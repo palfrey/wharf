@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block body %}
+<h1>Wharf</h1>
   <ul class=apps>
   {% for app in apps %}
     <h2><li><a href="{{ url_for('app_info', app_name=app) }}">{{ app }}</a></li></h2>

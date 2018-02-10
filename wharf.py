@@ -49,4 +49,4 @@ def app_config(app):
 @app.route("/apps/<app_name>")
 def app_info(app_name):
     config = app_config(app_name)
-    raise Exception(config)
+    return render_template('app_info.html', app=app_name, config=sorted(config.items()))
