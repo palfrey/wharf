@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block body %}
+  <ul class=apps>
+  {% for app in apps %}
+    <h2><li><a href="{{ url_for('app_info', app_name=app) }}">{{ app }}</a></li></h2>
+  {% else %}
+    <li><em>Unbelievable.  No apps here so far</em></li>
+  {% endfor %}
+  </ul>
+{% endblock %}
