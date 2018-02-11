@@ -7,4 +7,10 @@
     <li>{{ k }} = {{ v }}</li>
   {% endfor %}
 </ul>
+<h3>New item</h3>
+<form action="{{ url('app_info', app_name=app) }}" method="POST">
+  {% csrf_token %}
+  {{ form | bootstrap }}
+  <input type="submit" value="Submit" />
+</form>
 {% endblock %}

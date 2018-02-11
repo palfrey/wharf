@@ -1,3 +1,4 @@
 django
+django-jinja-bootstrap-form
 requests
 jinja2

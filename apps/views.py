@@ -1,8 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, reverse
 from django.conf import settings
 
 import requests
 import time
+from . import forms
 
 def run_cmd(cmd):
     req = requests.post("%s/commands" % settings.DOKKU_API, headers=settings.DOKKU_HEADERS, data="cmd=%s" % cmd)
@@ -40,6 +41,19 @@ def app_config(app):
         config[name] = value.lstrip()
     return config
 
+def app_config_set(app, key, value):
+    data = run_cmd("config:set %s %s=%s" % (app, key, value))
+    lines = data.split("\n")
+    if lines[0] != '-----> Setting config vars':
+        raise Exception(data)
+
 def app_info(request, app_name):
     config = app_config(app_name)
-    return render(request, 'app_info.html', { 'app': app_name, 'config': sorted(config.items())})
+    if request.method == 'POST':
+        form = forms.ConfigForm(request.POST)
+        if form.is_valid():
+            app_config_set(app_name, form.cleaned_data['key'], form.cleaned_data['value'])
+            return redirect(reverse('app_info', args=[app_name]))
+    else:
+        form = forms.ConfigForm()
+    return render(request, 'app_info.html', {'form': form, 'app': app_name, 'config': sorted(config.items())})

@@ -6,6 +6,8 @@
 #
 certifi==2018.1.18        # via requests
 chardet==3.0.4            # via requests
+django-jinja-bootstrap-form==4.2.3
+django-jinja==2.4.1       # via django-jinja-bootstrap-form
 django==2.0.2
 idna==2.6                 # via requests
 jinja2==2.10
