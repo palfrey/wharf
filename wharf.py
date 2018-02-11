@@ -5,8 +5,8 @@ import time
 app = Flask(__name__)
 
 DOKKU_API = "http://127.0.0.1:34720"
-API_KEY = "cca6a483f4b54d8aa47376e0dc55d296"
-API_SECRET = "c4b02813f42a22669d3abf92bce04267"
+API_KEY = "dffbadf9726c5d57a5257b89c0f885ec"
+API_SECRET = "3ba0f24046cb61754ab0b30a41398c4a"
 headers = {"Api-Key": API_KEY, "Api-Secret": API_SECRET}
 
 def run_cmd(cmd):
