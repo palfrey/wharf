@@ -7,18 +7,8 @@ import time
 from . import forms
 
 def run_cmd(cmd):
-    req = requests.post("%s/commands" % settings.DOKKU_API, headers=settings.DOKKU_HEADERS, data="cmd=%s" % cmd)
-    req.raise_for_status()
-    token = req.json()['token']
-    while True:
-        req = requests.get("%s/commands/%s" % (settings.DOKKU_API, token), headers=settings.DOKKU_HEADERS)
-        req.raise_for_status()
-        if req.json()['ran_at'] != None:
-            break
-        time.sleep(0.1)
-    if not req.json()['result_data']['ok']:
-        raise Exception(req.json())
-    return req.json()['result_data']['output']
+    res = tasks.run_command.delay(cmd)
+    return res.get().strip()
 
 def app_list():
     data = run_cmd("apps:list")

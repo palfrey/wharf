@@ -121,10 +121,8 @@ STATIC_URL = '/static/'
 
 # Wharf settings
 
-DOKKU_API = "http://192.168.1.188:34720"
-API_KEY = "dffbadf9726c5d57a5257b89c0f885ec"
-API_SECRET = "3ba0f24046cb61754ab0b30a41398c4a"
-DOKKU_HEADERS = {"Api-Key": API_KEY, "Api-Secret": API_SECRET}
+DOKKU_HOST = "192.168.1.188"
+DOKKU_SSH_PORT = 2222
 
 # Celery settings
 
