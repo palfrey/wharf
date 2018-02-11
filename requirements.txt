@@ -13,6 +13,7 @@ django==2.0.2
 idna==2.6                 # via requests
 jinja2==2.10
 markupsafe==1.0           # via jinja2
+psycopg2==2.7.4
 pytz==2018.3              # via django
 requests==2.18.4
 urllib3==1.22             # via requests

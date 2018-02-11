@@ -75,7 +75,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wharf.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
@@ -121,7 +120,7 @@ STATIC_URL = '/static/'
 
 # Wharf settings
 
-DOKKU_API = "http://127.0.0.1:34720"
+DOKKU_API = "http://192.168.1.188:34720"
 API_KEY = "dffbadf9726c5d57a5257b89c0f885ec"
 API_SECRET = "3ba0f24046cb61754ab0b30a41398c4a"
 DOKKU_HEADERS = {"Api-Key": API_KEY, "Api-Secret": API_SECRET}
