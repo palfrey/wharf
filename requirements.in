@@ -1,4 +1,5 @@
 django
 django-jinja-bootstrap-form
+dj-database-url
 requests
 jinja2
