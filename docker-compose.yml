@@ -3,16 +3,34 @@ version: "3"
 services:
   web:
     build: .
+    command: ./wait-for-it.sh postgres:5432 --strict --timeout=0 -- ./wait-for-it.sh redis:6379 --strict --timeout=0 -- bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/work
     ports:
       - 8000:8000
     environment:
       - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
+      - BROKER_URL=redis://redis:6379/0
     depends_on:
       - postgres
+      - redis
+  celery:
+    build: .
+    command: ./wait-for-it.sh postgres:5432 --strict --timeout=0 -- ./wait-for-it.sh redis:6379 --strict --timeout=0 -- bash -c "python manage.py celery"
+    volumes:
+      - .:/work
+      - ~/.ssh:/root/.ssh
+    environment:
+      - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
+      - BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+
   postgres:
     image: postgres:10-alpine
     environment:
       POSTGRES_DB: wharf
       POSTGRES_PASSWORD: example
+  redis:
+    image: redis:4-alpine

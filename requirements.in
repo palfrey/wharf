@@ -3,4 +3,8 @@ django-jinja-bootstrap-form
 dj-database-url
 requests
 jinja2
-psycopg2
+psycopg2-binary
+
+celery
+celery[redis]
+django-celery-results

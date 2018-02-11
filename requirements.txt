@@ -4,16 +4,23 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
+amqp==2.2.2               # via kombu
+billiard==3.5.0.3         # via celery
+celery[redis]==4.1.0
 certifi==2018.1.18        # via requests
 chardet==3.0.4            # via requests
 dj-database-url==0.4.2
+django-celery-results==1.0.1
 django-jinja-bootstrap-form==4.2.3
 django-jinja==2.4.1       # via django-jinja-bootstrap-form
 django==2.0.2
 idna==2.6                 # via requests
 jinja2==2.10
+kombu==4.1.0              # via celery
 markupsafe==1.0           # via jinja2
-psycopg2==2.7.4
-pytz==2018.3              # via django
+psycopg2-binary==2.7.4
+pytz==2018.3              # via celery, django
+redis==2.10.6             # via celery
 requests==2.18.4
 urllib3==1.22             # via requests
+vine==1.1.4               # via amqp

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, reverse
 from django.conf import settings
+import wharf.tasks as tasks
 
 import requests
 import time

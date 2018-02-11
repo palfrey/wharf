@@ -1,3 +1,4 @@
 .vscode/
 ENV/
 db.sqlite3
+celerybeat-schedule

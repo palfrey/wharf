@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_jinja',
     'bootstrapform_jinja',
+    'django_celery_results',
     'apps'
 ]
 
@@ -124,3 +125,8 @@ DOKKU_API = "http://192.168.1.188:34720"
 API_KEY = "dffbadf9726c5d57a5257b89c0f885ec"
 API_SECRET = "3ba0f24046cb61754ab0b30a41398c4a"
 DOKKU_HEADERS = {"Api-Key": API_KEY, "Api-Secret": API_SECRET}
+
+# Celery settings
+
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_BROKER_URL = os.environ.get('BROKER_URL', 'redis://localhost:6379/0')
