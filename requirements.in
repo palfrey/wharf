@@ -1,2 +1,3 @@
-flask
+django
 requests
+jinja2

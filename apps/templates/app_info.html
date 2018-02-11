@@ -2,9 +2,9 @@
 {% block body %}
 <h1>Wharf: {{ app }}</h1>
 <h2>Config</h2>
-  <ul class=config>
+<ul class=config>
   {% for (k,v) in config %}
     <li>{{ k }} = {{ v }}</li>
   {% endfor %}
-  </ul>
+</ul>
 {% endblock %}

@@ -6,12 +6,10 @@
 #
 certifi==2018.1.18        # via requests
 chardet==3.0.4            # via requests
-click==6.7                # via flask
-flask==0.12.2
+django==2.0.2
 idna==2.6                 # via requests
-itsdangerous==0.24        # via flask
-jinja2==2.10              # via flask
+jinja2==2.10
 markupsafe==1.0           # via jinja2
+pytz==2018.3              # via django
 requests==2.18.4
 urllib3==1.22             # via requests
-werkzeug==0.14.1          # via flask
