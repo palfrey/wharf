@@ -12,9 +12,12 @@ def handle_data(key, data):
     redis.append(key, data)
     print(data)
 
+def task_key(task_id):
+    return "task:%s" % task_id
+
 @app.task(bind=True)
 def run_command(self, command):
-    key = "task:%s" % self.request.id
+    key = task_key(self.request.id)
     client = SSHClient()
     client.load_system_host_keys()
     client.connect(settings.DOKKU_HOST, port=settings.DOKKU_SSH_PORT, username="dokku")

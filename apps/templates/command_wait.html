@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Wharf: running task for {{ app }}</h1>
+Task id: {{ task_id }}<br />
+Task state: {{ state }}<br />
+<pre>
+{{ log }}
+</pre>
+<script type="text/javascript">
+    setTimeout(function(){
+      location = ''
+    },2000)
+  </script>
+{% endblock %}

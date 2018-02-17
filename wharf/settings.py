@@ -128,3 +128,4 @@ DOKKU_SSH_PORT = 2222
 
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BROKER_URL = os.environ.get('BROKER_URL', 'redis://localhost:6379/0')
+CELERY_TASK_TRACK_STARTED = True
