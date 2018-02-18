@@ -20,4 +20,13 @@
   {{ form | bootstrap }}
   <input class="form-control" type="submit" value="Submit" />
 </form>
+<h3>Postgres</h3>
+{% if postgres %}
+Status: {{ postgres['STATUS'] }}
+{% else %}
+<form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary">Create postgres db</button>
+</form>
+{% endif %}
 {% endblock %}

@@ -74,6 +74,32 @@ def check_app_config_set(request, app_name, task_id):
     messages.success(request, 'Config updated')
     return redirect(reverse('app_info', args=[app_name]))
 
+def postgres_list():
+    data = run_cmd("postgres:list")
+    lines = data.split("\n")
+    fields = dict([[x,{}] for x in ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"]])
+    last_field = None
+    for f in fields.keys():
+        index = lines[0].find(f)
+        if index == -1:
+            raise Exception("Can't find '%s' in '%s'" % (f, lines[0].strip()))
+        fields[f]["start"] = index
+        if last_field != None:
+            fields[last_field]["end"] = index
+        last_field = f
+    fields[last_field]["end"] = None
+    results = []
+    for line in lines[1:]:
+        info = {}
+        for f in fields.keys():
+            if fields[f]["end"] == None:
+                info[f] = line[fields[f]["start"]:].strip()
+            else:
+                info[f] = line[fields[f]["start"]:fields[f]["end"]].strip()
+        results.append(info)
+    results = dict([[x["NAME"], x] for x in results])
+    return results
+
 def app_info(request, app_name):
     config = app_config(app_name)
     if request.method == 'POST':
@@ -82,12 +108,28 @@ def app_info(request, app_name):
             return app_config_set(app_name, form.cleaned_data['key'], form.cleaned_data['value'])
     else:
         form = forms.ConfigForm()
-    return render(request, 'app_info.html', {'form': form, 'app': app_name, 'git_url': config.get('GITHUB_URL', None), 'config': sorted(config.items())})
+    postgres = postgres_list()
+    if app_name in postgres:
+        postgres = postgres[app_name]
+    else:
+        postgres = None
+    return render(request, 'app_info.html', {'postgres':postgres, 'form': form, 'app': app_name, 'git_url': config.get('GITHUB_URL', None), 'config': sorted(config.items())})
 
 def deploy(request, app_name):
     res = tasks.deploy.delay(app_name, request.POST['url'])
     return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': "check_deploy"}))
 
+def create_postgres(request, app_name):
+    return run_cmd_with_log(app_name, ["postgres:create %s" % app_name, "postgres:link %s %s" % (app_name, app_name)], "check_postgres")
+
 def check_deploy(request, app_name, task_id):
     messages.success(request, "%s redeployed" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+def check_postgres(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Postgres container created") == -1:
+        raise Exception(data)
+    messages.success(request, "Postgres added to %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
