@@ -57,11 +57,14 @@ def deploy(self, app, git_url):
     key = task_key(self.request.id)
     app_repo_path = os.path.abspath(os.path.join("repos", app))
     if not os.path.exists(app_repo_path):
+        redis.append(key, "== Cloning ==\n")
         run_process(key, ["git", "clone", git_url, app_repo_path])
     repo = Repo(app_repo_path)
     try:
         repo.remotes['dokku']
     except IndexError:
         repo.create_remote('dokku', "ssh://dokku@%s:%s/%s" % (settings.DOKKU_HOST, settings.DOKKU_SSH_PORT, app))
+    redis.append(key, "== Pulling ==\n")
     run_process(key, ["git", "pull"], cwd=app_repo_path)
+    redis.append(key, "== Pushing to Dokku ==\n")
     run_process(key, ["git", "push", "dokku", "master"], cwd=app_repo_path)

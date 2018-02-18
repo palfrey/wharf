@@ -82,7 +82,7 @@ def app_info(request, app_name):
             return app_config_set(app_name, form.cleaned_data['key'], form.cleaned_data['value'])
     else:
         form = forms.ConfigForm()
-    return render(request, 'app_info.html', {'form': form, 'app': app_name, 'git_url': config['GITHUB_URL'], 'config': sorted(config.items())})
+    return render(request, 'app_info.html', {'form': form, 'app': app_name, 'git_url': config.get('GITHUB_URL', None), 'config': sorted(config.items())})
 
 def deploy(request, app_name):
     res = tasks.deploy.delay(app_name, request.POST['url'])

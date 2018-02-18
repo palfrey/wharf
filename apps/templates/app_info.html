@@ -6,7 +6,7 @@
 <form class="form-inline" action="{{ url('deploy', app_name=app) }}" method="POST">
   {% csrf_token %}
   <input type="hidden" name="url" value="{{ git_url }}" />
-  <button type="submit" class="btn btn-primary">Redeploy app</button>
+  <button type="submit" class="btn btn-primary" {% if git_url == None %}disabled{%endif%}>Redeploy app</button>
 </form>
 <h2>Config</h2>
 <ul class=config>

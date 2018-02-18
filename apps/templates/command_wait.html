@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block body %}
-<h1>Wharf: running task for {{ app }}</h1>
+<h1>Wharf: running task for <a href="{{ url('app_info', app_name=app) }}">{{ app }}</a></h1>
 Task id: {{ task_id }}<br />
 Task state: {{ state }}<br />
 <pre>
@@ -13,4 +13,5 @@ Task state: {{ state }}<br />
     },2000)
   </script>
 {% endif %}
+<a href="{{ url('app_info', app_name=app) }}">Return to {{app}} info</a>
 {% endblock %}
