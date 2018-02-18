@@ -153,6 +153,7 @@ def app_info(request, app_name):
 
 def deploy(request, app_name):
     res = tasks.deploy.delay(app_name, request.POST['url'])
+    clear_cache("config %s" % app_name)
     return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': "check_deploy"}))
 
 def create_postgres(request, app_name):
@@ -162,6 +163,7 @@ def create_redis(request, app_name):
     return run_cmd_with_log(app_name, ["redis:create %s" % app_name, "redis:link %s %s" % (app_name, app_name)], "check_redis")
 
 def check_deploy(request, app_name, task_id):
+    clear_cache("config %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
 

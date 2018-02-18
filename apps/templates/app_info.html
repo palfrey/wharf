@@ -1,13 +1,18 @@
 {% extends "base.html" %}
 {% block body %}
 <h1>Wharf: {{ app }}</h1>
-<a href="{{ url('index') }}">Return to apps index</a>
+<a href="{{ url('index') }}">Return to apps index</a><br />
 
+<h3>Actions</h3>
+{% if git_url == None %}
+Can't deploy due to missing GITHUB_URL in config
+{% else %}
 <form class="form-inline" action="{{ url('deploy', app_name=app) }}" method="POST">
   {% csrf_token %}
   <input type="hidden" name="url" value="{{ git_url }}" />
-  <button type="submit" class="btn btn-primary" {% if git_url == None %}disabled{%endif%}>Deploy app</button>
+  <button type="submit" class="btn btn-primary">Deploy app</button>
 </form>
+{% endif %}
 <h2>Config</h2>
 <ul class=config>
   {% for (k,v) in config %}
