@@ -6,9 +6,11 @@ Task state: {{ state }}<br />
 <pre>
 {{ log }}
 </pre>
+{% if running %}
 <script type="text/javascript">
     setTimeout(function(){
-      location = ''
+      location.reload()
     },2000)
   </script>
+{% endif %}
 {% endblock %}

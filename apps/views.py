@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib import messages
 import wharf.tasks as tasks
 from celery.result import AsyncResult
-from celery.states import state, PENDING, SUCCESS
+from celery.states import state, PENDING, SUCCESS, FAILURE, STARTED
 
 import requests
 import time
@@ -14,11 +14,11 @@ from redis import StrictRedis
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
 
 def run_cmd(cmd):
-    res = tasks.run_command.delay(cmd)
+    res = tasks.run_ssh_command.delay(cmd)
     return res.get().strip()
 
 def run_cmd_with_log(app, cmd, after):
-    res = tasks.run_command.delay(cmd)
+    res = tasks.run_ssh_command.delay(cmd)
     return redirect(reverse('wait_for_command', kwargs={'app_name': app, 'task_id': res.id, 'after': after}))
 
 def get_log(res):
@@ -26,7 +26,7 @@ def get_log(res):
     if res.state > state(PENDING):
         raw = redis.get(key)
         if raw == None:
-            return None
+            return ""
         return raw.decode('utf-8')
     else:
         return ""
@@ -36,7 +36,9 @@ def wait_for_command(request, app_name, task_id, after):
     if res.state == state(SUCCESS):
         return redirect(reverse(after, kwargs={'app_name': app_name, 'task_id': task_id}))
     log = get_log(res)
-    return render(request, 'command_wait.html', {'app': app_name, 'task_id': task_id, 'log': log, 'state': res.state})
+    if res.state == state(FAILURE):
+        log += str(res.traceback)
+    return render(request, 'command_wait.html', {'app': app_name, 'task_id': task_id, 'log': log, 'state': res.state, 'running': res.state in [state(PENDING), state(STARTED)]})
 
 def app_list():
     data = run_cmd("apps:list")
@@ -80,4 +82,12 @@ def app_info(request, app_name):
             return app_config_set(app_name, form.cleaned_data['key'], form.cleaned_data['value'])
     else:
         form = forms.ConfigForm()
-    return render(request, 'app_info.html', {'form': form, 'app': app_name, 'config': sorted(config.items())})
+    return render(request, 'app_info.html', {'form': form, 'app': app_name, 'git_url': config['GITHUB_URL'], 'config': sorted(config.items())})
+
+def deploy(request, app_name):
+    res = tasks.deploy.delay(app_name, request.POST['url'])
+    return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': "check_deploy"}))
+
+def check_deploy(request, app_name, task_id):
+    messages.success(request, "%s redeployed" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
