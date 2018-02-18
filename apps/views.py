@@ -92,8 +92,7 @@ def check_app_config_set(request, app_name, task_id):
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
 
-def postgres_list():
-    data = run_cmd_with_cache("postgres:list")
+def generic_list(data):
     lines = data.split("\n")
     fields = dict([[x,{}] for x in ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"]])
     last_field = None
@@ -118,6 +117,14 @@ def postgres_list():
     results = dict([[x["NAME"], x] for x in results])
     return results
 
+def postgres_list():
+    data = run_cmd_with_cache("postgres:list")
+    return generic_list(data)
+
+def redis_list():
+    data = run_cmd_with_cache("redis:list")
+    return generic_list(data)
+
 def app_info(request, app_name):
     config = app_config(app_name)
     if request.method == 'POST':
@@ -131,7 +138,12 @@ def app_info(request, app_name):
         postgres = postgres[app_name]
     else:
         postgres = None
-    return render(request, 'app_info.html', {'postgres':postgres, 'form': form, 'app': app_name, 'git_url': config.get('GITHUB_URL', None), 'config': sorted(config.items())})
+    redis = redis_list()
+    if app_name in redis:
+        redis = redis[app_name]
+    else:
+        redis = None
+    return render(request, 'app_info.html', {'postgres':postgres, 'redis':redis, 'form': form, 'app': app_name, 'git_url': config.get('GITHUB_URL', None), 'config': sorted(config.items())})
 
 def deploy(request, app_name):
     res = tasks.deploy.delay(app_name, request.POST['url'])
@@ -139,6 +151,9 @@ def deploy(request, app_name):
 
 def create_postgres(request, app_name):
     return run_cmd_with_log(app_name, ["postgres:create %s" % app_name, "postgres:link %s %s" % (app_name, app_name)], "check_postgres")
+
+def create_redis(request, app_name):
+    return run_cmd_with_log(app_name, ["redis:create %s" % app_name, "redis:link %s %s" % (app_name, app_name)], "check_redis")
 
 def check_deploy(request, app_name, task_id):
     messages.success(request, "%s redeployed" % app_name)
@@ -151,4 +166,15 @@ def check_postgres(request, app_name, task_id):
         raise Exception(data)
     messages.success(request, "Postgres added to %s" % app_name)
     clear_cache("postgres:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+def check_redis(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Redis container created") == -1:
+        raise Exception(data)
+    messages.success(request, "Redis added to %s" % app_name)
+    clear_cache("redis:list")
+    clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))

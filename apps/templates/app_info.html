@@ -29,4 +29,13 @@ Status: {{ postgres['STATUS'] }}
   <button type="submit" class="btn btn-primary">Create postgres db</button>
 </form>
 {% endif %}
+<h3>Redis</h3>
+{% if redis %}
+Status: {{ redis['STATUS'] }}
+{% else %}
+<form class="form-inline" action="{{ url('create_redis', app_name=app) }}" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary">Create redis db</button>
+</form>
+{% endif %}
 {% endblock %}

@@ -11,4 +11,6 @@ urlpatterns = [
     path('apps/<app_name>/check_deploy/<task_id>', views.check_deploy, name='check_deploy'),
     path('apps/<app_name>/create_postgres', views.create_postgres, name='create_postgres'),
     path('apps/<app_name>/check_postgres/<task_id>', views.check_postgres, name='check_postgres'),
+    path('apps/<app_name>/create_redis', views.create_redis, name='create_redis'),
+    path('apps/<app_name>/check_redis/<task_id>', views.check_redis, name='check_redis'),
 ]
