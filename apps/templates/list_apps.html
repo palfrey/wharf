@@ -8,4 +8,9 @@
     <li><em>Unbelievable.  No apps here so far</em></li>
   {% endfor %}
   </ul>
+  <form class="form-inline" action="{{ url('index') }}" method="POST">
+    {% csrf_token %}
+    {{ form }}
+    <button type="submit" class="btn btn-primary">Create app</button>
+  </form>
 {% endblock %}

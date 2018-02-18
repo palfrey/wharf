@@ -66,7 +66,13 @@ def app_list():
 
 def index(request):
     apps = app_list()
-    return render(request, 'list_apps.html', {'apps': apps})
+    if request.method == 'POST':
+        form = forms.CreateAppForm(request.POST)
+        if form.is_valid():
+            return create_app(form.cleaned_data['name'])
+    else:
+        form = forms.CreateAppForm()
+    return render(request, 'list_apps.html', {'apps': apps, 'form': form})
 
 def app_config(app):
     data = run_cmd_with_cache("config %s" % app)
@@ -177,4 +183,16 @@ def check_redis(request, app_name, task_id):
     messages.success(request, "Redis added to %s" % app_name)
     clear_cache("redis:list")
     clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+def create_app(app_name):
+    return run_cmd_with_log(app_name, "apps:create %s" % app_name, "check_app")
+
+def check_app(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Creating %s... done" % app_name) == -1:
+        raise Exception(data)
+    messages.success(request, "Created %s" % app_name)
+    clear_cache("apps:list")
     return redirect(reverse('app_info', args=[app_name]))
