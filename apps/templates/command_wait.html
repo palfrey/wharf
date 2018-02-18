@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block body %}
-<h1>Wharf: running task for <a href="{{ url('app_info', app_name=app) }}">{{ app }}</a></h1>
+<h1>Wharf: running task{% if app != "_" %} for <a href="{{ url('app_info', app_name=app) }}">{{ app }}</a>{% endif %}</h1>
 Task id: {{ task_id }}<br />
 Task state: {{ state }}<br />
 <pre>
@@ -13,5 +13,9 @@ Task state: {{ state }}<br />
     },2000)
   </script>
 {% endif %}
+{% if app == "_" %}
+<a href="{{ url('index') }}">Return to apps index</a>
+{% else %}
 <a href="{{ url('app_info', app_name=app) }}">Return to {{app}} info</a>
+{% endif %}
 {% endblock %}

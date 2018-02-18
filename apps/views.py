@@ -35,6 +35,8 @@ def clear_cache(cmd):
     cache.delete(key)
 
 def run_cmd_with_log(app, cmd, after):
+    if app == None: # global
+        app = '_'
     res = tasks.run_ssh_command.delay(cmd)
     return redirect(reverse('wait_for_command', kwargs={'app_name': app, 'task_id': res.id, 'after': after}))
 
@@ -51,7 +53,10 @@ def get_log(res):
 def wait_for_command(request, app_name, task_id, after):
     res = AsyncResult(task_id)
     if res.state == state(SUCCESS):
-        return redirect(reverse(after, kwargs={'app_name': app_name, 'task_id': task_id}))
+        if app_name == '_': # global
+            return redirect(reverse(after, kwargs={'task_id': task_id}))
+        else:
+            return redirect(reverse(after, kwargs={'app_name': app_name, 'task_id': task_id}))
     log = get_log(res)
     if res.state == state(FAILURE):
         log += str(res.traceback)
@@ -67,15 +72,16 @@ def app_list():
 def index(request):
     apps = app_list()
     if request.method == 'POST':
-        form = forms.CreateAppForm(request.POST)
+        app_form = forms.CreateAppForm(request.POST)
         if form.is_valid():
             return create_app(form.cleaned_data['name'])
     else:
-        form = forms.CreateAppForm()
-    return render(request, 'list_apps.html', {'apps': apps, 'form': form})
+        app_form = forms.CreateAppForm()
+    config_form = forms.ConfigForm()
+    config = global_config()
+    return render(request, 'list_apps.html', {'apps': apps, 'app_form': app_form, 'config_form': config_form, 'config': sorted(config.items())})
 
-def app_config(app):
-    data = run_cmd_with_cache("config %s" % app)
+def generic_config(app, data):
     lines = data.split("\n")
     if lines[0] != "=====> %s env vars" % app:
         raise Exception(data)
@@ -85,18 +91,41 @@ def app_config(app):
         config[name] = value.lstrip()
     return config
 
+def app_config(app):
+    data = run_cmd_with_cache("config %s" % app)
+    return generic_config(app, data)
+
+def global_config():
+    data = run_cmd_with_cache("config --global")
+    return generic_config("global", data)
+
 def app_config_set(app, key, value):
     return run_cmd_with_log(app, "config:set %s %s=%s" % (app, key, value), "check_app_config_set")
 
-def check_app_config_set(request, app_name, task_id):
+def check_config_set(request, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
     lines = data.split("\n")
     if lines[0] != '-----> Setting config vars':
         raise Exception(data)
     messages.success(request, 'Config updated')
+
+def check_app_config_set(request, app_name, task_id):
+    check_config_set(request, task_id)
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
+
+def global_config_set(request):
+    form = forms.ConfigForm(request.POST)
+    if form.is_valid():
+        return run_cmd_with_log(None, "config:set --global %s=%s" % (form.cleaned_data['key'], form.cleaned_data['value']), "check_global_config_set")
+    else:
+        raise Exception
+
+def check_global_config_set(request, task_id):
+    check_config_set(request, task_id)
+    clear_cache("config --global")
+    return redirect(reverse('index'))
 
 def generic_list(data):
     lines = data.split("\n")

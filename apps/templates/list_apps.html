@@ -1,16 +1,33 @@
 {% extends "base.html" %}
 {% block body %}
 <h1>Wharf</h1>
-  <ul class=apps>
-  {% for app in apps %}
-    <h2><li><a href="{{ url('app_info', app_name=app) }}">{{ app }}</a></li></h2>
-  {% else %}
-    <li><em>Unbelievable.  No apps here so far</em></li>
+<h3>Apps</h3>
+<ul class=apps>
+{% for app in apps %}
+  <h2><li><a href="{{ url('app_info', app_name=app) }}">{{ app }}</a></li></h2>
+{% else %}
+  <li><em>Unbelievable.  No apps here so far</em></li>
+{% endfor %}
+</ul>
+<h3>New app</h3>
+<form class="form" action="{{ url('index') }}" method="POST">
+  {% csrf_token %}
+  <input type="hidden" name="kind" value="app" />
+  {{ app_form | bootstrap }}
+  <button type="submit" class="btn btn-primary">Create app</button>
+</form>
+<br />
+<h2>Global Config</h2>
+<ul class=config>
+  {% for (k,v) in config %}
+    <li>{{ k }} = {{ v }}</li>
   {% endfor %}
-  </ul>
-  <form class="form-inline" action="{{ url('index') }}" method="POST">
-    {% csrf_token %}
-    {{ form }}
-    <button type="submit" class="btn btn-primary">Create app</button>
-  </form>
+</ul>
+<h3>New item</h3>
+<form action="{{ url('global_config_set') }}" method="POST">
+  {% csrf_token %}
+  <input type="hidden" name="kind" value="config" />
+  {{ config_form | bootstrap }}
+  <input class="form-control" type="submit" value="Submit" />
+</form>
 {% endblock %}
