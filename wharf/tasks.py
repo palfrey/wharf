@@ -7,6 +7,8 @@ from redis import StrictRedis
 import subprocess
 import os.path
 from git import Repo
+from fcntl import fcntl, F_GETFL, F_SETFL
+from os import O_NONBLOCK, read
 
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
 
@@ -42,13 +44,29 @@ def run_ssh_command(self, command):
                 return redis.get(key).decode("utf-8")
             time.sleep(0.1)
 
+def set_nb(pipe):
+    flags = fcntl(pipe, F_GETFL)
+    fcntl(pipe, F_SETFL, flags | O_NONBLOCK)
+
 def run_process(key, cmd, cwd=None):
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
+    set_nb(p.stdout)
+    set_nb(p.stderr)
     while True:
-        line = p.stdout.read()
-        if line == b'' and p.poll() != None:
-            break
-        handle_data(key, line)
+        try:
+            out = read(p.stdout.fileno(), 1024)
+        except BlockingIOError:
+            out = b""
+        try:
+            err = read(p.stderr.fileno(), 1024)
+        except BlockingIOError:
+            err = b""
+        handle_data(key, out)
+        handle_data(key, err)
+        if out == b'' and err == b'':
+            if p.poll() != None:
+                break
+            time.sleep(0.1)
     if p.poll()!=0:
         raise Exception
 
