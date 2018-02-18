@@ -4,9 +4,9 @@ dj-database-url
 requests
 jinja2
 psycopg2-binary
-
 celery
 celery[redis]
+django-redis
 django-celery-results
 paramiko
 gitpython

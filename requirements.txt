@@ -17,6 +17,7 @@ dj-database-url==0.4.2
 django-celery-results==1.0.1
 django-jinja-bootstrap-form==4.2.3
 django-jinja==2.4.1       # via django-jinja-bootstrap-form
+django-redis==4.8.0
 django==2.0.2
 gitdb2==2.0.3             # via gitpython
 gitpython==2.1.8
@@ -30,7 +31,7 @@ pyasn1==0.4.2             # via paramiko
 pycparser==2.18           # via cffi
 pynacl==1.2.1             # via paramiko
 pytz==2018.3              # via celery, django
-redis==2.10.6             # via celery
+redis==2.10.6             # via celery, django-redis
 requests==2.18.4
 six==1.11.0               # via bcrypt, cryptography, pynacl
 smmap2==2.0.3             # via gitdb2

@@ -4,6 +4,7 @@ from django.contrib import messages
 import wharf.tasks as tasks
 from celery.result import AsyncResult
 from celery.states import state, PENDING, SUCCESS, FAILURE, STARTED
+from django.core.cache import cache
 
 import requests
 import time
@@ -16,6 +17,22 @@ redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
 def run_cmd(cmd):
     res = tasks.run_ssh_command.delay(cmd)
     return res.get().strip()
+
+def cmd_key(cmd):
+    return "cmd:%s" % cmd
+
+def run_cmd_with_cache(cmd):
+    key = cmd_key(cmd)
+    existing = cache.get(key)
+    if existing:
+        return existing
+    res = run_cmd(cmd)
+    cache.set(key, res, 300)
+    return res
+
+def clear_cache(cmd):
+    key = cmd_key(cmd)
+    cache.delete(key)
 
 def run_cmd_with_log(app, cmd, after):
     res = tasks.run_ssh_command.delay(cmd)
@@ -41,7 +58,7 @@ def wait_for_command(request, app_name, task_id, after):
     return render(request, 'command_wait.html', {'app': app_name, 'task_id': task_id, 'log': log, 'state': res.state, 'running': res.state in [state(PENDING), state(STARTED)]})
 
 def app_list():
-    data = run_cmd("apps:list")
+    data = run_cmd_with_cache("apps:list")
     lines = data.split("\n")
     if lines[0] != "=====> My Apps":
         raise Exception(data)
@@ -52,7 +69,7 @@ def index(request):
     return render(request, 'list_apps.html', {'apps': apps})
 
 def app_config(app):
-    data = run_cmd("config %s" % app)
+    data = run_cmd_with_cache("config %s" % app)
     lines = data.split("\n")
     if lines[0] != "=====> %s env vars" % app:
         raise Exception(data)
@@ -72,10 +89,11 @@ def check_app_config_set(request, app_name, task_id):
     if lines[0] != '-----> Setting config vars':
         raise Exception(data)
     messages.success(request, 'Config updated')
+    clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
 
 def postgres_list():
-    data = run_cmd("postgres:list")
+    data = run_cmd_with_cache("postgres:list")
     lines = data.split("\n")
     fields = dict([[x,{}] for x in ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"]])
     last_field = None
@@ -132,4 +150,5 @@ def check_postgres(request, app_name, task_id):
     if data.find("Postgres container created") == -1:
         raise Exception(data)
     messages.success(request, "Postgres added to %s" % app_name)
+    clear_cache("postgres:list")
     return redirect(reverse('app_info', args=[app_name]))

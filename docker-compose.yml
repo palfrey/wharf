@@ -11,6 +11,7 @@ services:
     environment:
       - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
       - BROKER_URL=redis://redis:6379/0
+      - CACHE_URL=redis://redis:6379/1
     depends_on:
       - postgres
       - redis
@@ -23,6 +24,7 @@ services:
     environment:
       - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
       - BROKER_URL=redis://redis:6379/0
+      - CACHE_URL=redis://redis:6379/1
     depends_on:
       - postgres
       - redis
