@@ -73,8 +73,8 @@ def index(request):
     apps = app_list()
     if request.method == 'POST':
         app_form = forms.CreateAppForm(request.POST)
-        if form.is_valid():
-            return create_app(form.cleaned_data['name'])
+        if app_form.is_valid():
+            return create_app(app_form.cleaned_data['name'])
     else:
         app_form = forms.CreateAppForm()
     config_form = forms.ConfigForm()
