@@ -127,7 +127,7 @@ def check_global_config_set(request, task_id):
     clear_cache("config --global")
     return redirect(reverse('index'))
 
-def generic_list(data):
+def generic_list(app_name, data):
     lines = data.split("\n")
     fields = dict([[x,{}] for x in ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"]])
     last_field = None
@@ -150,15 +150,25 @@ def generic_list(data):
                 info[f] = line[fields[f]["start"]:fields[f]["end"]].strip()
         results.append(info)
     results = dict([[x["NAME"], x] for x in results])
-    return results
+    if app_name in results:
+        return results[app_name]
+    else:
+        return None
 
-def postgres_list():
+def postgres_list(app_name):
     data = run_cmd_with_cache("postgres:list")
-    return generic_list(data)
+    return generic_list(app_name, data)
 
-def redis_list():
+def redis_list(app_name):
     data = run_cmd_with_cache("redis:list")
-    return generic_list(data)
+    return generic_list(app_name, data)
+
+def letsencrypt(app_name):
+    data = run_cmd_with_cache("letsencrypt:ls")
+    lines = data.split("\n")
+    if len(lines) != 1:
+        raise Exception(lines)
+    return None
 
 def app_info(request, app_name):
     config = app_config(app_name)
@@ -168,17 +178,15 @@ def app_info(request, app_name):
             return app_config_set(app_name, form.cleaned_data['key'], form.cleaned_data['value'])
     else:
         form = forms.ConfigForm()
-    postgres = postgres_list()
-    if app_name in postgres:
-        postgres = postgres[app_name]
-    else:
-        postgres = None
-    redis = redis_list()
-    if app_name in redis:
-        redis = redis[app_name]
-    else:
-        redis = None
-    return render(request, 'app_info.html', {'postgres':postgres, 'redis':redis, 'form': form, 'app': app_name, 'git_url': config.get('GITHUB_URL', None), 'config': sorted(config.items())})
+    return render(request, 'app_info.html', {
+        'postgres': postgres_list(app_name),
+        'redis': redis_list(app_name),
+        'letsencrypt': letsencrypt(app_name),
+        'form': form,
+        'app': app_name,
+        'git_url': config.get('GITHUB_URL', None),
+        'config': sorted(config.items())
+    })
 
 def deploy(request, app_name):
     res = tasks.deploy.delay(app_name, request.POST['url'])
@@ -227,3 +235,11 @@ def check_app(request, app_name, task_id):
     messages.success(request, "Created %s" % app_name)
     clear_cache("apps:list")
     return redirect(reverse('app_info', args=[app_name]))
+
+def setup_letsencrypt(request, app_name):
+    return run_cmd_with_log(app_name, "letsencrypt %s" % app_name, "check_letsencrypt")
+
+def check_letsencrypt(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    raise Exception(data)

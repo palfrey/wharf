@@ -43,4 +43,13 @@ Status: {{ redis['STATUS'] }}
   <button type="submit" class="btn btn-primary">Create redis db</button>
 </form>
 {% endif %}
+<h3>Let's Encrypt</h3>
+{% if letsencrypt %}
+{{ letsencrypt }}
+{% else %}
+<form class="form-inline" action="{{ url('setup_letsencrypt', app_name=app) }}" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary">Setup Let's Encrypt</button>
+</form>
+{% endif %}
 {% endblock %}

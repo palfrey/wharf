@@ -17,4 +17,6 @@ urlpatterns = [
     path('apps/<app_name>/check_postgres/<task_id>', views.check_postgres, name='check_postgres'),
     path('apps/<app_name>/create_redis', views.create_redis, name='create_redis'),
     path('apps/<app_name>/check_redis/<task_id>', views.check_redis, name='check_redis'),
+    path('apps/<app_name>/setup_letsencrypt', views.setup_letsencrypt, name='setup_letsencrypt'),
+    path('apps/<app_name>/check_letsencrypt/<task_id>', views.check_letsencrypt, name='check_letsencrypt'),
 ]
