@@ -255,5 +255,9 @@ def setup_letsencrypt(request, app_name):
 
 def check_letsencrypt(request, app_name, task_id):
     res = AsyncResult(task_id)
-    data = get_log(res)
-    raise Exception(data)
+    log = get_log(res)
+    if log.find("Certificate retrieved successfully") !=-1:
+        clear_cache("letsencrypt:ls")
+        return redirect(reverse('app_info', args=[app_name]))
+    else:
+        return render(request, 'command_wait.html', {'app': app_name, 'task_id': task_id, 'log': log, 'state': res.state, 'running': res.state in [state(PENDING), state(STARTED)]})
