@@ -127,14 +127,20 @@ def check_global_config_set(request, task_id):
     clear_cache("config --global")
     return redirect(reverse('index'))
 
-def generic_list(app_name, data):
+def generic_list(app_name, data, name_field, fields):
     lines = data.split("\n")
-    fields = dict([[x,{}] for x in ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"]])
+    if lines[0].find("is not a dokku command") != -1:
+        raise Exception("Need plugin!")
+    if lines[0].find("There are no") != -1:
+        return None
+    fields = dict([[x,{}] for x in fields])
     last_field = None
     for f in fields.keys():
         index = lines[0].find(f)
         if index == -1:
             raise Exception("Can't find '%s' in '%s'" % (f, lines[0].strip()))
+        if f == name_field:
+            index = 0
         fields[f]["start"] = index
         if last_field != None:
             fields[last_field]["end"] = index
@@ -149,26 +155,34 @@ def generic_list(app_name, data):
             else:
                 info[f] = line[fields[f]["start"]:fields[f]["end"]].strip()
         results.append(info)
-    results = dict([[x["NAME"], x] for x in results])
+    results = dict([[x[name_field], x] for x in results])
     if app_name in results:
         return results[app_name]
     else:
         return None
 
+def db_list(app_name, data):
+    return generic_list(app_name, data, "NAME", ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"])
+
 def postgres_list(app_name):
     data = run_cmd_with_cache("postgres:list")
-    return generic_list(app_name, data)
+    try:
+        return db_list(app_name, data)
+    except:
+        clear_cache("postgres:list")
+        raise
 
 def redis_list(app_name):
     data = run_cmd_with_cache("redis:list")
-    return generic_list(app_name, data)
+    try:
+        return db_list(app_name, data)
+    except:
+        clear_cache("redis:list")
+        raise
 
 def letsencrypt(app_name):
     data = run_cmd_with_cache("letsencrypt:ls")
-    lines = data.split("\n")
-    if len(lines) != 1:
-        raise Exception(lines)
-    return None
+    return generic_list(app_name, data, "App name", ["App name", "Certificate Expiry", "Time before expiry", "Time before renewal"])
 
 def app_info(request, app_name):
     config = app_config(app_name)
