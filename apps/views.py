@@ -27,7 +27,7 @@ def run_cmd_with_cache(cmd):
     if existing:
         return existing
     res = run_cmd(cmd)
-    cache.set(key, res, 300)
+    cache.set(key, res, None)
     return res
 
 def clear_cache(cmd):
@@ -80,6 +80,10 @@ def index(request):
     config_form = forms.ConfigForm()
     config = global_config()
     return render(request, 'list_apps.html', {'apps': apps, 'app_form': app_form, 'config_form': config_form, 'config': sorted(config.items())})
+
+def refresh_all(request):
+    cache.clear()
+    return redirect(reverse('index'))
 
 def generic_config(app, data):
     lines = data.split("\n")

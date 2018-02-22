@@ -1,6 +1,10 @@
 {% extends "base.html" %}
 {% block body %}
 <h1>Wharf</h1>
+<form class="form" action="{{ url('refresh_all') }}" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary">Refresh Dokku information</button>
+</form>
 <h3>Apps</h3>
 <ul class=apps>
 {% for app in apps %}

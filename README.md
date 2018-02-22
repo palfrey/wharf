@@ -13,4 +13,3 @@ TODO
 * Logs
 * Auto-deploy from Github
 * Restructuring of app config page
-* Move to caching all Dokku state permanently (with refresh button)
