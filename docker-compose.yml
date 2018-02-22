@@ -12,6 +12,8 @@ services:
       - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
       - BROKER_URL=redis://redis:6379/0
       - CACHE_URL=redis://redis:6379/1
+      - DOKKU_SSH_HOST=${DOKKU_SSH_HOST:-127.0.0.1}
+      - DOKKU_SSH_PORT=${DOKKU_SSH_PORT:-22}
     depends_on:
       - postgres
       - redis
@@ -25,6 +27,8 @@ services:
       - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
       - BROKER_URL=redis://redis:6379/0
       - CACHE_URL=redis://redis:6379/1
+      - DOKKU_SSH_HOST=${DOKKU_SSH_HOST:-127.0.0.1}
+      - DOKKU_SSH_PORT=${DOKKU_SSH_PORT:-22}
     depends_on:
       - postgres
       - redis

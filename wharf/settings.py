@@ -131,8 +131,8 @@ STATIC_URL = '/static/'
 
 # Wharf settings
 
-DOKKU_HOST = "192.168.1.188"
-DOKKU_SSH_PORT = 2222
+DOKKU_HOST = os.environ.get("DOKKU_SSH_HOST", "127.0.0.1")
+DOKKU_SSH_PORT = int(os.environ.get("DOKKU_SSH_PORT", "22"))
 
 # Celery settings
 
