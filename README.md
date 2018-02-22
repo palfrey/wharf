@@ -9,7 +9,6 @@ dokku letsencrypt:cron-job --add
 
 TODO
 * Domains management
-* Process listing
 * Logs
 * Auto-deploy from Github
 * Restructuring of app config page

@@ -9,6 +9,7 @@ from django.core.cache import cache
 import requests
 import time
 from . import forms
+import re
 
 from redis import StrictRedis
 
@@ -188,6 +189,27 @@ def letsencrypt(app_name):
     data = run_cmd_with_cache("letsencrypt:ls")
     return generic_list(app_name, data, "App name", ["App name", "Certificate Expiry", "Time before expiry", "Time before renewal"])
 
+def process_info(app_name):
+    data = run_cmd_with_cache("ps:report %s" % app_name)
+    lines = data.split("\n")
+    if lines[0].find("%s process information" % app_name) == -1:
+        raise Exception(data)
+    results = {}
+    processes = {}
+    process_re = re.compile("Status\s+([^\.]+\.\d+)\s+(\S+)")
+    for line in lines[1:]:
+        if line.strip().startswith("Status "):
+            matches = process_re.search(line)
+            if matches == None:
+                raise Exception(line)
+            matches = matches.groups()
+            processes[matches[0]] = matches[1]
+        else:
+            (name, rest) = line.split(":", 1)
+            results[name.strip()] = rest.strip()
+    results["processes"] = processes
+    return results
+
 def app_info(request, app_name):
     config = app_config(app_name)
     if request.method == 'POST':
@@ -200,6 +222,7 @@ def app_info(request, app_name):
         'postgres': postgres_list(app_name),
         'redis': redis_list(app_name),
         'letsencrypt': letsencrypt(app_name),
+        'process': process_info(app_name),
         'form': form,
         'app': app_name,
         'git_url': config.get('GITHUB_URL', None),

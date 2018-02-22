@@ -56,4 +56,16 @@ Status: {{ redis['STATUS'] }}
   <button type="submit" class="btn btn-primary">Setup Let's Encrypt</button>
 </form>
 {% endif %}
+<h3>Process Info</h3>
+<ul>
+  {% for (k,v) in process.items() if k!= 'processes' %}
+  <li>{{k}}: {{v}}</li>
+  {% endfor %}
+</ul>
+<h3>Processes</h3>
+<ul>
+  {% for (k,v) in process['processes'].items() %}
+  <li>{{k}}: {{v}}</li>
+  {% endfor %}
+</ul>
 {% endblock %}
