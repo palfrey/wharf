@@ -68,4 +68,8 @@ Status: {{ redis['STATUS'] }}
   <li>{{k}}: {{v}}</li>
   {% endfor %}
 </ul>
+<h3>Logs</h3>
+<pre>
+{{ logs }}
+</pre>
 {% endblock %}

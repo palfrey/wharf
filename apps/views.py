@@ -14,6 +14,7 @@ import re
 from redis import StrictRedis
 
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
+ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
 def run_cmd(cmd):
     res = tasks.run_ssh_command.delay(cmd)
@@ -223,6 +224,7 @@ def app_info(request, app_name):
         'redis': redis_list(app_name),
         'letsencrypt': letsencrypt(app_name),
         'process': process_info(app_name),
+        'logs': ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
         'form': form,
         'app': app_name,
         'git_url': config.get('GITHUB_URL', None),
