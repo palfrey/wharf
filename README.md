@@ -6,3 +6,11 @@ dokku letsencrypt:cron-job --add
 * If there's a Dockerfile, it'll do that by default (http://dokku.viewdocs.io/dokku/deployment/methods/dockerfiles/). Set BUILDPACK_URL to override
 * BUILDPACK_URL should be an HTTPS one, not a SSH or heroku/<foo>
 * You should setup the global domain name and add a *.example.com
+
+TODO
+* Domains management
+* Process listing
+* Logs
+* Auto-deploy from Github
+* Restructuring of app config page
+* Move to caching all Dokku state permanently (with refresh button)
