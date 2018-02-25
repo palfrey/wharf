@@ -3,4 +3,3 @@ ENV/
 db.sqlite3
 celerybeat-schedule
 repos/
-wharf.key*

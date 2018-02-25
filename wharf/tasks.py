@@ -21,10 +21,13 @@ def handle_data(key, data):
 def task_key(task_id):
     return "task:%s" % task_id
 
-keyfile = "wharf.key"
+keyfile = os.path.expanduser("~/.ssh/id_rsa")
 
 def generate_key():
     if not os.path.exists(keyfile):
+        keydir = os.path.dirname(keyfile)
+        if not os.path.exists(keydir):
+            os.mkdir(keydir)
         prv = RSAKey.generate(bits=1024)
         prv.write_private_key_file(keyfile)
         pub = RSAKey(filename=keyfile)
@@ -43,7 +46,13 @@ def run_ssh_command(self, command):
     key = task_key(self.request.id)
     client = SSHClient()
     client.set_missing_host_key_policy(AutoAddPolicy)
-    client.load_system_host_keys()
+    known_hosts = os.path.expanduser('~/.ssh/known_hosts')
+    try:
+        client.load_host_keys(known_hosts) # So that we also save back the new host
+    except FileNotFoundError:
+        if not os.path.exists(os.path.dirname(known_hosts)):
+            os.mkdir(os.path.dirname(known_hosts))
+        open(known_hosts, "w").write("") # so connect doesn't barf when trying to save
     if type(command) == list:
         commands = command
     else:
