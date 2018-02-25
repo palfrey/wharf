@@ -72,7 +72,13 @@ def app_list():
     return lines[1:]
 
 def index(request):
-    apps = app_list()
+    try:
+        apps = app_list()
+    except Exception as e:
+        if e.__class__.__name__ == "AuthenticationException": # Can't use class directly as Celery mangles things
+            return render(request, 'setup_key.html', {'key': tasks.get_public_key.delay().get()})
+        else:
+            raise
     if request.method == 'POST':
         app_form = forms.CreateAppForm(request.POST)
         if app_form.is_valid():

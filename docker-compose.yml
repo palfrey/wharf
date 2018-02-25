@@ -22,7 +22,6 @@ services:
     command: ./wait-for-it.sh postgres:5432 --strict --timeout=0 -- ./wait-for-it.sh redis:6379 --strict --timeout=0 -- bash -c "python manage.py celery"
     volumes:
       - .:/work
-      - ~/.ssh:/root/.ssh
     environment:
       - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
       - BROKER_URL=redis://redis:6379/0

@@ -1,5 +1,6 @@
 from .celery import app
-from paramiko.client import SSHClient
+from paramiko.client import SSHClient, AutoAddPolicy
+from paramiko import RSAKey
 from django.conf import settings
 import select
 import time
@@ -20,17 +21,39 @@ def handle_data(key, data):
 def task_key(task_id):
     return "task:%s" % task_id
 
+keyfile = "wharf.key"
+
+def generate_key():
+    if not os.path.exists(keyfile):
+        prv = RSAKey.generate(bits=1024)
+        prv.write_private_key_file(keyfile)
+        pub = RSAKey(filename=keyfile)
+        with open("%s.pub" % keyfile, 'w') as f:
+            f.write("%s %s" % (pub.get_name(), pub.get_base64()))
+        print("Made new Wharf SSH key")
+
+generate_key()
+
+@app.task
+def get_public_key():
+    return open("%s.pub" % keyfile).read()
+
 @app.task(bind=True)
 def run_ssh_command(self, command):
     key = task_key(self.request.id)
     client = SSHClient()
+    client.set_missing_host_key_policy(AutoAddPolicy)
     client.load_system_host_keys()
     if type(command) == list:
         commands = command
     else:
         commands = [command]
     for c in commands:
-        client.connect(settings.DOKKU_HOST, port=settings.DOKKU_SSH_PORT, username="dokku")
+        if os.path.exists(keyfile):
+            pkey = RSAKey.from_private_key_file(keyfile)
+        else:
+            pkey = None
+        client.connect(settings.DOKKU_HOST, port=settings.DOKKU_SSH_PORT, username="dokku", pkey=pkey)
         transport = client.get_transport()
         channel = transport.open_session()
         channel.exec_command(c)
