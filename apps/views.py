@@ -59,7 +59,7 @@ def wait_for_command(request, app_name, task_id, after):
             return redirect(reverse(after, kwargs={'task_id': task_id}))
         else:
             return redirect(reverse(after, kwargs={'app_name': app_name, 'task_id': task_id}))
-    log = get_log(res)
+    log = ansi_escape.sub("", get_log(res))
     if res.state == state(FAILURE):
         log += str(res.traceback)
     return render(request, 'command_wait.html', {'app': app_name, 'task_id': task_id, 'log': log, 'state': res.state, 'running': res.state in [state(PENDING), state(STARTED)]})
