@@ -74,10 +74,17 @@ TEMPLATES = [
     },
 ]
 
+if "CACHE_URL" in os.environ:
+    cache_url = os.environ["CACHE_URL"]
+elif "REDIS_URL" in os.environ:
+    cache_url = "%s/1" % os.environ["REDIS_URL"]
+else:
+    raise Exception("Neither CACHE_URL nor REDIS_URL set in environment")
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.environ["CACHE_URL"],
+        "LOCATION": cache_url,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
@@ -136,7 +143,14 @@ DOKKU_SSH_PORT = int(os.environ.get("DOKKU_SSH_PORT", "22"))
 
 # Celery settings
 
+if "BROKER_URL" in os.environ:
+    broker_url = os.environ["BROKER_URL"]
+elif "REDIS_URL" in os.environ:
+    broker_url = "%s/0" % os.environ["REDIS_URL"]
+else:
+    raise Exception("Neither BROKER_URL nor REDIS_URL set in environment")
+
 CELERY_RESULT_BACKEND = 'django-db'
-CELERY_BROKER_URL = os.environ.get('BROKER_URL', 'redis://localhost:6379/0')
+CELERY_BROKER_URL = broker_url
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_SERIALISER = "pickle" # To fix exception serialisation. See https://github.com/celery/celery/pull/3592
