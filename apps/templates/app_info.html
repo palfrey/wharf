@@ -13,6 +13,20 @@ Can't deploy due to missing GITHUB_URL in config (which should be set to the "Cl
   <button type="submit" class="btn btn-primary">Deploy app</button>
 </form>
 {% endif %}
+<h2>Domains</h2>
+{% if domains.length == 0 %}None{% else %}
+<ul>
+  {% for d in domains %}
+    <li>{{ d }}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+<h3>New domain</h3>
+<form action="{{ url('add_domain', app_name=app) }}" method="POST">
+  {% csrf_token %}
+  {{ domain_form | bootstrap }}
+  <input class="form-control" type="submit" value="Submit" />
+</form>
 <h2>Config</h2>
 <ul class=config>
   {% for (k,v) in config %}

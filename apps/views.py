@@ -217,6 +217,28 @@ def process_info(app_name):
     results["processes"] = processes
     return results
 
+def domains_list(app_name):
+    data = run_cmd_with_cache("domains:report %s" % app_name)
+    vhosts = re.search("Domains app vhosts: (.*)", data)
+    return [x.strip() for x in vhosts.groups()[0].split(" ") if x != ""]
+
+def add_domain(request, app_name):
+    form = forms.CreateDomainForm(request.POST)
+    if form.is_valid():
+        return run_cmd_with_log(app_name, "domains:add %s %s" % (app_name, form.cleaned_data['name']), "check_domain")
+    else:
+        raise Exception
+
+def check_domain(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Reloading nginx") != -1:
+        clear_cache("domains:report %s" % app_name)
+        messages.success(request, "Added domain name to %s" % app_name)
+        return redirect(reverse('app_info', args=[app_name]))
+    else:
+        raise Exception(data)
+
 def app_info(request, app_name):
     config = app_config(app_name)
     if request.method == 'POST':
@@ -231,6 +253,8 @@ def app_info(request, app_name):
         'letsencrypt': letsencrypt(app_name),
         'process': process_info(app_name),
         'logs': ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
+        'domains': domains_list(app_name),
+        'domain_form': forms.CreateDomainForm(),
         'form': form,
         'app': app_name,
         'git_url': config.get('GITHUB_URL', None),

@@ -20,4 +20,6 @@ urlpatterns = [
     path('apps/<app_name>/check_redis/<task_id>', views.check_redis, name='check_redis'),
     path('apps/<app_name>/setup_letsencrypt', views.setup_letsencrypt, name='setup_letsencrypt'),
     path('apps/<app_name>/check_letsencrypt/<task_id>', views.check_letsencrypt, name='check_letsencrypt'),
+    path('apps/<app_name>/add_domain', views.add_domain, name='add_domain'),
+    path('apps/<app_name>/check_domain/<task_id>', views.check_domain, name='check_domain'),
 ]

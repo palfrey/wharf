@@ -8,7 +8,6 @@ dokku letsencrypt:cron-job --add
 * You should setup the global domain name and add a *.example.com
 
 TODO
-* Domains management
 * List all task logs
 * Auto-deploy from Github
 * Restructuring of app config page
