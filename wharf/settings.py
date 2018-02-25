@@ -148,7 +148,7 @@ elif "REDIS_URL" in os.environ:
 else:
     raise Exception("Neither BROKER_URL nor REDIS_URL set in environment")
 
-CELERY_RESULT_BACKEND = 'django-db'
+CELERY_RESULT_BACKEND = 'django-cache'
 CELERY_BROKER_URL = broker_url
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_SERIALISER = "pickle" # To fix exception serialisation. See https://github.com/celery/celery/pull/3592
