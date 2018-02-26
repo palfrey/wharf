@@ -13,6 +13,16 @@ Can't deploy due to missing GITHUB_URL in config (which should be set to the "Cl
   <button type="submit" class="btn btn-primary">Deploy app</button>
 </form>
 {% endif %}
+<h2>Task logs</h2>
+{% if task_logs %}
+<ul>
+  {% for tl in task_logs %}
+    <li><a href="{{ url('show_log', task_id=tl.task_id) }}">{{ tl.nice_when() }} - {{ tl.description }}</a></li>
+  {% endfor %}
+</ul>
+{% else %}
+No tasks run yet
+{% endif %}
 <h2>Domains</h2>
 {% if domains.length == 0 %}None{% else %}
 <ul>

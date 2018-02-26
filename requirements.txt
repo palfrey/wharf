@@ -21,6 +21,7 @@ django-redis==4.8.0
 django==2.0.2
 gitdb2==2.0.3             # via gitpython
 gitpython==2.1.8
+humanize==0.5.1
 idna==2.6                 # via cryptography, requests
 jinja2==2.10
 kombu==4.1.0              # via celery

@@ -1,3 +1,18 @@
 from django.db import models
+import uuid
+import humanize
+import datetime
 
-# Create your models here.
+class App(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    name = models.CharField(max_length=256)
+
+class TaskLog(models.Model):
+    task_id = models.CharField(max_length=256, primary_key=True)
+    when = models.DateTimeField()
+    success = models.NullBooleanField()
+    app = models.ForeignKey(App, on_delete=models.CASCADE)
+    description = models.CharField(max_length=256)
+
+    def nice_when(self):
+        return humanize.naturaltime(datetime.datetime.now(datetime.timezone.utc) - self.when)

@@ -10,3 +10,4 @@ django-redis
 django-celery-results
 paramiko
 gitpython
+humanize
