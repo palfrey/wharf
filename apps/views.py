@@ -5,6 +5,8 @@ import wharf.tasks as tasks
 from celery.result import AsyncResult
 from celery.states import state, PENDING, SUCCESS, FAILURE, STARTED
 from django.core.cache import cache
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponseBadRequest, HttpResponse
 
 import requests
 import time
@@ -12,6 +14,7 @@ from . import forms
 from . import models
 import re
 from datetime import datetime
+import json
 
 from redis import StrictRedis
 
@@ -273,6 +276,9 @@ def check_domain(request, app_name, task_id):
 def app_info(request, app_name):
     app, _ = models.App.objects.get_or_create(name=app_name)
     config = app_config(app_name)
+    if "GITHUB_URL" in config:
+        app.github_url = config["GITHUB_URL"]
+        app.save()
     if request.method == 'POST':
         form = forms.ConfigForm(request.POST)
         if form.is_valid():
@@ -359,3 +365,25 @@ def check_letsencrypt(request, app_name, task_id):
         return redirect(reverse('app_info', args=[app_name]))
     else:
         return render(request, 'command_wait.html', {'app': app_name, 'task_id': task_id, 'log': log, 'state': res.state, 'running': res.state in [state(PENDING), state(STARTED)]})
+
+@csrf_exempt
+def github_webhook(request):
+    data = json.loads(request.read())
+    if "hook_id" in data: # assume Ping
+        if "push" not in data["hook"]["events"]:
+            return HttpResponseBadRequest("No Push event set!")
+        return HttpResponse("All good")
+    clone_url = data["repository"]["clone_url"]
+    apps = models.App.objects.filter(github_url=clone_url)
+    if not apps.exists():
+        return HttpResponseBadRequest("Can't find an entry for clone URL %s" % clone_url)
+    app = apps.first()
+    res = tasks.deploy.delay(app.name, clone_url)
+    models.TaskLog(
+        task_id=res.id,
+        when=datetime.now(),
+        app=models.App.objects.get(name=app_name),
+        description="Deploying %s" % app_name
+    ).save()
+    clear_cache("config %s" % app.name)
+    return HttpResponse("Running deploy. Deploy log is at %s" % request.build_absolute_uri(reverse('show_log', kwargs={'task_id': res.id})))
