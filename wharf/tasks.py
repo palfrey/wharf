@@ -131,4 +131,4 @@ def deploy(self, app_name, git_url):
     redis.append(key, "== Pulling ==\n")
     run_process(key, ["git", "pull"], cwd=app_repo_path)
     redis.append(key, "== Pushing to Dokku ==\n")
-    run_process(key, ["git", "push", "dokku", "master"], cwd=app_repo_path)
+    run_process(key, ["git", "push", "-f", "dokku", "master"], cwd=app_repo_path)
