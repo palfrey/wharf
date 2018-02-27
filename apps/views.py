@@ -62,7 +62,8 @@ def get_log(res):
 
 def wait_for_command(request, app_name, task_id, after):
     res = AsyncResult(task_id)
-    task = models.TaskLog.objects.get(task_id=task_id)
+    app = models.App.objects.get(name=app_name)
+    task, created = models.TaskLog.objects.get_or_create(task_id=task_id, defaults={'app': app, 'when': datetime.now()})
     if res.state == state(SUCCESS):
         if app_name == '_': # global
             return redirect(reverse(after, kwargs={'task_id': task_id}))
@@ -295,6 +296,12 @@ def app_info(request, app_name):
 
 def deploy(request, app_name):
     res = tasks.deploy.delay(app_name, request.POST['url'])
+    models.TaskLog(
+        task_id=res.id,
+        when=datetime.now(),
+        app=models.App.objects.get(name=app_name),
+        description="Deploying %s" % app_name
+    ).save()
     clear_cache("config %s" % app_name)
     return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': "check_deploy"}))
 

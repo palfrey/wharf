@@ -10,6 +10,8 @@ import os.path
 from git import Repo
 from fcntl import fcntl, F_GETFL, F_SETFL
 from os import O_NONBLOCK, read
+import apps.models as models
+from datetime import datetime
 
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
 
@@ -109,9 +111,15 @@ def run_process(key, cmd, cwd=None):
         raise Exception
 
 @app.task(bind=True)
-def deploy(self, app, git_url):
+def deploy(self, app_name, git_url):
+    models.TaskLog(
+        task_id=self.request.id,
+        when=datetime.now(),
+        app=models.App.objects.get(name=app_name),
+        description="Deploying %s" % app_name
+    ).save()
     key = task_key(self.request.id)
-    app_repo_path = os.path.abspath(os.path.join("repos", app))
+    app_repo_path = os.path.abspath(os.path.join("repos", app_name))
     if not os.path.exists(app_repo_path):
         redis.append(key, "== Cloning ==\n")
         run_process(key, ["git", "clone", git_url, app_repo_path])
@@ -119,7 +127,7 @@ def deploy(self, app, git_url):
     try:
         repo.remotes['dokku']
     except IndexError:
-        repo.create_remote('dokku', "ssh://dokku@%s:%s/%s" % (settings.DOKKU_HOST, settings.DOKKU_SSH_PORT, app))
+        repo.create_remote('dokku', "ssh://dokku@%s:%s/%s" % (settings.DOKKU_HOST, settings.DOKKU_SSH_PORT, app_name))
     redis.append(key, "== Pulling ==\n")
     run_process(key, ["git", "pull"], cwd=app_repo_path)
     redis.append(key, "== Pushing to Dokku ==\n")
