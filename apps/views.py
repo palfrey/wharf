@@ -302,7 +302,7 @@ def app_info(request, app_name):
         'app': app_name,
         'git_url': config.get('GITHUB_URL', None),
         'config': sorted(config.items()),
-        'task_logs': models.TaskLog.objects.order_by('-when').all(),
+        'task_logs': models.TaskLog.objects.filter(app=app).order_by('-when').all(),
     })
 
 def deploy(request, app_name):
