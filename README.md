@@ -1,27 +1,34 @@
-dokku plugin:install https://github.com/dokku/dokku-redis.git
-dokku plugin:install https://github.com/dokku/dokku-postgres.git
-dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
-dokku letsencrypt:cron-job --add
+Wharf
+=====
 
-mkdir /var/lib/dokku/data/storage/wharf-ssh/
-chown dokku:dokku /var/lib/dokku/data/storage/wharf-ssh/
-dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/app/.ssh
+Wharf is an opinionated web frontend for [Dokku](http://dokku.viewdocs.io/dokku/). You can also use the command line version, but most features you'll need day-to-day are in the Web UI
 
-* If there's a Dockerfile, it'll do that by default (http://dokku.viewdocs.io/dokku/deployment/methods/dockerfiles/). Set BUILDPACK_URL to override
-* BUILDPACK_URL should be an HTTPS one, not a SSH or heroku/<foo>
-* You should setup the global domain name and add a *.example.com
+Setup
+-----
+1. [Install Dokku](http://dokku.viewdocs.io/dokku/getting-started/installation)
+2. Install the following plugins:
+  * https://github.com/dokku/dokku-redis
+  * https://github.com/dokku/dokku-postgres
+  * https://github.com/dokku/dokku-letsencrypt
+3. Setup the Let's Encrypt plugin to auto-renew (`dokku letsencrypt:cron-job --add`)
+4. Create the app (`dokku apps:create wharf`)
+5. Add SSH key storage:
+  * `mkdir /var/lib/dokku/data/storage/wharf-ssh/`
+  * `chown dokku:dokku /var/lib/dokku/data/storage/wharf-ssh/`
+  * `dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/app/.ssh`
+6. Add Redis (`dokku redis:create wharf && dokku redis:link wharf wharf`)
+7. Add Postgres (`dokku redis:create wharf && dokku redis:link wharf wharf`)
+8. Set `ADMIN_PASSWORD` to something secret (`dokku config:set wharf ADMIN_PASSWORD=somesecret`)
+9. Deploy this Git repo [as per the standard Dokku instructions](http://dokku.viewdocs.io/dokku/deployment/application-deployment/)
 
-Set GITHUB_SECRET
-Goto settings/webhooks in Github
-https://dokku.tevp.net/webhook
-Content type: application/json
-Secret: something
+Helpful hints
+-------------
+* If there's a Dockerfile in your repository, it'll [try and deploy using that by default](http://dokku.viewdocs.io/dokku/deployment/methods/dockerfiles/). Set BUILDPACK_URL to override
+* BUILDPACK_URL should be an HTTPS one, not a SSH or heroku/something one
+* You should setup the global domain name when creating Dokku to start with and add a *.&lt;your dokku domain&gt; entry to give new apps more usable names.
 
-Set ADMIN_PASSWORD (and ADMIN_LOGIN if you want). If you set it to something plaintext, the interface will whinge
-until you use the encoded version.
-
-TODO
-* Restructuring of app config page
-* Reformat status messages
-* Edit config
-* Change name of app
+Enabling Github auto-deploy webhooks
+------------------------------------
+1. Set `GITHUB_SECRET` config item to something secret
+2. Goto settings/webhooks in Github
+3. Make a new webhook for &lt;your Wharf instance&gt;/webhook with Content type as `application/json` and Secret to the secret from `GITHUB_SECRET`
