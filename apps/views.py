@@ -373,15 +373,14 @@ def check_letsencrypt(request, app_name, task_id):
 
 @csrf_exempt
 def github_webhook(request):
-    raw_data = request.read()
-    secret = bytes(settings.GITHUB_SECRET, 'utf-8')
-    hash = "sha1=%s" % hmac.new(secret, raw_data, hashlib.sha256).hexdigest()
+    secret = settings.GITHUB_SECRET.encode('utf-8')
+    hash = "sha1=%s" % hmac.new(secret, request.body, hashlib.sha1).hexdigest()
     if "HTTP_X_HUB_SIGNATURE" not in request.META:
         return HttpResponseBadRequest("No X-Hub-Signature header")
     header = request.META["HTTP_X_HUB_SIGNATURE"]
     if header != hash:
         return HttpResponseBadRequest("%s doesn't equal %s" % (hash, header))
-    data = json.loads(raw_data)
+    data = json.loads(request.read())
     if "hook_id" in data: # assume Ping
         if "push" not in data["hook"]["events"]:
             return HttpResponseBadRequest("No Push event set!")
