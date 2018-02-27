@@ -259,7 +259,10 @@ def domains_list(app_name):
 def add_domain(request, app_name):
     form = forms.CreateDomainForm(request.POST)
     if form.is_valid():
-        return run_cmd_with_log(app_name, "Add domain %s" % form.cleaned_data['name'], "domains:add %s %s" % (app_name, form.cleaned_data['name']), "check_domain")
+        commands = ["domains:add %s %s" % (app_name, form.cleaned_data['name'])]
+        if letsencrypt(app_name) != None:
+            commands.append("letsencrypt %s" % app_name)
+        return run_cmd_with_log(app_name, "Add domain %s" % form.cleaned_data['name'], commands, "check_domain")
     else:
         raise Exception
 
