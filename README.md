@@ -17,8 +17,10 @@ https://dokku.tevp.net/webhook
 Content type: application/json
 Secret: something
 
+Set ADMIN_PASSWORD (and ADMIN_LOGIN if you want). If you set it to something plaintext, the interface will whinge
+until you use the encoded version.
+
 TODO
-* Lockout non-admins
 * Restructuring of app config page
 * Reformat status messages
 * Edit config

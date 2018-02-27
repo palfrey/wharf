@@ -50,7 +50,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'wharf.auth.LoginRequiredMiddleware'
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'wharf.auth.SettingsBackend',
+    'django.contrib.auth.backends.ModelBackend'
+]
+
+LOGIN_REDIRECT_URL = "/"
+LOGIN_EXEMPT_URLS = "webhook"
 
 ROOT_URLCONF = 'wharf.urls'
 
@@ -139,6 +148,8 @@ STATIC_URL = '/static/'
 DOKKU_HOST = os.environ.get("DOKKU_SSH_HOST", "127.0.0.1")
 DOKKU_SSH_PORT = int(os.environ.get("DOKKU_SSH_PORT", "22"))
 GITHUB_SECRET = os.environ.get("GITHUB_SECRET", "password")
+ADMIN_LOGIN = os.environ.get("ADMIN_LOGIN", "admin")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "password")
 
 # Celery settings
 

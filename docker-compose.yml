@@ -15,6 +15,7 @@ services:
       - DOKKU_SSH_HOST=${DOKKU_SSH_HOST:-127.0.0.1}
       - DOKKU_SSH_PORT=${DOKKU_SSH_PORT:-22}
       - GITHUB_SECRET=${GITHUB_SECRET:-password}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-password}
     depends_on:
       - postgres
       - redis
