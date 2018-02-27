@@ -138,6 +138,7 @@ STATIC_URL = '/static/'
 
 DOKKU_HOST = os.environ.get("DOKKU_SSH_HOST", "127.0.0.1")
 DOKKU_SSH_PORT = int(os.environ.get("DOKKU_SSH_PORT", "22"))
+GITHUB_SECRET = os.environ.get("GITHUB_SECRET", "password")
 
 # Celery settings
 
