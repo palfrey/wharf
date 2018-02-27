@@ -11,12 +11,13 @@ dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/app/.ssh
 * BUILDPACK_URL should be an HTTPS one, not a SSH or heroku/<foo>
 * You should setup the global domain name and add a *.example.com
 
+Set GITHUB_SECRET
+Goto settings/webhooks in Github
 https://dokku.tevp.net/webhook
 Content type: application/json
 Secret: something
 
 TODO
-* Auto-deploy from Github
 * Lockout non-admins
 * Restructuring of app config page
 * Reformat status messages
