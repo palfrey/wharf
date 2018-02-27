@@ -382,8 +382,8 @@ def github_webhook(request):
     models.TaskLog(
         task_id=res.id,
         when=datetime.now(),
-        app=models.App.objects.get(name=app_name),
-        description="Deploying %s" % app_name
+        app=app,
+        description="Deploying %s" % app.name
     ).save()
     clear_cache("config %s" % app.name)
     return HttpResponse("Running deploy. Deploy log is at %s" % request.build_absolute_uri(reverse('show_log', kwargs={'task_id': res.id})))
