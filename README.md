@@ -30,5 +30,5 @@ Helpful hints
 Enabling Github auto-deploy webhooks
 ------------------------------------
 1. Set `GITHUB_SECRET` config item to something secret
-2. Goto settings/webhooks in Github
+2. Goto [settings/webhooks](https://developer.github.com/webhooks/creating/#setting-up-a-webhook) in Github
 3. Make a new webhook for &lt;your Wharf instance&gt;/webhook with Content type as `application/json` and Secret to the secret from `GITHUB_SECRET`
