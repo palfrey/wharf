@@ -59,7 +59,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 LOGIN_REDIRECT_URL = "/"
-LOGIN_EXEMPT_URLS = "webhook"
+LOGIN_EXEMPT_URLS = ["webhook", "favicon.ico"]
 
 ROOT_URLCONF = 'wharf.urls'
 
