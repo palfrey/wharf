@@ -1,5 +1,6 @@
 from django.urls import path
-
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.views.generic.base import RedirectView
 from . import views
 
 urlpatterns = [
@@ -23,5 +24,11 @@ urlpatterns = [
     path('apps/<app_name>/add_domain', views.add_domain, name='add_domain'),
     path('apps/<app_name>/check_domain/<task_id>', views.check_domain, name='check_domain'),
     path('logs/<task_id>', views.show_log, name='show_log'),
-    path('webhook', views.github_webhook)
+    path('webhook', views.github_webhook),
+    path('favicon.ico',
+        RedirectView.as_view(
+            url=staticfiles_storage.url('favicon.ico'),
+            permanent=False),
+        name="favicon"
+    ),
 ]
