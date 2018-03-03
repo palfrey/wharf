@@ -315,6 +315,8 @@ def deploy(request, app_name):
         description="Deploying %s" % app_name
     ).save()
     clear_cache("config %s" % app_name)
+    clear_cache("domains:report %s" % app_name)
+    clear_cache("ps:report %s" % app_name)
     return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': "check_deploy"}))
 
 def create_postgres(request, app_name):
