@@ -44,15 +44,16 @@ def clear_cache(cmd):
     cache.delete(key)
 
 def run_cmd_with_log(app_name, description, cmd, after):
+    res = tasks.run_ssh_command.delay(cmd)
     if app_name == None: # global
         app_name = '_'
-    res = tasks.run_ssh_command.delay(cmd)
-    models.TaskLog(
-        task_id=res.id,
-        when=datetime.now(),
-        app=models.App.objects.get(name=app_name),
-        description=description
-    ).save()
+    else:
+        models.TaskLog(
+            task_id=res.id,
+            when=datetime.now(),
+            app=models.App.objects.get(name=app_name),
+            description=description
+        ).save()
     return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': after}))
 
 def get_log(res):
@@ -348,7 +349,7 @@ def check_redis(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 def create_app(app_name):
-    return run_cmd_with_log(app_name, "Add app %s" % app_name, "apps:create %s" % app_name, "check_app")
+    return run_cmd_with_log(None, "Add app %s" % app_name, "apps:create %s" % app_name, "check_app")
 
 def check_app(request, app_name, task_id):
     res = AsyncResult(task_id)
