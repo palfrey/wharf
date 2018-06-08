@@ -20,7 +20,7 @@ django-jinja==2.4.1       # via django-jinja-bootstrap-form
 django-redis==4.9.0
 django==2.0.6
 gitdb2==2.0.3             # via gitpython
-gitpython==2.1.8
+gitpython==2.1.10
 humanize==0.5.1
 idna==2.6                 # via cryptography, requests
 jinja2==2.10
