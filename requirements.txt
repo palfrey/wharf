@@ -24,7 +24,7 @@ gitpython==2.1.10
 humanize==0.5.1
 idna==2.6                 # via cryptography, requests
 jinja2==2.10
-kombu==4.1.0              # via celery
+kombu==4.2.1              # via celery
 markupsafe==1.0           # via jinja2
 paramiko==2.4.0
 psycopg2-binary==2.7.4
