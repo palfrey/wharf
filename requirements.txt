@@ -28,7 +28,7 @@ kombu==4.2.1              # via celery
 markupsafe==1.0           # via jinja2
 paramiko==2.4.1
 psycopg2-binary==2.7.4
-pyasn1==0.4.2             # via paramiko
+pyasn1==0.4.3             # via paramiko
 pycparser==2.18           # via cffi
 pynacl==1.2.1             # via paramiko
 pytz==2018.3              # via celery, django
