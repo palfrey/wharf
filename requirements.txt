@@ -9,7 +9,7 @@ asn1crypto==0.24.0        # via cryptography
 bcrypt==3.1.4             # via paramiko
 billiard==3.5.0.3         # via celery
 celery[redis]==4.1.1
-certifi==2018.1.18        # via requests
+certifi==2018.4.16        # via requests
 cffi==1.11.4              # via bcrypt, cryptography, pynacl
 chardet==3.0.4            # via requests
 cryptography==2.1.4       # via paramiko
