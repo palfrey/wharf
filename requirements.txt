@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-amqp==2.2.2               # via kombu
+amqp==2.3.2               # via kombu
 asn1crypto==0.24.0        # via cryptography
 bcrypt==3.1.4             # via paramiko
 billiard==3.5.0.3         # via celery
