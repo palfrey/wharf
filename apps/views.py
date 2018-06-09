@@ -388,8 +388,9 @@ def github_webhook(request):
         if "push" not in data["hook"]["events"]:
             return HttpResponseBadRequest("No Push event set!")
         return HttpResponse("All good")
-    if data["ref"] != "refs/heads/%s" % data["repository"]["default_branch"]:
-        return HttpResponse("Push to non-default branch (saw %s, expected %s)" % (data["ref"], data["repository"]["default_branch"]))
+    default_ref = "refs/heads/%s" % data["repository"]["default_branch"]
+    if data["ref"] != default_ref:
+        return HttpResponse("Push to non-default branch (saw %s, expected %s)" % (data["ref"], default_ref))
     clone_url = data["repository"]["clone_url"]
     apps = models.App.objects.filter(github_url=clone_url)
     if not apps.exists():
