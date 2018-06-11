@@ -22,7 +22,7 @@ django==2.0.6
 gitdb2==2.0.3             # via gitpython
 gitpython==2.1.10
 humanize==0.5.1
-idna==2.6                 # via cryptography, requests
+idna==2.7                 # via cryptography, requests
 jinja2==2.10
 kombu==4.2.1              # via celery
 markupsafe==1.0           # via jinja2
