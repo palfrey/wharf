@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpalfrey%2Fwharf.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpalfrey%2Fwharf?ref=badge_shield)
+
 Wharf
 =====
 
@@ -32,3 +34,6 @@ Enabling Github auto-deploy webhooks
 1. Set `GITHUB_SECRET` config item to something secret
 2. Goto [settings/webhooks](https://developer.github.com/webhooks/creating/#setting-up-a-webhook) in Github
 3. Make a new webhook for &lt;your Wharf instance&gt;/webhook with Content type as `application/json` and Secret to the secret from `GITHUB_SECRET`
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpalfrey%2Fwharf.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpalfrey%2Fwharf?ref=badge_large)
