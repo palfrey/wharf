@@ -33,7 +33,7 @@ pycparser==2.18           # via cffi
 pynacl==1.2.1             # via paramiko
 pytz==2018.4              # via celery, django
 redis==2.10.6             # via celery, django-redis
-requests==2.18.4
+requests==2.19.1
 six==1.11.0               # via bcrypt, cryptography, pynacl
 smmap2==2.0.3             # via gitdb2
 urllib3==1.22             # via requests
