@@ -18,7 +18,7 @@ django-celery-results==1.0.1
 django-jinja-bootstrap-form==4.2.3
 django-jinja==2.4.1       # via django-jinja-bootstrap-form
 django-redis==4.9.0
-django==2.0.6
+django==2.1
 gitdb2==2.0.3             # via gitpython
 gitpython==2.1.10
 humanize==0.5.1
