@@ -27,7 +27,7 @@ No tasks run yet
 {% if domains.length == 0 %}None{% else %}
 <ul>
   {% for d in domains %}
-    <li>{{ d }}</li>
+    <li><a href="{{ 'https' if letsencrypt else 'http' }}://{{ d }}">{{ d }}</a></li>
   {% endfor %}
 </ul>
 {% endif %}
