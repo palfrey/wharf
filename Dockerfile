@@ -1,5 +1,4 @@
 FROM python:3
 WORKDIR /work
-COPY requirements.txt /work
-COPY Procfile /work
+COPY . ./
 RUN pip install -r requirements.txt
