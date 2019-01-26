@@ -18,4 +18,4 @@ script:
   - dokku redis:create wharf && dokku redis:link wharf wharf
   - dokku postgres:create wharf && dokku postgres:link wharf wharf
   - git remote add dokku dokku@localhost:wharf
-  - git push dokku ${TRAVIS_BRANCH}
+  - GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku ${TRAVIS_BRANCH}
