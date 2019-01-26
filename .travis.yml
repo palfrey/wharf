@@ -5,7 +5,7 @@ services:
   - docker
 
 script:
-  - wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | apt-key add -
+  - wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
   - echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ xenial main" | sudo tee /etc/apt/sources.list.d/dokku.list
   - sudo apt-get update
   - sudo apt-get install -y dokku
