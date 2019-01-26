@@ -9,10 +9,10 @@ script:
   - echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ xenial main" | sudo tee /etc/apt/sources.list.d/dokku.list
   - sudo apt-get update
   - sudo apt-get install -y dokku
-  - dokku plugin:install-dependencies --core
-  - dokku plugin:install https://github.com/dokku/dokku-redis.git redis
-  - dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
-  - dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
+  - sudo dokku plugin:install-dependencies --core
+  - sudo dokku plugin:install https://github.com/dokku/dokku-redis.git redis
+  - sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
+  - sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
   - dokku letsencrypt:cron-job --add
   - dokku apps:create wharf
   - dokku redis:create wharf && dokku redis:link wharf wharf
