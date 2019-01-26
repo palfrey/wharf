@@ -1,0 +1,17 @@
+language: generic
+
+services:
+  - docker
+
+script:
+  - wget https://raw.githubusercontent.com/dokku/dokku/v0.14.5/bootstrap.sh
+  - DOKKU_TAG=v0.14.5 bash bootstrap.sh
+  - dokku plugin:install https://github.com/dokku/dokku-redis.git redis
+  - dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
+  - dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
+  - dokku letsencrypt:cron-job --add
+  - dokku apps:create wharf
+  - dokku redis:create wharf && dokku redis:link wharf wharf
+  - dokku postgres:create wharf && dokku postgres:link wharf wharf
+  - git remote add dokku dokku@localhost:wharf
+  - git push dokku master
