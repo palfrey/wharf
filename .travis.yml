@@ -1,11 +1,12 @@
-language: generic
+language: minimal
+dist: xenial
 
 services:
   - docker
 
 script:
   - wget https://raw.githubusercontent.com/dokku/dokku/v0.14.5/bootstrap.sh
-  - DOKKU_TAG=v0.14.5 bash bootstrap.sh
+  - DOKKU_TAG=v0.14.5 sudo bash bootstrap.sh
   - dokku plugin:install https://github.com/dokku/dokku-redis.git redis
   - dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
   - dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
