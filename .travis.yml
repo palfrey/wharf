@@ -21,4 +21,4 @@ script:
   - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
   - cat ~/.ssh/id_rsa.pub | sudo tee ~dokku/.ssh/authorized_keys
   - sudo chmod 600 ~dokku/.ssh/authorized_keys
-  - GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku ${TRAVIS_BRANCH}
+  - GIT_SSH_COMMAND="ssh -v -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku ${TRAVIS_BRANCH}
