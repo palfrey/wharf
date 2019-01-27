@@ -19,5 +19,5 @@ script:
   - dokku postgres:create wharf && dokku postgres:link wharf wharf
   - git remote add dokku ssh://dokku@localhost/wharf
   - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
-  - dokku ssh-keys:add travis ~/.ssh/id_rsa.pub
+  - sudo dokku ssh-keys:add travis ~/.ssh/id_rsa.pub
   - GIT_SSH_COMMAND="ssh -v -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku ${TRAVIS_BRANCH}
