@@ -1,6 +1,9 @@
 language: minimal
 dist: xenial
 
+git:
+  depth: false
+
 services:
   - docker
 
