@@ -1,2 +1,2 @@
-web: python manage.py migrate && python manage.py runserver "0.0.0.0:$PORT"
+web: ./dokku-boot.sh
 celery: python manage.py celery
