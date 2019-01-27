@@ -17,7 +17,7 @@ script:
   - dokku apps:create wharf
   - dokku redis:create wharf && dokku redis:link wharf wharf
   - dokku postgres:create wharf && dokku postgres:link wharf wharf
-  - git remote add dokku dokku@localhost:wharf
+  - git remote add dokku ssh://dokku@localhost/wharf
   - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
   - cat ~/.ssh/id_rsa.pub | sudo tee ~dokku/.ssh/authorized_keys
   - sudo chmod 600 ~dokku/.ssh/authorized_keys
