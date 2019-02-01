@@ -72,7 +72,7 @@ class LoginRequiredMiddleware:
             if not any(m.match(path) for m in EXEMPT_URLS):
                 redirect_to = settings.LOGIN_URL
                 # Add 'next' GET variable to support redirection after login
-                if len(path) > 0 and is_safe_url(url=request.path_info, host=request.get_host()):
+                if len(path) > 0 and is_safe_url(url=request.path_info, allowed_hosts=None):
                     redirect_to = "%s?next=%s" %(settings.LOGIN_URL, request.path_info)
                 return HttpResponseRedirect(redirect_to)
         elif not settings.ADMIN_PASSWORD.startswith("pbkdf2_sha256"):
