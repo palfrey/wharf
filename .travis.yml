@@ -1,4 +1,4 @@
-language: minimal
+language: python
 dist: xenial
 
 git:
@@ -8,6 +8,8 @@ services:
   - docker
 
 script:
+  - pip install -r requirements.txt
+  - python manage.py test
   - wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
   - echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ xenial main" | sudo tee /etc/apt/sources.list.d/dokku.list
   - sudo apt-get update
