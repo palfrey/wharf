@@ -11,7 +11,7 @@ services:
   - docker
 
 script:
-  - REDIS_URL=dummy python manage.py test
+  - REDIS_URL=dummy python manage.py test || travis_terminate 1
   - wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
   - echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ xenial main" | sudo tee /etc/apt/sources.list.d/dokku.list
   - sudo apt-get update
@@ -25,6 +25,6 @@ script:
   - dokku redis:create wharf && dokku redis:link wharf wharf
   - dokku postgres:create wharf && dokku postgres:link wharf wharf
   - git remote add dokku ssh://dokku@localhost/wharf
-  - ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+  - yes y | ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
   - sudo dokku ssh-keys:add travis ~/.ssh/id_rsa.pub
   - GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku HEAD:refs/heads/master
