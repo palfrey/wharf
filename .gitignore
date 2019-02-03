@@ -4,3 +4,5 @@ db.sqlite3
 celerybeat-schedule
 repos/
 /static/
+.vagrant/
+__pycache__/
