@@ -6,7 +6,7 @@ from celery.result import AsyncResult
 from celery.states import state, PENDING, SUCCESS, FAILURE, STARTED
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponseBadRequest, HttpResponse
+from django.http import HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 
 import requests
 import time
@@ -17,6 +17,7 @@ from datetime import datetime
 import json
 import hmac
 import hashlib
+import timeout_decorator
 
 from redis import StrictRedis
 
@@ -112,7 +113,7 @@ def index(request):
     try:
         apps = app_list()
     except Exception as e:
-        if e.__class__.__name__ == "AuthenticationException": # Can't use class directly as Celery mangles things
+        if e.__class__.__name__ in ["AuthenticationException", "NoValidConnectionsError"]: # Can't use class directly as Celery mangles things
             return render(request, 'setup_key.html', {'key': tasks.get_public_key.delay().get()})
         else:
             raise
@@ -405,3 +406,19 @@ def github_webhook(request):
     ).save()
     clear_cache("config %s" % app.name)
     return HttpResponse("Running deploy. Deploy log is at %s" % request.build_absolute_uri(reverse('show_log', kwargs={'task_id': res.id})))
+
+@timeout_decorator.timeout(5, use_signals=False)
+def check_status():
+    # Clearing the cache and then trying a command makes sure that
+    # - The cache is up
+    # - Celery is up
+    # - We can run dokku commands
+    clear_cache("config --global")
+    run_cmd_with_cache("config --global")
+
+def status(request):
+    try:
+        check_status()
+        return HttpResponse("All good")
+    except timeout_decorator.TimeoutError:
+        return HttpResponseServerError("Timeout trying to get status")

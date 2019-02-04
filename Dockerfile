@@ -1,5 +1,5 @@
 FROM python:3
-WORKDIR /work
-COPY requirements.txt /work
+WORKDIR /app
+COPY requirements.txt /app
 RUN pip install -r requirements.txt
-COPY . /work
+COPY . /app

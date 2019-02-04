@@ -11,3 +11,5 @@ django-celery-results
 paramiko
 gitpython
 humanize
+timeout-decorator
+selenium
