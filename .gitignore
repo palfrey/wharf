@@ -7,3 +7,4 @@ repos/
 .vagrant/
 __pycache__/
 *.log
+where.png
