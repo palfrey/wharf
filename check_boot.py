@@ -4,12 +4,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import sys
+import os
 
 chrome_options = webdriver.ChromeOptions()
 chrome_options.headless = True
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
-driver = webdriver.Chrome(chrome_options=chrome_options, service_args=['--verbose'])
+driver = webdriver.Chrome(os.environ["CHROMEDRIVER_PATH"], chrome_options=chrome_options, service_args=['--verbose'])
 try:
     driver.get(sys.argv[1])
     driver.find_element_by_name("username").send_keys("admin")

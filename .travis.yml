@@ -10,6 +10,9 @@ git:
 services:
   - docker
 
+env:
+  - CHROMEDRIVER_PATH=/usr/lib/chromium-browser/chromedriver
+
 script:
   - sudo apt-get update
   - sudo apt-get install -y chromium-chromedriver

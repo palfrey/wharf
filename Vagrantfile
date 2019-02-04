@@ -17,6 +17,6 @@ Vagrant.configure("2") do |config|
     curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
     echo "deb [arch=amd64] https://download.docker.com/linux/debian stretch stable" | sudo tee /etc/apt/sources.list.d/docker.list
     pip3 install -r requirements.txt
-    ./test.sh
+    CHROMEDRIVER_PATH=/usr/bin/chromedriver ./test.sh
   SHELL
 end
