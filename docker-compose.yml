@@ -5,7 +5,7 @@ services:
     build: .
     command: ./wait-for-it.sh postgres:5432 --strict --timeout=0 -- ./wait-for-it.sh redis:6379 --strict --timeout=0 -- bash -c "PORT=8000 ./dokku-boot.sh"
     volumes:
-      - .:/work
+      - .:/app
     ports:
       - 8000:8000
     environment:
@@ -23,7 +23,7 @@ services:
     build: .
     command: ./wait-for-it.sh postgres:5432 --strict --timeout=0 -- ./wait-for-it.sh redis:6379 --strict --timeout=0 -- bash -c "python manage.py celery"
     volumes:
-      - .:/work
+      - .:/app
     environment:
       - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
       - BROKER_URL=redis://redis:6379/0

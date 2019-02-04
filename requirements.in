@@ -12,3 +12,4 @@ paramiko
 gitpython
 humanize
 timeout-decorator
+selenium

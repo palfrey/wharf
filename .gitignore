@@ -6,3 +6,4 @@ repos/
 /static/
 .vagrant/
 __pycache__/
+*.log

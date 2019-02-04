@@ -6,7 +6,7 @@ REDIS_URL=dummy python3 manage.py test
 wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
 echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ xenial main" | sudo tee /etc/apt/sources.list.d/dokku.list
 sudo apt-get update
-sudo apt-get install -y dokku
+sudo apt-get install -y dokku chromium-driver
 sudo dokku plugin:install-dependencies --core
 (dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git redis
 (dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres
@@ -21,3 +21,4 @@ if [ ! -f ~/.ssh/id_rsa.pub ]; then
 fi
 (dokku ssh-keys:list | grep travis) || sudo dokku ssh-keys:add travis ~/.ssh/id_rsa.pub
 GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku HEAD:refs/heads/master
+python3 check_boot.py $(dokku url wharf)
