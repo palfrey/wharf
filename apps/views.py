@@ -69,13 +69,14 @@ def get_log(res):
 
 def wait_for_command(request, app_name, task_id, after):
     res = AsyncResult(task_id)
-    app = models.App.objects.get(name=app_name)
-    task, created = models.TaskLog.objects.get_or_create(task_id=task_id, defaults={'app': app, 'when': datetime.now()})
+    if app_name != '_':
+        app = models.App.objects.get(name=app_name)
+        task, created = models.TaskLog.objects.get_or_create(task_id=task_id, defaults={'app': app, 'when': datetime.now()})
+        description = task.description
+    else:
+        description = ""
     if res.state == state(SUCCESS):
-        if app_name == '_': # global
-            return redirect(reverse(after, kwargs={'task_id': task_id}))
-        else:
-            return redirect(reverse(after, kwargs={'app_name': app_name, 'task_id': task_id}))
+        return redirect(reverse(after, kwargs={'app_name': app_name, 'task_id': task_id}))
     log = ansi_escape.sub("", get_log(res))
     if res.state == state(FAILURE):
         log += str(res.traceback)
@@ -85,7 +86,7 @@ def wait_for_command(request, app_name, task_id, after):
         'log': log,
         'state': res.state,
         'running': res.state in [state(PENDING), state(STARTED)],
-        'description': task.description
+        'description': description
         })
 
 def show_log(request, task_id):
@@ -237,7 +238,7 @@ def letsencrypt(app_name):
 def process_info(app_name):
     data = run_cmd_with_cache("ps:report %s" % app_name)
     lines = data.split("\n")
-    if lines[0].find("%s process information" % app_name) == -1:
+    if lines[0].find("%s process information" % app_name) == -1 and lines[0].find("%s ps information" % app_name) == -1: # Different versions
         raise Exception(data)
     results = {}
     processes = {}
@@ -281,7 +282,7 @@ def check_domain(request, app_name, task_id):
         raise Exception(data)
 
 def app_info(request, app_name):
-    app, _ = models.App.objects.get_or_create(name=app_name)
+    app = models.App.objects.get(name=app_name)
     config = app_config(app_name)
     if "GITHUB_URL" in config:
         app.github_url = config["GITHUB_URL"]
@@ -352,7 +353,8 @@ def check_redis(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 def create_app(app_name):
-    return run_cmd_with_log(None, "Add app %s" % app_name, "apps:create %s" % app_name, "check_app")
+    models.App(name=app_name).save()
+    return run_cmd_with_log(app_name, "Add app %s" % app_name, "apps:create %s" % app_name, "check_app")
 
 def check_app(request, app_name, task_id):
     res = AsyncResult(task_id)

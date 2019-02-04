@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block body %}
-<h1>Wharf</h1>
+<h1 id="list_apps">Wharf</h1>
 <form class="form" action="{{ url('refresh_all') }}" method="POST">
   {% csrf_token %}
-  <button type="submit" class="btn btn-primary">Refresh Dokku information</button>
+  <button type="submit" class="btn btn-primary" id="refresh_info">Refresh Dokku information</button>
 </form>
 <h3>Apps</h3>
 <ul class=apps>
@@ -18,7 +18,7 @@
   {% csrf_token %}
   <input type="hidden" name="kind" value="app" />
   {{ app_form | bootstrap }}
-  <button type="submit" class="btn btn-primary">Create app</button>
+  <button type="submit" class="btn btn-primary" id="create_app">Create app</button>
 </form>
 <br />
 <h2>Global Config</h2>
