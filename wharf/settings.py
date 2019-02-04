@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 
 import os
 import dj_database_url
+import subprocess
+import re
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -147,6 +149,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # Wharf settings
 
 DOKKU_HOST = os.environ.get("DOKKU_SSH_HOST", "127.0.0.1")
+if DOKKU_HOST == "127.0.0.1": # default, so need to detect host
+    route = subprocess.check_output(["/sbin/ip", "route"]).decode("utf-8")
+    ip = re.match("default via (\d+\.\d+\.\d+.\d+)", route)
+    DOKKU_HOST = ip.groups()[0]
+
 DOKKU_SSH_PORT = int(os.environ.get("DOKKU_SSH_PORT", "22"))
 GITHUB_SECRET = os.environ.get("GITHUB_SECRET", "password")
 ADMIN_LOGIN = os.environ.get("ADMIN_LOGIN", "admin")
