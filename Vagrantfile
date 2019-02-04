@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
   # end
 
   config.vm.provision "shell", inline: <<-SHELL
-    sudo apt-get install -y python3-pip git apt-transport-https curl redis-server
+    sudo apt-get install -y python3-pip git apt-transport-https curl redis-server chromium-driver
     curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
     echo "deb [arch=amd64] https://download.docker.com/linux/debian stretch stable" | sudo tee /etc/apt/sources.list.d/docker.list
     pip3 install -r requirements.txt
