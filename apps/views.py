@@ -282,7 +282,7 @@ def check_domain(request, app_name, task_id):
         raise Exception(data)
 
 def app_info(request, app_name):
-    app = models.App.objects.get(name=app_name)
+    app, _ = models.App.objects.get_or_create(name=app_name)
     config = app_config(app_name)
     if "GITHUB_URL" in config:
         app.github_url = config["GITHUB_URL"]
