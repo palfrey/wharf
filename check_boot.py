@@ -65,14 +65,14 @@ try:
         pass
     else:
         raise Exception(id)
-    # app_name = uuid.uuid4().hex
-    # print("Making new app " + app_name)
-    # driver.find_element_by_id("id_name").send_keys(app_name)
-    # driver.find_element_by_id("create_app").click()
-    # WebDriverWait(driver, 10).until(
-    #     lambda driver: wait_for_one(driver, [find_element_by_id("app_page")])
-    # )
-    # assert driver.page_source.find(app_name) != -1
+    app_name = uuid.uuid4().hex
+    print("Making new app " + app_name)
+    driver.find_element_by_id("id_name").send_keys(app_name)
+    driver.find_element_by_id("create_app").click()
+    WebDriverWait(driver, 10).until(
+        lambda driver: wait_for_one(driver, [find_element_by_id("app_page")])
+    )
+    assert driver.page_source.find(app_name) != -1
 
     driver.get(sys.argv[1])
     driver.find_element_by_xpath('//a[text()="wharf"]').click()
