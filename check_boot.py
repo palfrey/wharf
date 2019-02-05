@@ -73,6 +73,13 @@ try:
         lambda driver: wait_for_one(driver, [find_element_by_id("app_page")])
     )
     assert driver.page_source.find(app_name) != -1
+
+    driver.get(sys.argv[1])
+    driver.find_element_by_xpath('//a[text()="wharf"]').click()
+    WebDriverWait(driver, 10).until(
+        lambda driver: wait_for_one(driver, [find_element_by_id("app_page")])
+    )
+    assert driver.page_source.find("Wharf: wharf") != -1
 except:
     driver.get_screenshot_as_file('where.png')
     raise
