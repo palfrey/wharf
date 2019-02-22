@@ -16,7 +16,7 @@ Setup
 5. Add SSH key storage:
   * `mkdir /var/lib/dokku/data/storage/wharf-ssh/`
   * `chown dokku:dokku /var/lib/dokku/data/storage/wharf-ssh/`
-  * `dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/app/.ssh`
+  * `dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/root/.ssh`
 6. Add Redis (`dokku redis:create wharf && dokku redis:link wharf wharf`)
 7. Add Postgres (`dokku postgres:create wharf && dokku postgres:link wharf wharf`)
 8. Set `ADMIN_PASSWORD` to something secret (`dokku config:set wharf ADMIN_PASSWORD=somesecret`)

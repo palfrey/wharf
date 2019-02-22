@@ -20,5 +20,16 @@ if [ ! -f ~/.ssh/id_rsa.pub ]; then
     yes y | ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
 fi
 (dokku ssh-keys:list | grep travis) || sudo dokku ssh-keys:add travis ~/.ssh/id_rsa.pub
+KEY_DIR=`pwd`/keys
+if [ ! -d $KEY_DIR ]; then
+    mkdir -p $KEY_DIR
+fi
+chown dokku:dokku $KEY_DIR
+(dokku storage:list wharf | grep ssh) || dokku storage:mount wharf $KEY_DIR:/root/.ssh
 GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku HEAD:refs/heads/master
 python3 check_boot.py $(dokku url wharf)
+if [ ! -f $KEY_DIR/id_rsa ]; then
+    echo "Can't find keys in key dir"
+    ls $KEY_DIR
+    exit 1
+fi
