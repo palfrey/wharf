@@ -16,6 +16,7 @@ Vagrant.configure("2") do |config|
     sudo apt-get install -y python3-pip git apt-transport-https curl redis-server chromium-driver
     curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
     echo "deb [arch=amd64] https://download.docker.com/linux/debian stretch stable" | sudo tee /etc/apt/sources.list.d/docker.list
+    cd /vagrant
     pip3 install -r requirements.txt
     CHROMEDRIVER_PATH=/usr/bin/chromedriver ./test.sh
   SHELL
