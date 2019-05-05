@@ -13,3 +13,5 @@ gitpython
 humanize
 timeout-decorator
 selenium
+
+redis < 3 # Version 3 does various things we're not compatible with yet, so don't automatically upgrade
