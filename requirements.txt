@@ -23,7 +23,7 @@ gitdb2==2.0.3             # via gitpython
 gitpython==2.1.10
 humanize==0.5.1
 idna==2.6                 # via cryptography, requests
-jinja2==2.10
+jinja2==2.10.1
 kombu==4.2.1              # via celery
 markupsafe==1.0           # via jinja2
 paramiko==2.4.2
@@ -32,11 +32,11 @@ pyasn1==0.4.3             # via paramiko
 pycparser==2.18           # via cffi
 pynacl==1.2.1             # via paramiko
 pytz==2018.4              # via celery, django
-redis==2.10.6             # via celery, django-redis
+redis==2.10.6
 requests==2.20.1
 selenium==3.141.0
 six==1.11.0               # via bcrypt, cryptography, pynacl
 smmap2==2.0.3             # via gitdb2
 timeout-decorator==0.4.1
-urllib3==1.24.1           # via requests, selenium
+urllib3==1.24.3           # via requests, selenium
 vine==1.1.4               # via amqp
