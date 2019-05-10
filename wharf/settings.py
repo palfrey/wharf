@@ -148,8 +148,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 # Wharf settings
 
-DOKKU_HOST = os.environ.get("DOKKU_SSH_HOST", "127.0.0.1")
-if DOKKU_HOST == "127.0.0.1": # default, so need to detect host
+DOKKU_HOST = os.environ.get("DOKKU_SSH_HOST", None)
+if DOKKU_HOST == None: # default, so need to detect host
     route = subprocess.check_output(["/sbin/ip", "route"]).decode("utf-8")
     ip = re.match("default via (\d+\.\d+\.\d+.\d+)", route)
     DOKKU_HOST = ip.groups()[0]

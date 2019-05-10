@@ -114,7 +114,7 @@ def index(request):
     try:
         apps = app_list()
     except Exception as e:
-        if e.__class__.__name__ in ["AuthenticationException", "NoValidConnectionsError"]: # Can't use class directly as Celery mangles things
+        if e.__class__.__name__ in ["AuthenticationException"]: # Can't use class directly as Celery mangles things
             return render(request, 'setup_key.html', {'key': tasks.get_public_key.delay().get()})
         else:
             raise

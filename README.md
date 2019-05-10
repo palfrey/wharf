@@ -33,3 +33,11 @@ Enabling Github auto-deploy webhooks
 1. Set `GITHUB_SECRET` config item to something secret
 2. Goto [settings/webhooks](https://developer.github.com/webhooks/creating/#setting-up-a-webhook) in Github
 3. Make a new webhook for &lt;your Wharf instance&gt;/webhook with Content type as `application/json` and Secret to the secret from `GITHUB_SECRET`
+
+Development
+-----------
+Easiest way to do dev is:
+
+1. `vagrant up` which will boot the entire Dokku setup in a VM
+2. `DOKKU_SSH_PORT=2222 docker-compose up`
+3. Load up `http://localhost:8000/`
