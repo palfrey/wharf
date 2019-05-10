@@ -27,7 +27,14 @@ No tasks run yet
 {% if domains.length == 0 %}None{% else %}
 <ul>
   {% for d in domains %}
-    <li><a href="{{ 'https' if letsencrypt else 'http' }}://{{ d }}">{{ d }}</a></li>
+    <li>
+      <a href="{{ 'https' if letsencrypt else 'http' }}://{{ d }}">{{ d }}</a>
+      <form class="d-inline" action="{{ url('remove_domain', app_name=app) }}" method="POST">
+      {% csrf_token %}
+        <input type="hidden" name="name" value="{{d}}" />
+        <button type="submit" class="btn btn-primary">Delete '{{d}}' domain</button>
+      </form>
+    </li>
   {% endfor %}
 </ul>
 {% endif %}
