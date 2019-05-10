@@ -281,6 +281,13 @@ def check_domain(request, app_name, task_id):
     else:
         raise Exception(data)
 
+def remove_domain(request, app_name):
+    name = request.POST['name']
+    commands = ["domains:remove %s %s" % (app_name, name)]
+    if letsencrypt(app_name) != None:
+        commands.append("letsencrypt %s" % app_name)
+    return run_cmd_with_log(app_name, "Remove domain %s" % name, commands, "check_domain")
+
 def app_info(request, app_name):
     app, _ = models.App.objects.get_or_create(name=app_name)
     config = app_config(app_name)
