@@ -46,6 +46,7 @@ def get_public_key():
 @app.task(bind=True)
 def run_ssh_command(self, command):
     key = task_key(self.request.id)
+    redis.set(key, "")
     client = SSHClient()
     client.set_missing_host_key_policy(AutoAddPolicy)
     known_hosts = os.path.expanduser('~/.ssh/known_hosts')
