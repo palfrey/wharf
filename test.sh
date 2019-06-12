@@ -8,7 +8,7 @@ if [ ! -f /etc/apt/sources.list.d/dokku.list ]; then
     echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ xenial main" | sudo tee /etc/apt/sources.list.d/dokku.list
     sudo apt-get update
 fi
-sudo DEBIAN_FRONTEND=noninteractive apt-get install -y dokku
+sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y dokku=0.16.0
 sudo dokku plugin:install-dependencies --core
 (dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git redis
 (dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git postgres

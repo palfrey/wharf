@@ -13,7 +13,8 @@ Vagrant.configure("2") do |config|
   # end
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
-    sudo apt-get install -y python3-pip git apt-transport-https curl redis-server chromium-driver
+    set -eux -o pipefail
+    sudo apt-get install --no-install-recommends -y python3-pip git apt-transport-https curl redis-server chromium-driver python3-setuptools python3-wheel
     curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
     echo "deb [arch=amd64] https://download.docker.com/linux/debian stretch stable" | sudo tee /etc/apt/sources.list.d/docker.list
     cd /vagrant
