@@ -13,6 +13,9 @@ chrome_options = webdriver.ChromeOptions()
 chrome_options.headless = True
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--no-sandbox')
+chromium_browser = os.environ.get("CHROMIUM_BROWSER", None)
+if chromium_browser != None:
+    chrome_options.binary_location = chromium_browser
 driver = webdriver.Chrome(os.environ["CHROMEDRIVER_PATH"], chrome_options=chrome_options, service_args=['--verbose'])
 driver.implicitly_wait(0)
 
