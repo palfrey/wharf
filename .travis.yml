@@ -11,8 +11,9 @@ services:
   - docker
 
 env:
-  - CHROMEDRIVER_PATH=/usr/lib/chromium-browser/chromedriver
-  - CHROMIUM_BROWSER=/usr/bin/chromium-browser
+  global:
+    - CHROMEDRIVER_PATH=/usr/lib/chromium-browser/chromedriver
+    - CHROMIUM_BROWSER=/usr/bin/chromium-browser
 
 script:
   - sudo apt-get update
