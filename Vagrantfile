@@ -14,7 +14,8 @@ Vagrant.configure("2") do |config|
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
     set -eux -o pipefail
-    sudo apt-get install --no-install-recommends -y python3-pip git apt-transport-https curl redis-server chromium-driver python3-setuptools python3-wheel python3-dev libssl-dev
+    sudo apt-get update
+    sudo apt-get install --no-install-recommends -y build-essential python3-pip git apt-transport-https curl redis-server chromium-driver python3-setuptools python3-wheel python3-dev libssl-dev
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
     echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable" | sudo tee /etc/apt/sources.list.d/docker.list
     cd /vagrant
