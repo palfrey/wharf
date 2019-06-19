@@ -39,5 +39,6 @@ Development
 Easiest way to do dev is:
 
 1. `vagrant up` which will boot the entire Dokku setup in a VM
-2. `DOKKU_SSH_PORT=2222 docker-compose up`
+2. `DOKKU_SSH_HOST=host.docker.internal DOKKU_SSH_PORT=2222 docker-compose up`
+    * `host.docker.internal` works on Mac/Windows, but not on Linux (see https://github.com/docker/for-linux/issues/264). On Linux hosts, you should set `DOKKU_SSH_HOST` to whatever your IP is (not localhost, but a local IP is fine)
 3. Load up `http://localhost:8000/`
