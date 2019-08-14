@@ -7,7 +7,7 @@
 amqp==2.5.1               # via kombu
 asn1crypto==0.24.0        # via cryptography
 bcrypt==3.1.7             # via paramiko
-billiard==3.6.0.0         # via celery
+billiard==3.6.1.0         # via celery
 celery[redis]==4.3.0
 certifi==2019.6.16        # via requests
 cffi==1.12.3              # via bcrypt, cryptography, pynacl
