@@ -316,17 +316,22 @@ def app_info(request, app_name):
     })
 
 def deploy(request, app_name):
-    res = tasks.deploy.delay(app_name, request.POST['url'])
-    models.TaskLog(
-        task_id=res.id,
-        when=datetime.now(),
-        app=models.App.objects.get(name=app_name),
-        description="Deploying %s" % app_name
-    ).save()
-    clear_cache("config %s" % app_name)
-    clear_cache("domains:report %s" % app_name)
-    clear_cache("ps:report %s" % app_name)
-    return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': "check_deploy"}))
+    if request.POST['action'] == "deploy":
+        res = tasks.deploy.delay(app_name, request.POST['url'])
+        models.TaskLog(
+            task_id=res.id,
+            when=datetime.now(),
+            app=models.App.objects.get(name=app_name),
+            description="Deploying %s" % app_name
+        ).save()
+        clear_cache("config %s" % app_name)
+        clear_cache("domains:report %s" % app_name)
+        clear_cache("ps:report %s" % app_name)
+        return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': "check_deploy"}))
+    elif request.POST['action'] == "rebuild":
+        return run_cmd_with_log(app_name, "Rebuilding", "ps:rebuild %s" % app_name, "check_rebuild")
+    else:
+        raise Exception(request.POST['action'])
 
 def create_postgres(request, app_name):
     return run_cmd_with_log(app_name, "Add Postgres", ["postgres:create %s" % app_name, "postgres:link %s %s" % (app_name, app_name)], "check_postgres")
@@ -337,6 +342,15 @@ def create_redis(request, app_name):
 def check_deploy(request, app_name, task_id):
     clear_cache("config %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+def check_rebuild(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Application deployed:") == -1:
+        raise Exception(data)
+    messages.success(request, "%s rebuilt" % app_name)
+    clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
 
 def check_postgres(request, app_name, task_id):
