@@ -2,31 +2,29 @@
     <link href="{{ static('components/login/login.css') }}" rel="stylesheet">
     <body class="bg-light text-center">
         <div class="container">
+            <div class="alert alert-primary alert-dismissible fade show" role="alert">
+            Initial login is admin/password, but this can be changed by setting ADMIN_LOGIN and ADMIN_PASSWORD in the environment variables.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
             <form method="post" action="{{ url('login') }}" class="form-signin">
                 {% csrf_token %}
                 <img class="mb-4" src="{{ static('components/login/logo.svg') }}" alt="Wharf Logo by darius-dan on flaticon.com" title="Wharf Logo by darius-dan on flaticon.com" width="72" height="72">
-                <h1 class="h3 mb-3 font-weight-normal">Wharf - Login</h1>
+                <h1 class="h1 mb-3 font-weight-normal">Wharf - Login</h1>
                 {{ form.username }}
                 {{ form.password }}
                 <input type="hidden" name="next" value="{{ next }}" />
-                <button class="btn btn-lg btn-primary btn-block" value="login" name="submit" type="submit">Sign in</button>
-            </form>
-
-            {% if form.errors %}
+                {% if form.errors %}
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     Your username and password didn't match. Please try again.
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-            {% endif %}
-
-            <div class="alert alert-primary alert-dismissible fade show" role="alert">
-                Initial login is admin/password, but this can be changed by setting ADMIN_LOGIN and ADMIN_PASSWORD in the environment variables.
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
+                {% endif %}
+                <button class="btn btn-lg btn-primary btn-block" value="login" name="submit" type="submit">Sign in</button>
+            </form>
         </div>
     </body>
 {% endblock %}
