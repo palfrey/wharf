@@ -17,9 +17,11 @@ class CreateDomainForm(forms.Form):
 
 class LoginForm(AuthenticationForm):
 
-    username = UsernameField(widget=forms.TextInput(attrs={'autofocus': True, 'class': 'form-control'}))
+    username = UsernameField(widget=forms.TextInput(
+        attrs={'autofocus': True, 'class': 'form-control', 'placeholder': 'Username'})
+    )
     password = forms.CharField(
         label="Password",
         strip=False,
-        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}),
     )
