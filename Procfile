@@ -1,2 +1,2 @@
-web: ./dokku-boot.sh
+web: bash dokku-boot.sh
 celery: python manage.py celery
