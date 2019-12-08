@@ -4,6 +4,10 @@ body {
   font-family: 'Open Sans', sans-serif;
 }
 
+.footer {
+  display: none !important;
+}
+
 body {
   display: -ms-flexbox;
   display: -webkit-box;
