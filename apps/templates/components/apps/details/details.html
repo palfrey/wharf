@@ -35,9 +35,9 @@
                         </div>
                         <div class="card-body">
                             {% if git_url == None %}
-                                <h4 class="card-title">Can't deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)</h4>
+                                <h5 class="card-title">Can't deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)</h5>
                             {% else %}
-                                <h4 class="card-title">The current deploy URL is:</h4>
+                                <h5 class="card-title">The current deploy URL is:</h5>
                                 <p class="card-text"><a href="{{ git_url }}" rel="nofollow noopener noreferrer" target="_blank">{{ git_url }}</a></p>
                                 <form class="form-inline" action="{{ url('deploy', app_name=app) }}" method="POST">
                                     {% csrf_token %}
@@ -122,6 +122,16 @@
                                     {% endfor %}
                                 </ul>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                <br><br>
+
+                <h3>Log output</h3>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="logs-output">
+                            {{ logs }}
                         </div>
                     </div>
                 </div>
@@ -226,12 +236,5 @@
             <button type="submit" class="btn btn-primary">Create redis db</button>
         </form>
     {% endif %}
-
-
-
-    <h3>Logs</h3>
-    <pre>
-{{ logs }}
-</pre>
     </body>
 {% endblock %}
