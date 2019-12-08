@@ -206,11 +206,26 @@ def generic_list(app_name, data, name_field, fields):
             else:
                 info[f] = line[fields[f]["start"]:fields[f]["end"]].strip()
         results.append(info)
+
+    postgres_names_list = []
+
+    for x in results:
+        postgres_names_list.append(x[name_field])
+
     results = dict([[x[name_field], x] for x in results])
+
     if app_name in results:
         return results[app_name]
     else:
-        return None
+        found_items = []
+        for postgres_name_item in postgres_names_list:
+            if results[postgres_name_item]['LINKS'] == app_name:
+                found_items.append(results[postgres_name_item])
+
+        if not found_items:
+            return None
+        else:
+            return found_items
 
 def db_list(app_name, data):
     return generic_list(app_name, data, "NAME", ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"])
