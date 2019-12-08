@@ -8,7 +8,9 @@ class ConfigForm(forms.Form):
 
 
 class CreateAppForm(forms.Form):
-    name = forms.CharField(label='App name', max_length=100)
+    name = forms.CharField(label='App name', max_length=100,widget=forms.TextInput(
+        attrs={'autocomplete': 'new-password'}
+    ))
 
 
 class CreateDomainForm(forms.Form):
