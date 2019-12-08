@@ -8,83 +8,111 @@ import os
 from subprocess import Popen, PIPE, STDOUT, run, check_call, check_output, CalledProcessError
 import io
 import uuid
+import time
 
-chrome_options = webdriver.ChromeOptions()
-chrome_options.headless = True
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--no-sandbox')
-chromium_browser = os.environ.get("CHROMIUM_BROWSER", None)
-if chromium_browser != None:
-    chrome_options.binary_location = chromium_browser
-driver = webdriver.Chrome(os.environ["CHROMEDRIVER_PATH"], chrome_options=chrome_options, service_args=['--verbose'])
-driver.implicitly_wait(0)
+class Tester:
+    def __init__(self):
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options.headless = True
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--start-maximized')
+        chromium_browser = os.environ.get("CHROMIUM_BROWSER", None)
+        if chromium_browser != None:
+            chrome_options.binary_location = chromium_browser
+        self.driver = webdriver.Chrome(os.environ["CHROMEDRIVER_PATH"], chrome_options=chrome_options, service_args=['--verbose'])
+        self.driver.implicitly_wait(0)
+        self.start = time.time()
 
-def find_element_by_id(id):
-    def find(driver):
-        elements = driver.find_elements_by_id(id)
+    def log(self, message):
+        print("%f: %s" % (time.time()-self.start, message))
+
+    def find_one(self, elements):
         if len(elements) == 1:
             return elements[0]
         elif len(elements) == 0:
             return None
         else:
             raise Exception(elements)
-    return find
 
-def wait_for_one(driver, locators):
-    for locator in locators:
-        element = locator(driver)
-        if element != None:
-            return element
-    return False
+    def find_element(self, strat, id, allow_none=False):
+        self.log("Looking for %s: '%s'" % (strat, id))
+        ret = self.find_one(self.driver.find_elements(strat, id))
+        if ret == None and not allow_none:
+            self.failure()
+            raise Exception("No such element with %s and %s" % (strat, id))
+        return ret
 
-def get_main_id():
-    res = WebDriverWait(driver, 10).until(
-        lambda driver: wait_for_one(driver, [find_element_by_id("initial-setup-header"), find_element_by_id("list_apps")])
-    )
-    return res.get_attribute("id")
+    def wait_for_one(self, locators):
+        for locator in locators:
+            element = self.find_element(*locator, allow_none=True)
+            if element != None:
+                return element
+        return False
+
+    def failure(self):
+        self.driver.get_screenshot_as_file("screenshot.png")
+
+    def get(self, url):
+        self.log("Went to %s" % url)
+        return self.driver.get(url)
+
+    def send_keys(self, strat, id, text):
+        self.log("Send keys '%s' to %s: '%s'" % (text, strat, id))
+        return self.find_element(strat, id).send_keys(text)
+    
+    def click(self, strat, id):
+        self.log("Click on %s: '%s'" %(strat, id))
+        return self.find_element(strat, id).click()
+
+    def wait_for_list(self, items):
+        return WebDriverWait(self.driver, 10).until(
+            lambda driver: self.wait_for_one(items)
+        )
+
+    def get_main_id(self):
+        res = self.wait_for_list([(By.ID, "initial-setup-header"), (By.ID, "list_apps")])
+        return res.get_attribute("id")
+    
+    def page_source(self):
+        return self.driver.page_source
 
 try:
-    driver.get(sys.argv[1])
-    driver.find_element_by_name("username").send_keys("admin")
-    driver.find_element_by_name("password").send_keys("password")
-    driver.find_element_by_name("submit").click()
-    id = get_main_id()
+    tester = Tester()
+    tester.get(sys.argv[1])
+    tester.send_keys(By.NAME, "username", "admin")
+    tester.send_keys(By.NAME, "password", "password")
+    tester.click(By.NAME, "submit")
+    id = tester.get_main_id()
     if id == "list_apps":
-        print("Checking SSH status")
-        driver.find_element_by_id("refresh_info").click()
-        id = get_main_id() # because keys might not work any more
+        tester.log("Checking SSH status")
+        tester.click(By.ID, "refresh_info")
+        id = tester.get_main_id() # because keys might not work any more
     if id == "initial-setup-header":
-        print("Adding new keys")
+        tester.log("Adding new keys")
         keys = check_output("sudo dokku ssh-keys:list".split(" ")).decode("utf-8")
         if "check_boot" in keys:
             check_call("sudo dokku ssh-keys:remove check_boot".split(" "))
-        element = driver.find_element_by_id("ssh-key")
+        element = tester.find_element(By.ID, "ssh-key")
         cmd = "echo " + element.text + " | sudo dokku ssh-keys:add check_boot"
         print(cmd)
         ret = os.system(cmd)
         assert ret == 0
-        driver.get(sys.argv[1])
+        tester.get(sys.argv[1])
     elif id == "list_apps":
         pass
     else:
         raise Exception(id)
     app_name = uuid.uuid4().hex
-    print("Making new app " + app_name)
-    driver.find_element_by_id("id_name").send_keys(app_name)
-    driver.find_element_by_id("create_app").click()
-    WebDriverWait(driver, 10).until(
-        lambda driver: wait_for_one(driver, [find_element_by_id("app_page")])
-    )
-    assert driver.page_source.find(app_name) != -1
+    tester.log("Making new app %s" % app_name)
+    tester.send_keys(By.ID, "id_name", app_name)
+    tester.click(By.ID, "create_app")
+    tester.wait_for_list([(By.ID, "app_page")])
+    assert tester.page_source().find(app_name) != -1
 
-    driver.get(sys.argv[1])
-    driver.find_element_by_xpath('//a[text()="wharf"]').click()
-    WebDriverWait(driver, 10).until(
-        lambda driver: wait_for_one(driver, [find_element_by_id("app_page")])
-    )
-    assert driver.page_source.find("Wharf: wharf") != -1
-except:
-    driver.get_screenshot_as_file('where.png')
-    raise
+    tester.get(sys.argv[1])
+    tester.click(By.XPATH, '//a[text()="wharf"]')
+    tester.wait_for_list([(By.ID, "app_page")])
+    assert tester.page_source().find("Wharf: wharf") != -1
 finally:
-    driver.quit()
+    tester.driver.quit()

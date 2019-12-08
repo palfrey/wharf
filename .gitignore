@@ -7,5 +7,6 @@ repos/
 .vagrant/
 __pycache__/
 *.log
-where.png
+screenshot.png
 keys
+ssh-key
