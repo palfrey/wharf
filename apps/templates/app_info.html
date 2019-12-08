@@ -55,7 +55,7 @@ No tasks run yet
 <form action="{{ url('app_info', app_name=app) }}" method="POST">
   {% csrf_token %}
   {{ form | bootstrap }}
-  <input class="form-control" type="submit" value="Submit" />
+  <input class="form-control" type="submit" value="Submit" id="config_add" />
 </form>
 <h3>Postgres</h3>
 {% if postgres %}
