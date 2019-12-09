@@ -33,7 +33,7 @@
                         <div class="card-header">
                             Status
                         </div>
-                        <div class="card-body">
+                        <div class="card-body card-with-scroll">
                             {% if git_url == None %}
                                 <h5 class="card-title">Can't deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)</h5>
                             {% else %}
@@ -55,7 +55,7 @@
                             <div class="card-header">
                                 Status
                             </div>
-                            <div class="card-body">
+                            <div class="card-body card-with-scroll">
                                 {% if task_logs %}
                                     <ul>
                                         {% for tl in task_logs %}
@@ -78,7 +78,7 @@
                             <div class="card-header">
                                 Status
                             </div>
-                            <div class="card-body">
+                            <div class="card-body card-with-scroll">
                                 <ul>
                                     {% for (k,v) in process.items() if k!= 'processes' %}
                                         <li>{{k}}: {{v}}</li>
@@ -93,7 +93,7 @@
                             <div class="card-header">
                                 Status
                             </div>
-                            <div class="card-body">
+                            <div class="card-body card-with-scroll">
                                 {% if letsencrypt %}
                                     <ul>
                                         {% for (k,v) in letsencrypt.items() if k != 'App name' %}
@@ -115,7 +115,7 @@
                             <div class="card-header">
                                 Status
                             </div>
-                            <div class="card-body">
+                            <div class="card-body card-with-scroll">
                                 <ul>
                                     {% for (k,v) in process['processes'].items() %}
                                         <li>{{k}}: {{v}}</li>
@@ -133,6 +133,115 @@
                         <div class="logs-output">
                             {{ logs }}
                         </div>
+                    </div>
+                </div>
+                <br><br>
+
+                <h3>App links</h3>
+                <ul id="app-links-config" class="nav nav-tabs">
+                    <li class="nav-item"><a href="" data-target="#app-links-postgres-list" data-toggle="tab" class="nav-link small text-uppercase active show">Postgres links</a></li>
+                    <li class="nav-item"><a href="" data-target="#app-links-redis-list" data-toggle="tab" class="nav-link small text-uppercase">Redis links</a></li>
+                    <li class="nav-item"><a href="" data-target="#app-links-mariadb-list" data-toggle="tab" class="nav-link small text-uppercase">MariaDB links</a></li>
+                </ul>
+                <div id="tabAppLinksContent" class="tab-content">
+                    <div id="app-links-postgres-list" class="tab-pane fade active show">
+                        {% if postgres %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Version</th>
+                                            <th scope="col">Exposed ports</th>
+                                            <th scope="col">Links</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in postgres %}
+                                            <tr>
+                                                <td>{{ item['NAME'] }}</td>
+                                                <td>{{ item['STATUS'] }}</td>
+                                                <td>{{ item['VERSION'] }}</td>
+                                                <td>{{ item['EXPOSED PORTS'] }}</td>
+                                                <td>{{ item['LINKS'] }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else: %}
+                            <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Create postgres db</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                    <div id="app-links-redis-list" class="tab-pane fade">
+                        {% if redis %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Version</th>
+                                            <th scope="col">Exposed ports</th>
+                                            <th scope="col">Links</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in redis %}
+                                            <tr>
+                                                <td>{{ item['NAME'] }}</td>
+                                                <td>{{ item['STATUS'] }}</td>
+                                                <td>{{ item['VERSION'] }}</td>
+                                                <td>{{ item['EXPOSED PORTS'] }}</td>
+                                                <td>{{ item['LINKS'] }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <form class="form-inline" action="{{ url('create_redis', app_name=app) }}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Create redis db</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                    <div id="app-links-mariadb-list" class="tab-pane fade">
+                        {% if mariadb %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Version</th>
+                                            <th scope="col">Exposed ports</th>
+                                            <th scope="col">Links</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in mariadb %}
+                                            <tr>
+                                                <td>{{ item['NAME'] }}</td>
+                                                <td>{{ item['STATUS'] }}</td>
+                                                <td>{{ item['VERSION'] }}</td>
+                                                <td>{{ item['EXPOSED PORTS'] }}</td>
+                                                <td>{{ item['LINKS'] }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <form class="form-inline" action="{{ url('create_redis', app_name=app) }}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Create redis db</button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
                 <br><br>
@@ -211,109 +320,6 @@
                     </div>
                 </div>
                 <br><br>
-
-                <h3>Postgres</h3>
-
-                {% if postgres %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Version</th>
-                                    <th scope="col">Exposed ports</th>
-                                    <th scope="col">Links</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in postgres %}
-                                    <tr>
-                                        <td>{{ item['NAME'] }}</td>
-                                        <td>{{ item['STATUS'] }}</td>
-                                        <td>{{ item['VERSION'] }}</td>
-                                        <td>{{ item['EXPOSED PORTS'] }}</td>
-                                        <td>{{ item['LINKS'] }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else: %}
-                    <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary">Create postgres db</button>
-                    </form>
-                {% endif %}
-
-
-                <h3>Redis</h3>
-                {% if redis %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Version</th>
-                                    <th scope="col">Exposed ports</th>
-                                    <th scope="col">Links</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in redis %}
-                                    <tr>
-                                        <td>{{ item['NAME'] }}</td>
-                                        <td>{{ item['STATUS'] }}</td>
-                                        <td>{{ item['VERSION'] }}</td>
-                                        <td>{{ item['EXPOSED PORTS'] }}</td>
-                                        <td>{{ item['LINKS'] }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <form class="form-inline" action="{{ url('create_redis', app_name=app) }}" method="POST">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary">Create redis db</button>
-                    </form>
-                {% endif %}
-
-
-                <h3>MariaDB</h3>
-                {% if mariadb %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Version</th>
-                                    <th scope="col">Exposed ports</th>
-                                    <th scope="col">Links</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in mariadb %}
-                                    <tr>
-                                        <td>{{ item['NAME'] }}</td>
-                                        <td>{{ item['STATUS'] }}</td>
-                                        <td>{{ item['VERSION'] }}</td>
-                                        <td>{{ item['EXPOSED PORTS'] }}</td>
-                                        <td>{{ item['LINKS'] }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <form class="form-inline" action="{{ url('create_redis', app_name=app) }}" method="POST">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary">Create redis db</button>
-                    </form>
-                {% endif %}
-
             </main>
         </div>
     </div>
