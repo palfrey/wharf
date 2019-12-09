@@ -232,6 +232,7 @@ def generic_list(app_name, data, name_field, fields, type_list=None):
         results.append(info)
 
     items_names_list = []
+    found_items = []
 
     for x in results:
         items_names_list.append(x[name_field])
@@ -239,10 +240,13 @@ def generic_list(app_name, data, name_field, fields, type_list=None):
     results = dict([[x[name_field], x] for x in results])
 
     if app_name in results:
-        return results[app_name]
-    else:
-        found_items = []
+        if type_list is None:
+            return results[app_name]
 
+        found_items.append(results[app_name])
+        return found_items
+
+    else:
         if type_list == "postgres":
             for postgres_name_item in items_names_list:
                 if results[postgres_name_item]['LINKS'] == app_name:
