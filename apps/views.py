@@ -439,6 +439,11 @@ def create_redis(request, app_name):
                             ["redis:create %s" % app_name, "redis:link %s %s" % (app_name, app_name)], "check_redis")
 
 
+def create_mariadb(request, app_name):
+    return run_cmd_with_log(app_name, "Add MariaDB",
+                            ["mariadb:create %s" % app_name, "mariadb:link %s %s" % (app_name, app_name)], "check_mariadb")
+
+
 def check_deploy(request, app_name, task_id):
     clear_cache("config %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
@@ -473,6 +478,17 @@ def check_redis(request, app_name, task_id):
         raise Exception(data)
     messages.success(request, "Redis added to %s" % app_name)
     clear_cache("redis:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+def check_mariadb(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("MariaDB container created") == -1:
+        raise Exception(data)
+    messages.success(request, "MariaDB added to %s" % app_name)
+    clear_cache("mariadb:list")
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
 
