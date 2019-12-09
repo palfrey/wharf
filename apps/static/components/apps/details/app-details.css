@@ -13,3 +13,14 @@
     padding: 10px;
     font-size: 90%;
 }
+
+.tab-content {
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-top: none;
+    background: #fff;
+}
+
+.tab-content table {
+    margin-bottom: 0;
+}

@@ -242,10 +242,15 @@ def generic_list(app_name, data, name_field, fields, type_list=None):
         return results[app_name]
     else:
         found_items = []
+
         if type_list == "postgres":
             for postgres_name_item in items_names_list:
                 if results[postgres_name_item]['LINKS'] == app_name:
                     found_items.append(results[postgres_name_item])
+        elif type_list == "redis":
+            for redis_name_item in items_names_list:
+                if results[redis_name_item]['LINKS'] == app_name:
+                    found_items.append(results[redis_name_item])
 
         if not found_items:
             return None
@@ -269,7 +274,7 @@ def postgres_list(app_name):
 def redis_list(app_name):
     data = run_cmd_with_cache("redis:list")
     try:
-        return db_list(app_name, data)
+        return db_list(app_name, data, 'redis')
     except:
         clear_cache("redis:list")
         raise
@@ -352,8 +357,17 @@ def app_info(request, app_name):
             return app_config_set(app_name, form.cleaned_data['key'], form.cleaned_data['value'])
     else:
         form = forms.ConfigForm()
+
+    original_postgres_items = postgres_list(app_name)
+    list_postgres = []
+
+    if type(original_postgres_items) is dict:
+        list_postgres.append(postgres_list(app_name))
+    else:
+        list_postgres = original_postgres_items
+
     return render(request, 'app_info.html', {
-        'postgres': postgres_list(app_name),
+        'postgres': list_postgres,
         'redis': redis_list(app_name),
         'letsencrypt': letsencrypt(app_name),
         'process': process_info(app_name),
