@@ -240,6 +240,7 @@ def generic_list(app_name, data, name_field, fields, type_list=None):
     results = dict([[x[name_field], x] for x in results])
 
     if app_name in results:
+
         if type_list is None:
             return results[app_name]
 
@@ -255,6 +256,10 @@ def generic_list(app_name, data, name_field, fields, type_list=None):
             for redis_name_item in items_names_list:
                 if results[redis_name_item]['LINKS'] == app_name:
                     found_items.append(results[redis_name_item])
+        elif type_list == "mariadb":
+            for mariadb_name_item in items_names_list:
+                if results[mariadb_name_item]['LINKS'] == app_name:
+                    found_items.append(results[mariadb_name_item])
 
         if not found_items:
             return None
@@ -281,6 +286,15 @@ def redis_list(app_name):
         return db_list(app_name, data, 'redis')
     except:
         clear_cache("redis:list")
+        raise
+
+
+def mariadb_list(app_name):
+    data = run_cmd_with_cache("mariadb:list")
+    try:
+        return db_list(app_name, data, 'mariadb')
+    except:
+        clear_cache("mariadb:list")
         raise
 
 
@@ -363,16 +377,24 @@ def app_info(request, app_name):
         form = forms.ConfigForm()
 
     original_postgres_items = postgres_list(app_name)
+    original_mariadb_items = mariadb_list(app_name)
     list_postgres = []
+    list_mariadb = []
 
     if type(original_postgres_items) is dict:
         list_postgres.append(postgres_list(app_name))
     else:
         list_postgres = original_postgres_items
 
+    if type(original_mariadb_items) is dict:
+        list_mariadb.append(mariadb_list(app_name))
+    else:
+        list_mariadb = original_mariadb_items
+
     return render(request, 'app_info.html', {
         'postgres': list_postgres,
         'redis': redis_list(app_name),
+        'mariadb': list_mariadb,
         'letsencrypt': letsencrypt(app_name),
         'process': process_info(app_name),
         'logs': ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
