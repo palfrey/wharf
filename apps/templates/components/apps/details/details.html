@@ -237,9 +237,9 @@
                                 </table>
                             </div>
                         {% else %}
-                            <form class="form-inline" action="{{ url('create_redis', app_name=app) }}" method="POST">
+                            <form class="form-inline" action="{{ url('create_mariadb', app_name=app) }}" method="POST">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-primary">Create redis db</button>
+                                <button type="submit" class="btn btn-primary">Create MariaDB db</button>
                             </form>
                         {% endif %}
                     </div>
