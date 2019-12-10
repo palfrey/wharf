@@ -1,0 +1,77 @@
+{% block command %}
+    <link href="{{ static('components/logs/command.css') }}" rel="stylesheet">
+    <body class="bg-light">
+        <nav class="navbar navbar-expand-md navbar-dark sticky-top bg-dark">
+            <a class="navbar-brand" href="#">Wharf</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse"
+                data-target="#main-nav-bar-apps-list" aria-controls="main-nav-bar-apps-list"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="main-nav-bar-apps-list">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{{ url('index') }}">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="container-fluid">
+            <div class="row">
+                <main role="main" class="col-md-12 ml-sm-auto col-lg-12 pt-3 px-4">
+                    <div class="pb-2 mb-3 border-bottom logs-heading">
+                        <div class="row justify-content-between">
+                            <div class="col-12 col-md-6">
+                                {% if app == "_" %}
+                                    <a href="{{ url('index') }}" rel="nofollow noopener noreferrer">
+                                        <span>&#8592;</span>Return to apps index
+                                    </a>
+                                {% else %}
+                                    <a href="{{ url('app_info', app_name=app) }}" rel="nofollow noopener noreferrer">
+                                        <span>&#8592;</span>Return to {{app}} info
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <h2 class="h2 text-right">
+                                    Wharf:
+                                    {% if running %}
+                                        {% if app != "_" %}
+                                            Running task for <a href="{{ url('app_info', app_name=app) }}">{{ app }}</a>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if app != "_" %}
+                                            Task log for <a href="{{ url('app_info', app_name=app) }}">{{ app }}</a>
+                                        {% endif %}
+                                    {% endif %}
+                                </h2>
+                            </div>
+                        </div>
+                        <p><strong>Task ID:</strong> {{ task_id }}</p>
+                        <p><strong>Task state:</strong> {{ state }}</p>
+                        <p><strong>Task description:</strong> {{ description }}</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12 logs-content">
+                        <h3>Log output</h3>
+                            <div class="logs-output">
+                                {{ log }}
+                            </div>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+
+        {% if running %}
+            <script type="text/javascript">
+                setTimeout(function(){
+                    location.reload()
+                }, 3000);
+            </script>
+        {% endif %}
+    </body>
+{% endblock %}
