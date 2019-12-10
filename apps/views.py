@@ -60,6 +60,7 @@ def run_cmd_with_log(app_name, description, cmd, after):
             app=models.App.objects.get(name=app_name),
             description=description
         ).save()
+
     return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': after}))
 
 
@@ -442,6 +443,16 @@ def create_redis(request, app_name):
 def create_mariadb(request, app_name):
     return run_cmd_with_log(app_name, "Add MariaDB",
                             ["mariadb:create %s" % app_name, "mariadb:link %s %s" % (app_name, app_name)], "check_mariadb")
+
+
+def remove_mariadb(request, app_name, link_name):
+    return run_cmd_with_log(app_name, "Remove MariaDB",
+                            [
+                                "mariadb:export %s" % link_name,
+                                "mariadb:unlink %s %s" % (link_name, app_name),
+                                "mariadb:destroy %s -f" % link_name
+                            ],
+                            "check_mariadb")
 
 
 def check_deploy(request, app_name, task_id):

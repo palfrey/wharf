@@ -221,6 +221,7 @@
                                             <th scope="col">Version</th>
                                             <th scope="col">Exposed ports</th>
                                             <th scope="col">Links</th>
+                                            <th scope="col">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -231,6 +232,13 @@
                                                 <td>{{ item['VERSION'] }}</td>
                                                 <td>{{ item['EXPOSED PORTS'] }}</td>
                                                 <td>{{ item['LINKS'] }}</td>
+                                                <td>
+                                                    <form class="d-inline" action="{{ url('remove_mariadb', app_name=app, link_name=item['LINKS']) }}" method="POST">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" value="{{ item['LINKS'] }}" name="link_name" />
+                                                        <button type="submit" class="btn btn-outline-danger">Delete '{{ item['NAME'] }}' link</button>
+                                                    </form>
+                                                </td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
