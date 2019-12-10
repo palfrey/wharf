@@ -66,21 +66,12 @@
             </div>
         </div>
 
-
-
-
-
-
-
-
-
-    {% if running %}
-        <script type="text/javascript">
-            setTimeout(function(){
-                location.reload()
-            },2000)
-        </script>
-    {% endif %}
-
+        {% if running %}
+            <script type="text/javascript">
+                setTimeout(function(){
+                    location.reload()
+                }, 3000);
+            </script>
+        {% endif %}
     </body>
 {% endblock %}
