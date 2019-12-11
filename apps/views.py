@@ -430,19 +430,33 @@ def deploy(request, app_name):
 
 
 def create_postgres(request, app_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add Postgres",
-                            ["postgres:create %s" % app_name, "postgres:link %s %s" % (app_name, app_name)],
+                            [
+                                "postgres:create %s" % sanitized_link_name,
+                                "postgres:link %s %s" % (sanitized_link_name, app_name)
+                            ],
                             "check_postgres")
 
 
 def create_redis(request, app_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add Redis",
-                            ["redis:create %s" % app_name, "redis:link %s %s" % (app_name, app_name)], "check_redis")
+                            [
+                                "redis:create %s" % sanitized_link_name,
+                                "redis:link %s %s" % (sanitized_link_name, app_name)
+                            ],
+                            "check_redis")
 
 
 def create_mariadb(request, app_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add MariaDB",
-                            ["mariadb:create %s" % app_name, "mariadb:link %s %s" % (app_name, app_name)], "check_mariadb")
+                            [
+                                "mariadb:create %s" % sanitized_link_name,
+                                "mariadb:link %s %s" % (sanitized_link_name, app_name)
+                            ],
+                            "check_mariadb")
 
 
 def remove_mariadb(request, app_name, link_name):
