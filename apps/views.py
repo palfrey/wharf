@@ -449,6 +449,16 @@ def create_redis(request, app_name):
                             "check_redis")
 
 
+def remove_redis(request, app_name, link_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+    return run_cmd_with_log(app_name, "Remove Redis",
+                            [
+                                "redis:unlink %s %s" % (sanitized_link_name, app_name),
+                                "redis:destroy %s -f" % sanitized_link_name
+                            ],
+                            "check_redis_removal")
+
+
 def create_mariadb(request, app_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add MariaDB",
@@ -506,6 +516,17 @@ def check_redis(request, app_name, task_id):
             data.find("Redis service %s already exists" % sanitized_app_name) == -1:
         raise Exception(data)
     messages.success(request, "Redis added to %s" % app_name)
+    clear_cache("redis:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+def check_redis_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Redis container deleted") == -1:
+        raise Exception(data)
+    messages.success(request, "Redis link removed from %s" % app_name)
     clear_cache("redis:list")
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
