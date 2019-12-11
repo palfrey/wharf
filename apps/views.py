@@ -60,6 +60,7 @@ def run_cmd_with_log(app_name, description, cmd, after):
             app=models.App.objects.get(name=app_name),
             description=description
         ).save()
+
     return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': after}))
 
 
@@ -429,19 +430,63 @@ def deploy(request, app_name):
 
 
 def create_postgres(request, app_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add Postgres",
-                            ["postgres:create %s" % app_name, "postgres:link %s %s" % (app_name, app_name)],
+                            [
+                                "postgres:create %s" % sanitized_link_name,
+                                "postgres:link %s %s" % (sanitized_link_name, app_name)
+                            ],
                             "check_postgres")
 
 
+def remove_postgres(request, app_name, link_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+    return run_cmd_with_log(app_name, "Remove Postgres",
+                            [
+                                "postgres:unlink %s %s" % (sanitized_link_name, app_name),
+                                "postgres:destroy %s -f" % sanitized_link_name
+                            ],
+                            "check_postgres_removal")
+
+
 def create_redis(request, app_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add Redis",
-                            ["redis:create %s" % app_name, "redis:link %s %s" % (app_name, app_name)], "check_redis")
+                            [
+                                "redis:create %s" % sanitized_link_name,
+                                "redis:link %s %s" % (sanitized_link_name, app_name)
+                            ],
+                            "check_redis")
+
+
+def remove_redis(request, app_name, link_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+    return run_cmd_with_log(app_name, "Remove Redis",
+                            [
+                                "redis:unlink %s %s" % (sanitized_link_name, app_name),
+                                "redis:destroy %s -f" % sanitized_link_name
+                            ],
+                            "check_redis_removal")
 
 
 def create_mariadb(request, app_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add MariaDB",
-                            ["mariadb:create %s" % app_name, "mariadb:link %s %s" % (app_name, app_name)], "check_mariadb")
+                            [
+                                "mariadb:create %s" % sanitized_link_name,
+                                "mariadb:link %s %s" % (sanitized_link_name, app_name)
+                            ],
+                            "check_mariadb")
+
+
+def remove_mariadb(request, app_name, link_name):
+    return run_cmd_with_log(app_name, "Remove MariaDB",
+                            [
+                                "mariadb:export %s" % link_name,
+                                "mariadb:unlink %s %s" % (link_name, app_name),
+                                "mariadb:destroy %s -f" % link_name
+                            ],
+                            "check_mariadb_removal")
 
 
 def check_deploy(request, app_name, task_id):
@@ -471,12 +516,38 @@ def check_postgres(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
+def check_postgres_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Postgres container deleted") == -1:
+        raise Exception(data)
+    messages.success(request, "Postgres link removed from %s" % app_name)
+    clear_cache("postgres:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
 def check_redis(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
-    if data.find("Redis container created") == -1:
+
+    sanitized_app_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+
+    if data.find("Redis container created") == -1 and \
+            data.find("Redis service %s already exists" % sanitized_app_name) == -1:
         raise Exception(data)
     messages.success(request, "Redis added to %s" % app_name)
+    clear_cache("redis:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+def check_redis_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Redis container deleted") == -1:
+        raise Exception(data)
+    messages.success(request, "Redis link removed from %s" % app_name)
     clear_cache("redis:list")
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
@@ -488,6 +559,17 @@ def check_mariadb(request, app_name, task_id):
     if data.find("MariaDB container created") == -1:
         raise Exception(data)
     messages.success(request, "MariaDB added to %s" % app_name)
+    clear_cache("mariadb:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+def check_mariadb_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("MariaDB container deleted") == -1:
+        raise Exception(data)
+    messages.success(request, "MariaDB link removed from %s" % app_name)
     clear_cache("mariadb:list")
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))

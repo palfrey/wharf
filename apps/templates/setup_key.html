@@ -1,11 +1,4 @@
 {% extends "base.html" %}
 {% block body %}
-<h1 id="initial-setup-header">Wharf: Initial setup</h1>
-Save the following key (as one line) to a file on your server, and run the
-<code>ssh-keys:add</code> command from the <a href="http://dokku.viewdocs.io/dokku/deployment/user-management/#adding-ssh-keys">Dokku instructions for setting up SSH keys</a><br /><br />
-<code id="ssh-key">
-{{ key }}
-</code><br />
-<br />
-When you've done this, <a href="" onclick="location.reload();">click here to reload</a>
+{% include "components/setup/initial-key/initial-key.html" %}
 {% endblock %}
