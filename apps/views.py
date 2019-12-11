@@ -502,7 +502,8 @@ def check_redis(request, app_name, task_id):
 
     sanitized_app_name = re.sub('[^A-Za-z0-9]+', '', app_name)
 
-    if data.find("Redis container created") == -1 and data.find("Redis service %s already exists" % sanitized_app_name):
+    if data.find("Redis container created") == -1 and \
+            data.find("Redis service %s already exists" % sanitized_app_name) == -1:
         raise Exception(data)
     messages.success(request, "Redis added to %s" % app_name)
     clear_cache("redis:list")
