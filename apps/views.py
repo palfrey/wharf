@@ -439,6 +439,16 @@ def create_postgres(request, app_name):
                             "check_postgres")
 
 
+def remove_postgres(request, app_name, link_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+    return run_cmd_with_log(app_name, "Remove Postgres",
+                            [
+                                "postgres:unlink %s %s" % (sanitized_link_name, app_name),
+                                "postgres:destroy %s -f" % sanitized_link_name
+                            ],
+                            "check_postgres_removal")
+
+
 def create_redis(request, app_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add Redis",
@@ -501,6 +511,17 @@ def check_postgres(request, app_name, task_id):
     if data.find("Postgres container created") == -1:
         raise Exception(data)
     messages.success(request, "Postgres added to %s" % app_name)
+    clear_cache("postgres:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+def check_postgres_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Postgres container deleted") == -1:
+        raise Exception(data)
+    messages.success(request, "Postgres link removed from %s" % app_name)
     clear_cache("postgres:list")
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
