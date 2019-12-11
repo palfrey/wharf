@@ -499,7 +499,10 @@ def check_postgres(request, app_name, task_id):
 def check_redis(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
-    if data.find("Redis container created") == -1:
+
+    sanitized_app_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+
+    if data.find("Redis container created") == -1 and data.find("Redis service %s already exists" % sanitized_app_name):
         raise Exception(data)
     messages.success(request, "Redis added to %s" % app_name)
     clear_cache("redis:list")
