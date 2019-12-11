@@ -60,6 +60,7 @@ def run_cmd_with_log(app_name, description, cmd, after):
             app=models.App.objects.get(name=app_name),
             description=description
         ).save()
+
     return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': after}))
 
 
@@ -444,6 +445,16 @@ def create_mariadb(request, app_name):
                             ["mariadb:create %s" % app_name, "mariadb:link %s %s" % (app_name, app_name)], "check_mariadb")
 
 
+def remove_mariadb(request, app_name, link_name):
+    return run_cmd_with_log(app_name, "Remove MariaDB",
+                            [
+                                "mariadb:export %s" % link_name,
+                                "mariadb:unlink %s %s" % (link_name, app_name),
+                                "mariadb:destroy %s -f" % link_name
+                            ],
+                            "check_mariadb_removal")
+
+
 def check_deploy(request, app_name, task_id):
     clear_cache("config %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
@@ -488,6 +499,17 @@ def check_mariadb(request, app_name, task_id):
     if data.find("MariaDB container created") == -1:
         raise Exception(data)
     messages.success(request, "MariaDB added to %s" % app_name)
+    clear_cache("mariadb:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+def check_mariadb_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("MariaDB container deleted") == -1:
+        raise Exception(data)
+    messages.success(request, "MariaDB link removed from %s" % app_name)
     clear_cache("mariadb:list")
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
