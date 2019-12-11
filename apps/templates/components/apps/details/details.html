@@ -72,7 +72,7 @@
                 <br><br>
 
                 <div class="row">
-                    <div class="col-sm-4">
+                    <div class="col-sm-6">
                         <h3>Process Info</h3>
                         <div class="card">
                             <div class="card-header">
@@ -87,29 +87,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-4">
-                        <h3>Let's Encrypt</h3>
-                        <div class="card">
-                            <div class="card-header">
-                                Status
-                            </div>
-                            <div class="card-body card-with-scroll">
-                                {% if letsencrypt %}
-                                    <ul>
-                                        {% for (k,v) in letsencrypt.items() if k != 'App name' %}
-                                            <li>{{k}}: {{v}}</li>
-                                        {% endfor %}
-                                    </ul>
-                                {% else %}
-                                    <form class="form-inline" action="{{ url('setup_letsencrypt', app_name=app) }}" method="POST">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-primary">Setup Let's Encrypt</button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-6">
                         <h3>Processes</h3>
                         <div class="card">
                             <div class="card-header">
@@ -254,10 +232,11 @@
                 </div>
                 <br><br>
 
-                <h3>Domains</h3>
+                <h3>Domains and SSL</h3>
                 <ul id="app-domains" class="nav nav-tabs">
                     <li class="nav-item"><a href="" data-target="#app-domains-list" data-toggle="tab" class="nav-link small text-uppercase active show">Domains for this app</a></li>
-                    <li class="nav-item"><a href="" data-target="#app-domain-add" data-toggle="tab" class="nav-link small text-uppercase">Add new item</a></li>
+                    <li class="nav-item"><a href="" data-target="#app-domain-add" data-toggle="tab" class="nav-link small text-uppercase">Add new domain</a></li>
+                    <li class="nav-item"><a href="" data-target="#app-domain-ssl-status" data-toggle="tab" class="nav-link small text-uppercase">Let's Encrypt status</a></li>
                 </ul>
                 <div id="tabAppDomainsContent" class="tab-content">
                     <div id="app-domains-list" class="tab-pane fade active show">
@@ -297,6 +276,21 @@
                             {{ domain_form | bootstrap }}
                             <input class="btn btn-lg btn-block btn-outline-primary" type="submit" value="Submit" />
                         </form>
+                    </div>
+                    <div id="app-domain-ssl-status" class="tab-pane fade">
+                        {% if letsencrypt %}
+                            <h4>Status</h4>
+                            <ul>
+                                {% for (k,v) in letsencrypt.items() if k != 'App name' %}
+                                    <li>{{k}}: {{v}}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <form class="form-inline" action="{{ url('setup_letsencrypt', app_name=app) }}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary">Setup Let's Encrypt</button>
+                            </form>
+                        {% endif %}
                     </div>
                 </div>
                 <br><br>
