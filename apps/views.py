@@ -7,6 +7,7 @@ from celery.states import state, PENDING, SUCCESS, FAILURE, STARTED
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseBadRequest, HttpResponse, HttpResponseServerError
+from django.contrib.auth.decorators import login_required
 
 import requests
 import time
@@ -75,6 +76,7 @@ def get_log(res):
         return ""
 
 
+@login_required(login_url='/accounts/login/')
 def wait_for_command(request, app_name, task_id, after):
     res = AsyncResult(task_id)
     if app_name != '_':
@@ -99,6 +101,7 @@ def wait_for_command(request, app_name, task_id, after):
     })
 
 
+@login_required(login_url='/accounts/login/')
 def show_log(request, task_id):
     res = AsyncResult(task_id)
     task = models.TaskLog.objects.get(task_id=task_id)
@@ -122,6 +125,7 @@ def app_list():
     return lines[1:]
 
 
+@login_required(login_url='/accounts/login/')
 def index(request):
     try:
         apps = app_list()
@@ -142,6 +146,7 @@ def index(request):
                   {'apps': apps, 'app_form': app_form, 'config_form': config_form, 'config': sorted(config.items())})
 
 
+@login_required(login_url='/accounts/login/')
 def refresh_all(request):
     cache.clear()
     return redirect(reverse('index'))
@@ -334,6 +339,7 @@ def domains_list(app_name):
     return [x.strip() for x in vhosts.groups()[0].split(" ") if x != ""]
 
 
+@login_required(login_url='/accounts/login/')
 def add_domain(request, app_name):
     form = forms.CreateDomainForm(request.POST)
     if form.is_valid():
@@ -356,6 +362,7 @@ def check_domain(request, app_name, task_id):
         raise Exception(data)
 
 
+@login_required(login_url='/accounts/login/')
 def remove_domain(request, app_name):
     name = request.POST['name']
     commands = ["domains:remove %s %s" % (app_name, name)]
@@ -364,6 +371,7 @@ def remove_domain(request, app_name):
     return run_cmd_with_log(app_name, "Remove domain %s" % name, commands, "check_domain")
 
 
+@login_required(login_url='/accounts/login/')
 def app_info(request, app_name):
     app, _ = models.App.objects.get_or_create(name=app_name)
     config = app_config(app_name)
@@ -409,6 +417,7 @@ def app_info(request, app_name):
     })
 
 
+@login_required(login_url='/accounts/login/')
 def deploy(request, app_name):
     if request.POST['action'] == "deploy":
         res = tasks.deploy.delay(app_name, request.POST['url'])
@@ -433,6 +442,7 @@ def create_postgres(request, app_name):
                             "check_postgres")
 
 
+@login_required(login_url='/accounts/login/')
 def remove_postgres(request, app_name, link_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Remove Postgres",
@@ -443,6 +453,7 @@ def remove_postgres(request, app_name, link_name):
                             "check_postgres_removal")
 
 
+@login_required(login_url='/accounts/login/')
 def create_redis(request, app_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add Redis",
@@ -453,6 +464,7 @@ def create_redis(request, app_name):
                             "check_redis")
 
 
+@login_required(login_url='/accounts/login/')
 def remove_redis(request, app_name, link_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Remove Redis",
@@ -463,6 +475,7 @@ def remove_redis(request, app_name, link_name):
                             "check_redis_removal")
 
 
+@login_required(login_url='/accounts/login/')
 def create_mariadb(request, app_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add MariaDB",
@@ -473,6 +486,7 @@ def create_mariadb(request, app_name):
                             "check_mariadb")
 
 
+@login_required(login_url='/accounts/login/')
 def remove_mariadb(request, app_name, link_name):
     return run_cmd_with_log(app_name, "Remove MariaDB",
                             [
@@ -584,6 +598,7 @@ def check_app(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
+@login_required(login_url='/accounts/login/')
 def setup_letsencrypt(request, app_name):
     return run_cmd_with_log(app_name, "Enable Let's Encrypt", "letsencrypt %s" % app_name, "check_letsencrypt")
 
