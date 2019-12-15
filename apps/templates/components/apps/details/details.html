@@ -328,7 +328,7 @@
                         <h4>Add a new config for this app</h4>
                         <form action="{{ url('app_info', app_name=app) }}" method="POST">
                             {% csrf_token %}
-                            {{ form | bootstrap }}
+                            {{ config_bulk_form }}
                             <input class="btn btn-lg btn-block btn-outline-primary" type="submit" value="Submit" />
                         </form>
                     </div>
