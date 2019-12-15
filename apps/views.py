@@ -8,6 +8,7 @@ from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
+from pprint import pprint
 
 import requests
 import time
@@ -141,9 +142,16 @@ def index(request):
     else:
         app_form = forms.CreateAppForm()
     config_form = forms.ConfigForm()
+    config_bulk_form = forms.ConfigFormBulk()
     config = global_config()
     return render(request, 'list_apps.html',
-                  {'apps': apps, 'app_form': app_form, 'config_form': config_form, 'config': sorted(config.items())})
+                  {
+                      'apps': apps,
+                      'app_form': app_form,
+                      'config_form': config_form,
+                      'config_bulk_form': config_bulk_form,
+                      'config': sorted(config.items())
+                  })
 
 
 @login_required(login_url='/accounts/login/')
@@ -192,20 +200,38 @@ def check_app_config_set(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
-def global_config_set(request):
-    form = forms.ConfigForm(request.POST)
-    if form.is_valid():
-        return run_cmd_with_log(None, "Setting %s" % form.cleaned_data['key'],
-                                "config:set --global %s=%s" % (form.cleaned_data['key'], form.cleaned_data['value']),
-                                "check_global_config_set")
-    else:
-        raise Exception
-
-
-def check_global_config_set(request, task_id):
+def check_global_config_set(request, app_name, task_id):
     check_config_set(request, task_id)
     clear_cache("config --global")
     return redirect(reverse('index'))
+
+
+def global_config_bulk_set(request):
+    form = forms.ConfigFormBulk(request.POST)
+
+    if form.is_valid():
+        config_items = []
+        cmd_string = ""
+        original_items = form.cleaned_data['userInput'].split("\r\n")
+
+        for item in original_items:
+            splitted_input = item.split(":")
+            if len(splitted_input) < 2:
+                continue
+            config_items.append(splitted_input)
+            cmd_string += f"{splitted_input[0]}={splitted_input[1]} "
+
+        if not cmd_string:
+            raise Exception("The input is invalid")
+
+        return run_cmd_with_log(
+            None,
+            "Setting global configuration",
+            "config:set --global %s" % cmd_string,
+            "check_global_config_set"
+        )
+    else:
+        raise Exception("The submitted form is invalid")
 
 
 def generic_list(app_name, data, name_field, fields, type_list=None):
