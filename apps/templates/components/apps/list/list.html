@@ -85,10 +85,10 @@
                     <div id="global-config-add" class="tab-pane fade">
                         <div class="list-group">
                             <h4>Add a new item to global configuration</h4>
-                            <form action="{{ url('global_config_set') }}" method="POST">
+                            <form action="{{ url('global_config_bulk_set') }}" method="POST">
                                 {% csrf_token %}
                                 <input type="hidden" name="kind" value="config" />
-                                {{ config_form | bootstrap }}
+                                {{ config_bulk_form }}
                                 <input class="btn btn-lg btn-block btn-outline-primary" type="submit" value="Submit" />
                             </form>
                         </div>
