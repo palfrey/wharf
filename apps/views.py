@@ -200,17 +200,7 @@ def check_app_config_set(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
-def global_config_set(request):
-    form = forms.ConfigForm(request.POST)
-    if form.is_valid():
-        return run_cmd_with_log(None, "Setting %s" % form.cleaned_data['key'],
-                                "config:set --global %s=%s" % (form.cleaned_data['key'], form.cleaned_data['value']),
-                                "check_config_set")
-    else:
-        raise Exception
-
-
-def check_global_config_set(request, task_id):
+def check_global_config_set(request, app_name, task_id):
     check_config_set(request, task_id)
     clear_cache("config --global")
     return redirect(reverse('index'))

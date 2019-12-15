@@ -17,8 +17,8 @@ class ConfigFormBulk(forms.Form):
     userInput = forms.CharField(
         widget=forms.Textarea(
             attrs={
-                'class': 'form-control',
-                'placeholder': 'The format is key : data. Add a new line to multiple variables'
+                'class': 'form-control global-config-bulk',
+                'placeholder': 'The format is key:data. Add a new line to multiple variables'
             }
         ),
         label=''
