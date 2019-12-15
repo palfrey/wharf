@@ -12,3 +12,7 @@ html, body {
 .tab-content table {
     margin-bottom: 0;
 }
+
+.global-config-bulk {
+    margin-bottom: 10px;
+}

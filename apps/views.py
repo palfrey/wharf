@@ -8,6 +8,7 @@ from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
+from pprint import pprint
 
 import requests
 import time
@@ -141,9 +142,16 @@ def index(request):
     else:
         app_form = forms.CreateAppForm()
     config_form = forms.ConfigForm()
+    config_bulk_form = forms.ConfigFormBulk()
     config = global_config()
     return render(request, 'list_apps.html',
-                  {'apps': apps, 'app_form': app_form, 'config_form': config_form, 'config': sorted(config.items())})
+                  {
+                      'apps': apps,
+                      'app_form': app_form,
+                      'config_form': config_form,
+                      'config_bulk_form': config_bulk_form,
+                      'config': sorted(config.items())
+                  })
 
 
 @login_required(login_url='/accounts/login/')
@@ -173,10 +181,6 @@ def global_config():
     return generic_config("global", data)
 
 
-def app_config_set(app, key, value):
-    return run_cmd_with_log(app, "Setting %s" % key, "config:set %s %s=%s" % (app, key, value), "check_app_config_set")
-
-
 def check_config_set(request, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
@@ -192,20 +196,54 @@ def check_app_config_set(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
-def global_config_set(request):
-    form = forms.ConfigForm(request.POST)
-    if form.is_valid():
-        return run_cmd_with_log(None, "Setting %s" % form.cleaned_data['key'],
-                                "config:set --global %s=%s" % (form.cleaned_data['key'], form.cleaned_data['value']),
-                                "check_global_config_set")
-    else:
-        raise Exception
-
-
-def check_global_config_set(request, task_id):
+def check_global_config_set(request, app_name, task_id):
     check_config_set(request, task_id)
     clear_cache("config --global")
     return redirect(reverse('index'))
+
+
+def format_config_string(data, splitter=":"):
+    """
+    Formats the config string submitted by the user to allow inserting multiple values in a single Dokku config:set use.
+    The string is separated into pieces and then they respective key:value pairs are separated too.
+    Then a new string is created in the format needed by Dokku command.
+    Returns the formatted string like FOO=BAR LOREM=IPSUM (with trailing space on the end of string).
+    """
+    config_items = []
+    cmd_string = ""
+    original_items = data.split("\r\n")
+
+    for item in original_items:
+        splitted_input = item.split(splitter)
+        if len(splitted_input) < 2:
+            continue
+        config_items.append(splitted_input)
+        cmd_string += f"{splitted_input[0]}={splitted_input[1]} "
+
+    return cmd_string
+
+
+def global_config_bulk_set(request):
+    """
+    Inserts all the key:value items received in the submitted string.
+    The string is formatted first in format_config_string function and after that passed to Dokku config:set command
+    """
+    form = forms.ConfigFormBulk(request.POST)
+
+    if form.is_valid():
+        cmd_string = format_config_string(form.cleaned_data['userInput'])
+
+        if not cmd_string:
+            raise Exception("The input is invalid")
+
+        return run_cmd_with_log(
+            None,
+            "Setting global configuration",
+            "config:set --global %s" % cmd_string,
+            "check_global_config_set"
+        )
+    else:
+        raise Exception("The submitted form is invalid")
 
 
 def generic_list(app_name, data, name_field, fields, type_list=None):
@@ -379,11 +417,21 @@ def app_info(request, app_name):
         app.github_url = config["GITHUB_URL"]
         app.save()
     if request.method == 'POST':
-        form = forms.ConfigForm(request.POST)
+
+        form = forms.ConfigFormBulk(request.POST)
+
         if form.is_valid():
-            return app_config_set(app_name, form.cleaned_data['key'], form.cleaned_data['value'])
+            cmd_string = format_config_string(form.cleaned_data['userInput'])
+
+            if not cmd_string:
+                raise Exception("The input is invalid")
+
+            return run_cmd_with_log(app_name,
+                                    "Setting app configuration",
+                                    "config:set %s %s" % (app_name, cmd_string),
+                                    "check_app_config_set")
     else:
-        form = forms.ConfigForm()
+        form = forms.ConfigFormBulk()
 
     original_postgres_items = postgres_list(app_name)
     original_mariadb_items = mariadb_list(app_name)
@@ -409,7 +457,7 @@ def app_info(request, app_name):
         'logs': ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
         'domains': domains_list(app_name),
         'domain_form': forms.CreateDomainForm(),
-        'form': form,
+        'config_bulk_form': form,
         'app': app_name,
         'git_url': config.get('GITHUB_URL', None),
         'config': sorted(config.items()),
