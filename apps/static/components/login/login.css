@@ -23,6 +23,17 @@ body {
   background-color: #f5f5f5;
 }
 
+.login-container-form {
+  background-color: #ffffff;
+  width: 400px;
+  margin: 50px auto 10px auto;
+  padding: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px -3px #333;
+  text-align: center;
+}
+
 .form-signin {
   width: 100%;
   max-width: 580px;
