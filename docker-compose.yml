@@ -16,6 +16,8 @@ services:
       - DOKKU_SSH_PORT=${DOKKU_SSH_PORT:-22}
       - GITHUB_SECRET=${GITHUB_SECRET:-password}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-password}
+      - SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=${SOCIAL_AUTH_GOOGLE_OAUTH2_KEY:-lorem}
+      - SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=${SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET:-ipsum}
     depends_on:
       - postgres
       - redis
@@ -30,6 +32,8 @@ services:
       - CACHE_URL=redis://redis:6379/1
       - DOKKU_SSH_HOST=${DOKKU_SSH_HOST:-127.0.0.1}
       - DOKKU_SSH_PORT=${DOKKU_SSH_PORT:-22}
+      - SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=${SOCIAL_AUTH_GOOGLE_OAUTH2_KEY:-lorem}
+      - SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=${SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET:-ipsum}
     depends_on:
       - postgres
       - redis
