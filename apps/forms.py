@@ -25,6 +25,19 @@ class ConfigFormBulk(forms.Form):
     )
 
 
+class BuildpackAddForm(forms.Form):
+
+    buildpack_url = forms.CharField(
+        label='Buildpack URL',
+    )
+    buildpack_type = forms.CharField(
+        label='Buildpack type',
+    )
+    buildpack_index = forms.CharField(
+        label='Buildpack index',
+    )
+
+
 class CreateAppForm(forms.Form):
     name = forms.CharField(
         label='App name',

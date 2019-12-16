@@ -567,6 +567,37 @@ def remove_mariadb(request, app_name, link_name):
                             "check_mariadb_removal")
 
 
+def add_buildpack(request, app_name):
+    cmd = ""
+
+    if request.method == 'POST':
+
+        buildpack_form = forms.BuildpackAddForm(request.POST)
+
+        if buildpack_form.is_valid():
+            buildpack_url = buildpack_form.cleaned_data['buildpack_url']
+            buildpack_type = "set" if buildpack_form.cleaned_data['buildpack_type'] is "set" else "add"
+
+            cmd = "buildpacks:%s%s %s %s" % (
+                buildpack_type,
+                " --index %s" % buildpack_form.cleaned_data['buildpack_index'] if buildpack_form.cleaned_data['buildpack_index'] is not None else 1,
+                app_name,
+                buildpack_url
+            )
+
+            return run_cmd_with_log(
+                app_name,
+                "Setting buildpack to app" if buildpack_type is "set" else "Adding buildpack to list",
+                [
+                    cmd,
+                ],
+                '',
+            )
+        else:
+            raise Exception("Cannot add buildpack")
+
+
+
 def check_deploy(request, app_name, task_id):
     clear_cache("config %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
