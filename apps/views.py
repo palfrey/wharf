@@ -315,6 +315,26 @@ def db_list(app_name, data, type_list=None):
     return generic_list(app_name, data, "NAME", ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"], type_list)
 
 
+def buildpack_list(app_name):
+    data = run_cmd_with_cache("buildpacks:list %s" % app_name)
+
+    lines = data.split("\n")
+    items = list()
+    if lines[0].find("is not a dokku command") != -1:
+        raise Exception("There is an error with the Dokku installation !")
+    if lines[0].find("There are no") != -1:
+        return None
+    if lines[0].find('-----> %s buildpacks urls' % app_name) != -1:
+        raise Exception("Buildpacks string not found")
+
+    del lines[0]
+
+    for line in lines:
+        items.append(line.split()[0])
+
+    return items
+
+
 def postgres_list(app_name):
     data = run_cmd_with_cache("postgres:list")
     try:
@@ -433,6 +453,7 @@ def app_info(request, app_name):
     else:
         form = forms.ConfigFormBulk()
 
+    original_buildpack_items = buildpack_list(app_name)
     original_postgres_items = postgres_list(app_name)
     original_mariadb_items = mariadb_list(app_name)
     list_postgres = []
@@ -453,6 +474,7 @@ def app_info(request, app_name):
         'redis': redis_list(app_name),
         'mariadb': list_mariadb,
         'letsencrypt': letsencrypt(app_name),
+        'buildpacks': original_buildpack_items,
         'process': process_info(app_name),
         'logs': ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
         'domains': domains_list(app_name),

@@ -115,11 +115,79 @@
                 </div>
                 <br><br>
 
+                <h3>Buildpacks</h3>
+                <ul id="app-buildpacks-config" class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a href="" data-target="#app-buildpacks-list" data-toggle="tab" class="nav-link small text-uppercase active show">Buildpacks</a>
+                    </li>
+                </ul>
+                <div id="tabAppBuildpacksContent" class="tab-content">
+                    <div id="app-links-buildpacks-list" class="tab-pane fade active show">
+                        {% if buildpacks %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Buildpack</th>
+                                            <th scope="col">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in buildpacks %}
+                                            <tr>
+                                                <td>
+                                                    {% if "https" or "http" in item %}
+                                                        <a href="{{ item }}" rel="nofollow noopener noreferrer" target="_blank">{{ item }}</a>
+                                                    {% else %}
+                                                        <span class="buildpack-name-item">{{ item }}</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <form action="{{ url('remove_domain', app_name=app) }}" method="POST">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="buildpack-url">Buildpack URL:</label>
+                                    <input type="url" class="form-control" id="buildpack-url" name="buildpack-url" required="required">
+                                </div>
+                                <fieldset class="form-group">
+                                    <legend class="col-form-legend small-legend">Options:</legend>
+                                    <div class="form-check col-sm-10">
+                                        <label class="form-check-label">
+                                            <input class="form-check-input" type="radio" name="buildpack-type" id="buildpack-type-add" value="add" checked="checked">
+                                            Add this buildpack to the list
+                                        </label>
+                                    </div>
+                                    <div class="form-check col-sm-10">
+                                        <label class="form-check-label">
+                                            <input class="form-check-input" type="radio" name="buildpack-type" id="buildpack-type-set" value="set">
+                                            Set this buildpack
+                                        </label>
+                                    </div>
+                                </fieldset>
+                                <div class="form-group">
+                                    <label for="buildpack-index">Index number:</label>
+                                    <input class="form-control" type="number" id="buildpack-index" name="buildpack-index" step="1" min="1" required="required">
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">Add buildpack</button>
+                                </div>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <br><br>
+
                 <h3>App links</h3>
                 <ul id="app-links-config" class="nav nav-tabs">
-                    <li class="nav-item"><a href="" data-target="#app-links-postgres-list" data-toggle="tab" class="nav-link small text-uppercase active show">Postgres links</a></li>
-                    <li class="nav-item"><a href="" data-target="#app-links-redis-list" data-toggle="tab" class="nav-link small text-uppercase">Redis links</a></li>
-                    <li class="nav-item"><a href="" data-target="#app-links-mariadb-list" data-toggle="tab" class="nav-link small text-uppercase">MariaDB links</a></li>
+                    <li class="nav-item"><a href="" data-target="#app-links-postgres-list" data-toggle="tab" class="nav-link small text-uppercase active show">Postgres</a></li>
+                    <li class="nav-item"><a href="" data-target="#app-links-redis-list" data-toggle="tab" class="nav-link small text-uppercase">Redis</a></li>
+                    <li class="nav-item"><a href="" data-target="#app-links-mariadb-list" data-toggle="tab" class="nav-link small text-uppercase">MariaDB</a></li>
                 </ul>
                 <div id="tabAppLinksContent" class="tab-content">
                     <div id="app-links-postgres-list" class="tab-pane fade active show">
