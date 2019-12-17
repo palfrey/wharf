@@ -109,6 +109,403 @@ def wait_for_command(request, app_name, task_id, after):
     })
 
 
+# Cloned into utils.py
+def generic_list(app_name, data, name_field, fields, type_list=None):
+    lines = data.split("\n")
+    if lines[0].find("is not a dokku command") != -1:
+        raise Exception("Need plugin!")
+    if lines[0].find("There are no") != -1:
+        return None
+    fields = dict([[x, {}] for x in fields])
+    last_field = None
+    for f in fields.keys():
+        index = lines[0].find(f)
+        if index == -1:
+            raise Exception("Can't find '%s' in '%s'" % (f, lines[0].strip()))
+        if f == name_field:
+            index = 0
+        fields[f]["start"] = index
+        if last_field is not None:
+            fields[last_field]["end"] = index
+        last_field = f
+    fields[last_field]["end"] = None
+    results = []
+    for line in lines[1:]:
+        info = {}
+        for f in fields.keys():
+            if fields[f]["end"] is None:
+                info[f] = line[fields[f]["start"]:].strip()
+            else:
+                info[f] = line[fields[f]["start"]:fields[f]["end"]].strip()
+        results.append(info)
+
+    items_names_list = []
+    found_items = []
+
+    for x in results:
+        items_names_list.append(x[name_field])
+
+    results = dict([[x[name_field], x] for x in results])
+
+    if app_name in results:
+
+        if type_list is None:
+            return results[app_name]
+
+        found_items.append(results[app_name])
+        return found_items
+
+    else:
+        if type_list == "postgres":
+            for postgres_name_item in items_names_list:
+                if results[postgres_name_item]['LINKS'] == app_name:
+                    found_items.append(results[postgres_name_item])
+        elif type_list == "redis":
+            for redis_name_item in items_names_list:
+                if results[redis_name_item]['LINKS'] == app_name:
+                    found_items.append(results[redis_name_item])
+        elif type_list == "mariadb":
+            for mariadb_name_item in items_names_list:
+                if results[mariadb_name_item]['LINKS'] == app_name:
+                    found_items.append(results[mariadb_name_item])
+
+        if not found_items:
+            return None
+        else:
+            return found_items
+
+
+# Cloned into utils.py
+def db_list(app_name, data, type_list=None):
+    return generic_list(app_name, data, "NAME", ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"], type_list)
+
+
+# Cloned into buildpacks.py
+def buildpack_list(app_name):
+    """
+    Get a list of the configured buildpacks for an app.
+    """
+    data = run_cmd("buildpacks:list %s" % app_name)
+
+    lines = data.split("\n")
+    items = list()
+    if lines[0].find("is not a dokku command") != -1:
+        raise Exception("There is an error with the Dokku installation !")
+    if lines[0].find("There are no") != -1:
+        return None
+    if lines[0].find('-----> %s buildpacks urls' % app_name) != -1:
+        raise Exception("Buildpacks string not found")
+
+    del lines[0]
+
+    for line in lines:
+        items.append(line.split()[0])
+
+    return items
+
+
+# Cloned into postgres.py
+def postgres_list(app_name):
+    data = run_cmd_with_cache("postgres:list")
+    try:
+        return db_list(app_name, data, 'postgres')
+    except:
+        clear_cache("postgres:list")
+        raise
+
+
+# Cloned into redis.py
+def redis_list(app_name):
+    data = run_cmd_with_cache("redis:list")
+    try:
+        return db_list(app_name, data, 'redis')
+    except:
+        clear_cache("redis:list")
+        raise
+
+
+# Cloned into mariadb.py
+def mariadb_list(app_name):
+    data = run_cmd_with_cache("mariadb:list")
+    try:
+        return db_list(app_name, data, 'mariadb')
+    except:
+        clear_cache("mariadb:list")
+        raise
+
+
+# Cloned into domains.py
+def letsencrypt(app_name):
+    data = run_cmd_with_cache("letsencrypt:ls")
+    return generic_list(app_name, data, "App name",
+                        ["App name", "Certificate Expiry", "Time before expiry", "Time before renewal"])
+
+
+# Cloned into domains.py
+def domains_list(app_name):
+    data = run_cmd_with_cache("domains:report %s" % app_name)
+    vhosts = re.search("Domains app vhosts: (.*)", data)
+    return [x.strip() for x in vhosts.groups()[0].split(" ") if x != ""]
+
+
+# Cloned into domains.py
+@login_required(login_url='/accounts/login/')
+def add_domain(request, app_name):
+    form = forms.CreateDomainForm(request.POST)
+    if form.is_valid():
+        commands = ["domains:add %s %s" % (app_name, form.cleaned_data['name'])]
+        if letsencrypt(app_name) != None:
+            commands.append("letsencrypt %s" % app_name)
+        return run_cmd_with_log(app_name, "Add domain %s" % form.cleaned_data['name'], commands, "check_domain")
+    else:
+        raise Exception
+
+
+# Cloned into domains.py
+def check_domain(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Reloading nginx") != -1:
+        clear_cache("domains:report %s" % app_name)
+        messages.success(request, "Added domain name to %s" % app_name)
+        return redirect(reverse('app_info', args=[app_name]))
+    else:
+        raise Exception(data)
+
+
+# Cloned into domains.py
+@login_required(login_url='/accounts/login/')
+def remove_domain(request, app_name):
+    name = request.POST['name']
+    commands = ["domains:remove %s %s" % (app_name, name)]
+    if letsencrypt(app_name) != None:
+        commands.append("letsencrypt %s" % app_name)
+    return run_cmd_with_log(app_name, "Remove domain %s" % name, commands, "check_domain")
+
+
+# Cloned into postgres.py
+def create_postgres(request, app_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+    return run_cmd_with_log(app_name, "Add Postgres",
+                            [
+                                "postgres:create %s" % sanitized_link_name,
+                                "postgres:link %s %s" % (sanitized_link_name, app_name)
+                            ],
+                            "check_postgres")
+
+
+# Cloned into postgres.py
+@login_required(login_url='/accounts/login/')
+def remove_postgres(request, app_name, link_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+    return run_cmd_with_log(app_name, "Remove Postgres",
+                            [
+                                "postgres:unlink %s %s" % (sanitized_link_name, app_name),
+                                "postgres:destroy %s -f" % sanitized_link_name
+                            ],
+                            "check_postgres_removal")
+
+
+# Cloned into redis.py
+@login_required(login_url='/accounts/login/')
+def create_redis(request, app_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+    return run_cmd_with_log(app_name, "Add Redis",
+                            [
+                                "redis:create %s" % sanitized_link_name,
+                                "redis:link %s %s" % (sanitized_link_name, app_name)
+                            ],
+                            "check_redis")
+
+
+# Cloned into redis.py
+@login_required(login_url='/accounts/login/')
+def remove_redis(request, app_name, link_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+    return run_cmd_with_log(app_name, "Remove Redis",
+                            [
+                                "redis:unlink %s %s" % (sanitized_link_name, app_name),
+                                "redis:destroy %s -f" % sanitized_link_name
+                            ],
+                            "check_redis_removal")
+
+
+# Cloned into mariadb.py
+@login_required(login_url='/accounts/login/')
+def create_mariadb(request, app_name):
+    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+    return run_cmd_with_log(app_name, "Add MariaDB",
+                            [
+                                "mariadb:create %s" % sanitized_link_name,
+                                "mariadb:link %s %s" % (sanitized_link_name, app_name)
+                            ],
+                            "check_mariadb")
+
+
+# Cloned into mariadb.py
+@login_required(login_url='/accounts/login/')
+def remove_mariadb(request, app_name, link_name):
+    return run_cmd_with_log(app_name, "Remove MariaDB",
+                            [
+                                "mariadb:export %s" % link_name,
+                                "mariadb:unlink %s %s" % (link_name, app_name),
+                                "mariadb:destroy %s -f" % link_name
+                            ],
+                            "check_mariadb_removal")
+
+
+# Cloned into buildpacks.py
+@login_required(login_url='/accounts/login/')
+def remove_buildpack(request, app_name):
+
+    if request.method == 'POST':
+
+        buildpack_form = forms.BuildpackRemoveForm(request.POST)
+
+        if buildpack_form.is_valid():
+
+            buildpack_url = buildpack_form.cleaned_data['buildpack_url']
+
+            cmd = "buildpacks:remove %s %s" % (app_name, buildpack_url)
+
+            return run_cmd_with_log(
+                app_name,
+                "Removing %s buildpack from %s" % (app_name, buildpack_url),
+                [
+                    cmd
+                ],
+                "check_buildpack_removal"
+            )
+        else:
+            raise Exception("Cannot remove buildpack, the form is invalid.")
+
+
+# Cloned into buildpacks.py
+def add_buildpack(request, app_name):
+
+    if request.method == 'POST':
+
+        buildpack_form = forms.BuildpackAddForm(request.POST)
+
+        if buildpack_form.is_valid():
+            buildpack_url = buildpack_form.cleaned_data['buildpack_url']
+            buildpack_type = "set" if buildpack_form.cleaned_data['buildpack_type'] is "set" else "add"
+
+            cmd = "buildpacks:%s%s %s %s" % (
+                buildpack_type,
+                " --index %s" % buildpack_form.cleaned_data['buildpack_index'] if buildpack_form.cleaned_data['buildpack_index'] is not None else 1,
+                app_name,
+                buildpack_url
+            )
+
+            return run_cmd_with_log(
+                app_name,
+                "Setting buildpack to app" if buildpack_type is "set" else "Adding buildpack to list",
+                [
+                    cmd,
+                ],
+                'check_buildpack',
+            )
+        else:
+            raise Exception("Cannot add buildpack, the form is invalid.")
+
+
+# Cloned into buildpacks.py
+def check_buildpack(request, app_name, task_id):
+    clear_cache("builpacks:list %s" % app_name)
+    messages.success(request, "Buildpack added to %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+# Cloned into postgres.py
+def check_postgres(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Postgres container created") == -1:
+        raise Exception(data)
+    messages.success(request, "Postgres added to %s" % app_name)
+    clear_cache("postgres:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+# Cloned into postgres.py
+def check_postgres_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Postgres container deleted") == -1:
+        raise Exception(data)
+    messages.success(request, "Postgres link removed from %s" % app_name)
+    clear_cache("postgres:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+# Cloned into redis.py
+def check_redis(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+
+    sanitized_app_name = re.sub('[^A-Za-z0-9]+', '', app_name)
+
+    if data.find("Redis container created") == -1 and \
+            data.find("Redis service %s already exists" % sanitized_app_name) == -1:
+        raise Exception(data)
+    messages.success(request, "Redis added to %s" % app_name)
+    clear_cache("redis:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+# Cloned into redis.py
+def check_redis_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Redis container deleted") == -1:
+        raise Exception(data)
+    messages.success(request, "Redis link removed from %s" % app_name)
+    clear_cache("redis:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+# Cloned into mariadb.py
+def check_mariadb(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("MariaDB container created") == -1:
+        raise Exception(data)
+    messages.success(request, "MariaDB added to %s" % app_name)
+    clear_cache("mariadb:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+# Cloned into mariadb.py
+def check_mariadb_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("MariaDB container deleted") == -1:
+        raise Exception(data)
+    messages.success(request, "MariaDB link removed from %s" % app_name)
+    clear_cache("mariadb:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+# Cloned into buildpacks.py
+def check_buildpack_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+
+    if data.find("-----> Removing") == -1:
+        raise Exception(data)
+
+    messages.success(request, "Buildpack removed from %s" % app_name)
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
 @login_required(login_url='/accounts/login/')
 def show_log(request, task_id):
     res = AsyncResult(task_id)
@@ -253,137 +650,6 @@ def global_config_bulk_set(request):
         raise Exception("The submitted form is invalid")
 
 
-# Cloned into utils.py
-def generic_list(app_name, data, name_field, fields, type_list=None):
-    lines = data.split("\n")
-    if lines[0].find("is not a dokku command") != -1:
-        raise Exception("Need plugin!")
-    if lines[0].find("There are no") != -1:
-        return None
-    fields = dict([[x, {}] for x in fields])
-    last_field = None
-    for f in fields.keys():
-        index = lines[0].find(f)
-        if index == -1:
-            raise Exception("Can't find '%s' in '%s'" % (f, lines[0].strip()))
-        if f == name_field:
-            index = 0
-        fields[f]["start"] = index
-        if last_field is not None:
-            fields[last_field]["end"] = index
-        last_field = f
-    fields[last_field]["end"] = None
-    results = []
-    for line in lines[1:]:
-        info = {}
-        for f in fields.keys():
-            if fields[f]["end"] is None:
-                info[f] = line[fields[f]["start"]:].strip()
-            else:
-                info[f] = line[fields[f]["start"]:fields[f]["end"]].strip()
-        results.append(info)
-
-    items_names_list = []
-    found_items = []
-
-    for x in results:
-        items_names_list.append(x[name_field])
-
-    results = dict([[x[name_field], x] for x in results])
-
-    if app_name in results:
-
-        if type_list is None:
-            return results[app_name]
-
-        found_items.append(results[app_name])
-        return found_items
-
-    else:
-        if type_list == "postgres":
-            for postgres_name_item in items_names_list:
-                if results[postgres_name_item]['LINKS'] == app_name:
-                    found_items.append(results[postgres_name_item])
-        elif type_list == "redis":
-            for redis_name_item in items_names_list:
-                if results[redis_name_item]['LINKS'] == app_name:
-                    found_items.append(results[redis_name_item])
-        elif type_list == "mariadb":
-            for mariadb_name_item in items_names_list:
-                if results[mariadb_name_item]['LINKS'] == app_name:
-                    found_items.append(results[mariadb_name_item])
-
-        if not found_items:
-            return None
-        else:
-            return found_items
-
-
-# Cloned into utils.py
-def db_list(app_name, data, type_list=None):
-    return generic_list(app_name, data, "NAME", ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"], type_list)
-
-
-# Cloned into buildpacks.py
-def buildpack_list(app_name):
-    """
-    Get a list of the configured buildpacks for an app.
-    """
-    data = run_cmd("buildpacks:list %s" % app_name)
-
-    lines = data.split("\n")
-    items = list()
-    if lines[0].find("is not a dokku command") != -1:
-        raise Exception("There is an error with the Dokku installation !")
-    if lines[0].find("There are no") != -1:
-        return None
-    if lines[0].find('-----> %s buildpacks urls' % app_name) != -1:
-        raise Exception("Buildpacks string not found")
-
-    del lines[0]
-
-    for line in lines:
-        items.append(line.split()[0])
-
-    return items
-
-
-# Cloned into postgres.py
-def postgres_list(app_name):
-    data = run_cmd_with_cache("postgres:list")
-    try:
-        return db_list(app_name, data, 'postgres')
-    except:
-        clear_cache("postgres:list")
-        raise
-
-
-# Cloned into redis.py
-def redis_list(app_name):
-    data = run_cmd_with_cache("redis:list")
-    try:
-        return db_list(app_name, data, 'redis')
-    except:
-        clear_cache("redis:list")
-        raise
-
-
-# Cloned into mariadb.py
-def mariadb_list(app_name):
-    data = run_cmd_with_cache("mariadb:list")
-    try:
-        return db_list(app_name, data, 'mariadb')
-    except:
-        clear_cache("mariadb:list")
-        raise
-
-
-def letsencrypt(app_name):
-    data = run_cmd_with_cache("letsencrypt:ls")
-    return generic_list(app_name, data, "App name",
-                        ["App name", "Certificate Expiry", "Time before expiry", "Time before renewal"])
-
-
 def process_info(app_name):
     data = run_cmd_with_cache("ps:report %s" % app_name)
     lines = data.split("\n")
@@ -405,44 +671,6 @@ def process_info(app_name):
             results[name.strip()] = rest.strip()
     results["processes"] = processes
     return results
-
-
-def domains_list(app_name):
-    data = run_cmd_with_cache("domains:report %s" % app_name)
-    vhosts = re.search("Domains app vhosts: (.*)", data)
-    return [x.strip() for x in vhosts.groups()[0].split(" ") if x != ""]
-
-
-@login_required(login_url='/accounts/login/')
-def add_domain(request, app_name):
-    form = forms.CreateDomainForm(request.POST)
-    if form.is_valid():
-        commands = ["domains:add %s %s" % (app_name, form.cleaned_data['name'])]
-        if letsencrypt(app_name) != None:
-            commands.append("letsencrypt %s" % app_name)
-        return run_cmd_with_log(app_name, "Add domain %s" % form.cleaned_data['name'], commands, "check_domain")
-    else:
-        raise Exception
-
-
-def check_domain(request, app_name, task_id):
-    res = AsyncResult(task_id)
-    data = get_log(res)
-    if data.find("Reloading nginx") != -1:
-        clear_cache("domains:report %s" % app_name)
-        messages.success(request, "Added domain name to %s" % app_name)
-        return redirect(reverse('app_info', args=[app_name]))
-    else:
-        raise Exception(data)
-
-
-@login_required(login_url='/accounts/login/')
-def remove_domain(request, app_name):
-    name = request.POST['name']
-    commands = ["domains:remove %s %s" % (app_name, name)]
-    if letsencrypt(app_name) != None:
-        commands.append("letsencrypt %s" % app_name)
-    return run_cmd_with_log(app_name, "Remove domain %s" % name, commands, "check_domain")
 
 
 @login_required(login_url='/accounts/login/')
@@ -518,140 +746,6 @@ def deploy(request, app_name):
         raise Exception(request.POST['action'])
 
 
-# Cloned into postgres.py
-def create_postgres(request, app_name):
-    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
-    return run_cmd_with_log(app_name, "Add Postgres",
-                            [
-                                "postgres:create %s" % sanitized_link_name,
-                                "postgres:link %s %s" % (sanitized_link_name, app_name)
-                            ],
-                            "check_postgres")
-
-
-# Cloned into postgres.py
-@login_required(login_url='/accounts/login/')
-def remove_postgres(request, app_name, link_name):
-    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
-    return run_cmd_with_log(app_name, "Remove Postgres",
-                            [
-                                "postgres:unlink %s %s" % (sanitized_link_name, app_name),
-                                "postgres:destroy %s -f" % sanitized_link_name
-                            ],
-                            "check_postgres_removal")
-
-
-# Cloned into redis.py
-@login_required(login_url='/accounts/login/')
-def create_redis(request, app_name):
-    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
-    return run_cmd_with_log(app_name, "Add Redis",
-                            [
-                                "redis:create %s" % sanitized_link_name,
-                                "redis:link %s %s" % (sanitized_link_name, app_name)
-                            ],
-                            "check_redis")
-
-
-# Cloned into redis.py
-@login_required(login_url='/accounts/login/')
-def remove_redis(request, app_name, link_name):
-    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
-    return run_cmd_with_log(app_name, "Remove Redis",
-                            [
-                                "redis:unlink %s %s" % (sanitized_link_name, app_name),
-                                "redis:destroy %s -f" % sanitized_link_name
-                            ],
-                            "check_redis_removal")
-
-
-# Cloned into mariadb.py
-@login_required(login_url='/accounts/login/')
-def create_mariadb(request, app_name):
-    sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
-    return run_cmd_with_log(app_name, "Add MariaDB",
-                            [
-                                "mariadb:create %s" % sanitized_link_name,
-                                "mariadb:link %s %s" % (sanitized_link_name, app_name)
-                            ],
-                            "check_mariadb")
-
-
-# Cloned into mariadb.py
-@login_required(login_url='/accounts/login/')
-def remove_mariadb(request, app_name, link_name):
-    return run_cmd_with_log(app_name, "Remove MariaDB",
-                            [
-                                "mariadb:export %s" % link_name,
-                                "mariadb:unlink %s %s" % (link_name, app_name),
-                                "mariadb:destroy %s -f" % link_name
-                            ],
-                            "check_mariadb_removal")
-
-
-# Cloned into buildpacks.py
-@login_required(login_url='/accounts/login/')
-def remove_buildpack(request, app_name):
-
-    if request.method == 'POST':
-
-        buildpack_form = forms.BuildpackRemoveForm(request.POST)
-
-        if buildpack_form.is_valid():
-
-            buildpack_url = buildpack_form.cleaned_data['buildpack_url']
-
-            cmd = "buildpacks:remove %s %s" % (app_name, buildpack_url)
-
-            return run_cmd_with_log(
-                app_name,
-                "Removing %s buildpack from %s" % (app_name, buildpack_url),
-                [
-                    cmd
-                ],
-                "check_buildpack_removal"
-            )
-        else:
-            raise Exception("Cannot remove buildpack, the form is invalid.")
-
-
-# Cloned into buildpacks.py
-def add_buildpack(request, app_name):
-
-    if request.method == 'POST':
-
-        buildpack_form = forms.BuildpackAddForm(request.POST)
-
-        if buildpack_form.is_valid():
-            buildpack_url = buildpack_form.cleaned_data['buildpack_url']
-            buildpack_type = "set" if buildpack_form.cleaned_data['buildpack_type'] is "set" else "add"
-
-            cmd = "buildpacks:%s%s %s %s" % (
-                buildpack_type,
-                " --index %s" % buildpack_form.cleaned_data['buildpack_index'] if buildpack_form.cleaned_data['buildpack_index'] is not None else 1,
-                app_name,
-                buildpack_url
-            )
-
-            return run_cmd_with_log(
-                app_name,
-                "Setting buildpack to app" if buildpack_type is "set" else "Adding buildpack to list",
-                [
-                    cmd,
-                ],
-                'check_buildpack',
-            )
-        else:
-            raise Exception("Cannot add buildpack, the form is invalid.")
-
-
-# Cloned into buildpacks.py
-def check_buildpack(request, app_name, task_id):
-    clear_cache("builpacks:list %s" % app_name)
-    messages.success(request, "Buildpack added to %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
-
-
 def check_deploy(request, app_name, task_id):
     clear_cache("config %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
@@ -664,95 +758,6 @@ def check_rebuild(request, app_name, task_id):
     if data.find("Application deployed:") == -1:
         raise Exception(data)
     messages.success(request, "%s rebuilt" % app_name)
-    clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
-
-
-# Cloned into postgres.py
-def check_postgres(request, app_name, task_id):
-    res = AsyncResult(task_id)
-    data = get_log(res)
-    if data.find("Postgres container created") == -1:
-        raise Exception(data)
-    messages.success(request, "Postgres added to %s" % app_name)
-    clear_cache("postgres:list")
-    clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
-
-
-# Cloned into postgres.py
-def check_postgres_removal(request, app_name, task_id):
-    res = AsyncResult(task_id)
-    data = get_log(res)
-    if data.find("Postgres container deleted") == -1:
-        raise Exception(data)
-    messages.success(request, "Postgres link removed from %s" % app_name)
-    clear_cache("postgres:list")
-    clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
-
-
-# Cloned into redis.py
-def check_redis(request, app_name, task_id):
-    res = AsyncResult(task_id)
-    data = get_log(res)
-
-    sanitized_app_name = re.sub('[^A-Za-z0-9]+', '', app_name)
-
-    if data.find("Redis container created") == -1 and \
-            data.find("Redis service %s already exists" % sanitized_app_name) == -1:
-        raise Exception(data)
-    messages.success(request, "Redis added to %s" % app_name)
-    clear_cache("redis:list")
-    clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
-
-
-# Cloned into redis.py
-def check_redis_removal(request, app_name, task_id):
-    res = AsyncResult(task_id)
-    data = get_log(res)
-    if data.find("Redis container deleted") == -1:
-        raise Exception(data)
-    messages.success(request, "Redis link removed from %s" % app_name)
-    clear_cache("redis:list")
-    clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
-
-
-# Cloned into mariadb.py
-def check_mariadb(request, app_name, task_id):
-    res = AsyncResult(task_id)
-    data = get_log(res)
-    if data.find("MariaDB container created") == -1:
-        raise Exception(data)
-    messages.success(request, "MariaDB added to %s" % app_name)
-    clear_cache("mariadb:list")
-    clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
-
-
-# Cloned into mariadb.py
-def check_mariadb_removal(request, app_name, task_id):
-    res = AsyncResult(task_id)
-    data = get_log(res)
-    if data.find("MariaDB container deleted") == -1:
-        raise Exception(data)
-    messages.success(request, "MariaDB link removed from %s" % app_name)
-    clear_cache("mariadb:list")
-    clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
-
-
-# Cloned into buildpacks.py
-def check_buildpack_removal(request, app_name, task_id):
-    res = AsyncResult(task_id)
-    data = get_log(res)
-
-    if data.find("-----> Removing") == -1:
-        raise Exception(data)
-
-    messages.success(request, "Buildpack removed from %s" % app_name)
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
 
