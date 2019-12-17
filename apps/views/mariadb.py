@@ -9,7 +9,11 @@ import re
 def mariadb_list(app_name):
     data = commands.run_cmd_with_cache("mariadb:list")
     try:
-        return utils.db_list(app_name, data, 'mariadb')
+        return utils.db_list(
+            app_name,
+            data,
+            "mariadb"
+        )
     except (Exception, RuntimeError):
         cache.clear_cache("mariadb:list")
         raise

@@ -357,6 +357,7 @@ def postgres_list(app_name):
         raise
 
 
+# Cloned into redis.py
 def redis_list(app_name):
     data = run_cmd_with_cache("redis:list")
     try:
@@ -539,6 +540,7 @@ def remove_postgres(request, app_name, link_name):
                             "check_postgres_removal")
 
 
+# Cloned into redis.py
 @login_required(login_url='/accounts/login/')
 def create_redis(request, app_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
@@ -550,6 +552,7 @@ def create_redis(request, app_name):
                             "check_redis")
 
 
+# Cloned into redis.py
 @login_required(login_url='/accounts/login/')
 def remove_redis(request, app_name, link_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
@@ -685,6 +688,7 @@ def check_postgres_removal(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
+# Cloned into redis.py
 def check_redis(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
@@ -700,6 +704,7 @@ def check_redis(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
+# Cloned into redis.py
 def check_redis_removal(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
