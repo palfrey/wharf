@@ -324,6 +324,7 @@ def db_list(app_name, data, type_list=None):
     return generic_list(app_name, data, "NAME", ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"], type_list)
 
 
+# Cloned into buildpacks.py
 def buildpack_list(app_name):
     """
     Get a list of the configured buildpacks for an app.
@@ -588,6 +589,7 @@ def remove_mariadb(request, app_name, link_name):
                             "check_mariadb_removal")
 
 
+# Cloned into buildpacks.py
 @login_required(login_url='/accounts/login/')
 def remove_buildpack(request, app_name):
 
@@ -613,6 +615,7 @@ def remove_buildpack(request, app_name):
             raise Exception("Cannot remove buildpack, the form is invalid.")
 
 
+# Cloned into buildpacks.py
 def add_buildpack(request, app_name):
 
     if request.method == 'POST':
@@ -642,6 +645,7 @@ def add_buildpack(request, app_name):
             raise Exception("Cannot add buildpack, the form is invalid.")
 
 
+# Cloned into buildpacks.py
 def check_buildpack(request, app_name, task_id):
     clear_cache("builpacks:list %s" % app_name)
     messages.success(request, "Buildpack added to %s" % app_name)
@@ -740,6 +744,7 @@ def check_mariadb_removal(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
+# Cloned into buildpacks.py
 def check_buildpack_removal(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
