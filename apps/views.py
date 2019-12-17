@@ -1,41 +1,44 @@
 from django.shortcuts import render, redirect, reverse
 from django.conf import settings
 from django.contrib import messages
-import wharf.tasks as tasks
 from celery.result import AsyncResult
 from celery.states import state, PENDING, SUCCESS, FAILURE, STARTED
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
-from pprint import pprint
+from datetime import datetime
+from redis import StrictRedis
 
-import requests
-import time
 from . import forms
 from . import models
+
+import wharf.tasks as tasks
 import re
-from datetime import datetime
 import json
 import hmac
 import hashlib
 import timeout_decorator
 
-from redis import StrictRedis
-
+# Cloned into utils.py
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
+
+# Cloned into commands.py
 ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
 
+# Cloned into commands.py
 def run_cmd(cmd):
     res = tasks.run_ssh_command.delay(cmd)
     return res.get().strip()
 
 
+# Cloned into commands.py
 def cmd_key(cmd):
     return "cmd:%s" % cmd
 
 
+# Cloned into commands.py
 def run_cmd_with_cache(cmd):
     key = cmd_key(cmd)
     existing = cache.get(key)
@@ -46,11 +49,13 @@ def run_cmd_with_cache(cmd):
     return res
 
 
+# Cloned into cache.py
 def clear_cache(cmd):
     key = cmd_key(cmd)
     cache.delete(key)
 
 
+# Cloned into commands.py
 def run_cmd_with_log(app_name, description, cmd, after):
     res = tasks.run_ssh_command.delay(cmd)
     if app_name == None:  # global
@@ -66,6 +71,7 @@ def run_cmd_with_log(app_name, description, cmd, after):
     return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': after}))
 
 
+# Cloned into utils.py
 def get_log(res):
     key = tasks.task_key(res.id)
     if res.state > state(PENDING):
@@ -77,6 +83,7 @@ def get_log(res):
         return ""
 
 
+# Cloned into commands.py
 @login_required(login_url='/accounts/login/')
 def wait_for_command(request, app_name, task_id, after):
     res = AsyncResult(task_id)
@@ -246,6 +253,7 @@ def global_config_bulk_set(request):
         raise Exception("The submitted form is invalid")
 
 
+# Cloned into utils.py
 def generic_list(app_name, data, name_field, fields, type_list=None):
     lines = data.split("\n")
     if lines[0].find("is not a dokku command") != -1:
@@ -311,6 +319,7 @@ def generic_list(app_name, data, name_field, fields, type_list=None):
             return found_items
 
 
+# Cloned into utils.py
 def db_list(app_name, data, type_list=None):
     return generic_list(app_name, data, "NAME", ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"], type_list)
 
@@ -338,6 +347,7 @@ def buildpack_list(app_name):
     return items
 
 
+# Cloned into postgres.py
 def postgres_list(app_name):
     data = run_cmd_with_cache("postgres:list")
     try:
@@ -505,6 +515,7 @@ def deploy(request, app_name):
         raise Exception(request.POST['action'])
 
 
+# Cloned into postgres.py
 def create_postgres(request, app_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
     return run_cmd_with_log(app_name, "Add Postgres",
@@ -646,6 +657,7 @@ def check_rebuild(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
+# Cloned into postgres.py
 def check_postgres(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
@@ -657,6 +669,7 @@ def check_postgres(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
+# Cloned into postgres.py
 def check_postgres_removal(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
