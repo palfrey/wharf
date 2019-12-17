@@ -38,6 +38,13 @@ class BuildpackAddForm(forms.Form):
     )
 
 
+class BuildpackRemoveForm(forms.Form):
+
+    buildpack_url = forms.CharField(
+        label='Buildpack URL'
+    )
+
+
 class CreateAppForm(forms.Form):
     name = forms.CharField(
         label='App name',

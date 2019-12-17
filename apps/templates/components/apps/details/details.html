@@ -145,7 +145,13 @@
                                                     <span class="buildpack-name-item">{{ item }}</span>
                                                 {% endif %}
                                             </td>
-                                            <td></td>
+                                            <td>
+                                                <form class="d-inline" action="{{ url('remove_buildpack', app_name=app) }}" method="POST">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" value="{{ item }}" name="buildpack_url" />
+                                                    <button type="submit" class="btn btn-outline-danger">Delete '{{ item }}' buildpack</button>
+                                                </form>
+                                            </td>
                                         </tr>
                                     {% endfor %}
                                 {% else %}
