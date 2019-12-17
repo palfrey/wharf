@@ -315,6 +315,29 @@ def db_list(app_name, data, type_list=None):
     return generic_list(app_name, data, "NAME", ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"], type_list)
 
 
+def buildpack_list(app_name):
+    """
+    Get a list of the configured buildpacks for an app.
+    """
+    data = run_cmd("buildpacks:list %s" % app_name)
+
+    lines = data.split("\n")
+    items = list()
+    if lines[0].find("is not a dokku command") != -1:
+        raise Exception("There is an error with the Dokku installation !")
+    if lines[0].find("There are no") != -1:
+        return None
+    if lines[0].find('-----> %s buildpacks urls' % app_name) != -1:
+        raise Exception("Buildpacks string not found")
+
+    del lines[0]
+
+    for line in lines:
+        items.append(line.split()[0])
+
+    return items
+
+
 def postgres_list(app_name):
     data = run_cmd_with_cache("postgres:list")
     try:
@@ -433,6 +456,7 @@ def app_info(request, app_name):
     else:
         form = forms.ConfigFormBulk()
 
+    original_buildpack_items = buildpack_list(app_name)
     original_postgres_items = postgres_list(app_name)
     original_mariadb_items = mariadb_list(app_name)
     list_postgres = []
@@ -453,6 +477,7 @@ def app_info(request, app_name):
         'redis': redis_list(app_name),
         'mariadb': list_mariadb,
         'letsencrypt': letsencrypt(app_name),
+        'buildpacks': original_buildpack_items,
         'process': process_info(app_name),
         'logs': ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
         'domains': domains_list(app_name),
@@ -545,6 +570,66 @@ def remove_mariadb(request, app_name, link_name):
                             "check_mariadb_removal")
 
 
+@login_required(login_url='/accounts/login/')
+def remove_buildpack(request, app_name):
+
+    if request.method == 'POST':
+
+        buildpack_form = forms.BuildpackRemoveForm(request.POST)
+
+        if buildpack_form.is_valid():
+
+            buildpack_url = buildpack_form.cleaned_data['buildpack_url']
+
+            cmd = "buildpacks:remove %s %s" % (app_name, buildpack_url)
+
+            return run_cmd_with_log(
+                app_name,
+                "Removing %s buildpack from %s" % (app_name, buildpack_url),
+                [
+                    cmd
+                ],
+                "check_buildpack_removal"
+            )
+        else:
+            raise Exception("Cannot remove buildpack, the form is invalid.")
+
+
+def add_buildpack(request, app_name):
+
+    if request.method == 'POST':
+
+        buildpack_form = forms.BuildpackAddForm(request.POST)
+
+        if buildpack_form.is_valid():
+            buildpack_url = buildpack_form.cleaned_data['buildpack_url']
+            buildpack_type = "set" if buildpack_form.cleaned_data['buildpack_type'] is "set" else "add"
+
+            cmd = "buildpacks:%s%s %s %s" % (
+                buildpack_type,
+                " --index %s" % buildpack_form.cleaned_data['buildpack_index'] if buildpack_form.cleaned_data['buildpack_index'] is not None else 1,
+                app_name,
+                buildpack_url
+            )
+
+            return run_cmd_with_log(
+                app_name,
+                "Setting buildpack to app" if buildpack_type is "set" else "Adding buildpack to list",
+                [
+                    cmd,
+                ],
+                'check_buildpack',
+            )
+        else:
+            raise Exception("Cannot add buildpack, the form is invalid.")
+
+
+def check_buildpack(request, app_name, task_id):
+    clear_cache("builpacks:list %s" % app_name)
+    messages.success(request, "Buildpack added to %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
 def check_deploy(request, app_name, task_id):
     clear_cache("config %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
@@ -627,6 +712,18 @@ def check_mariadb_removal(request, app_name, task_id):
         raise Exception(data)
     messages.success(request, "MariaDB link removed from %s" % app_name)
     clear_cache("mariadb:list")
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+def check_buildpack_removal(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+
+    if data.find("-----> Removing") == -1:
+        raise Exception(data)
+
+    messages.success(request, "Buildpack removed from %s" % app_name)
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
 
