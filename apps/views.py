@@ -366,6 +366,7 @@ def redis_list(app_name):
         raise
 
 
+# Cloned into mariadb.py
 def mariadb_list(app_name):
     data = run_cmd_with_cache("mariadb:list")
     try:
@@ -526,6 +527,7 @@ def create_postgres(request, app_name):
                             "check_postgres")
 
 
+# Cloned into postgres.py
 @login_required(login_url='/accounts/login/')
 def remove_postgres(request, app_name, link_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
@@ -559,6 +561,7 @@ def remove_redis(request, app_name, link_name):
                             "check_redis_removal")
 
 
+# Cloned into mariadb.py
 @login_required(login_url='/accounts/login/')
 def create_mariadb(request, app_name):
     sanitized_link_name = re.sub('[^A-Za-z0-9]+', '', app_name)
@@ -570,6 +573,7 @@ def create_mariadb(request, app_name):
                             "check_mariadb")
 
 
+# Cloned into mariadb.py
 @login_required(login_url='/accounts/login/')
 def remove_mariadb(request, app_name, link_name):
     return run_cmd_with_log(app_name, "Remove MariaDB",
@@ -707,6 +711,7 @@ def check_redis_removal(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
+# Cloned into mariadb.py
 def check_mariadb(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
@@ -718,6 +723,7 @@ def check_mariadb(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
+# Cloned into mariadb.py
 def check_mariadb_removal(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)

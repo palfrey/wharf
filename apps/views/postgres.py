@@ -69,4 +69,9 @@ def check_postgres_removal(request, app_name, task_id):
     messages.success(request, "Postgres link removed from %s" % app_name)
     cache.clear_cache("postgres:list")
     cache.clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
+    return redirect(
+        reverse(
+            'app_info',
+            args=[app_name]
+        )
+    )
