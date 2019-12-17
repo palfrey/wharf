@@ -29,6 +29,12 @@ urlpatterns = [
     path('apps/<app_name>/check_mariadb/<task_id>', views.check_mariadb, name='check_mariadb'),
     path('apps/<app_name>/check_mariadb_removal/<task_id>', views.check_mariadb_removal, name='check_mariadb_removal'),
     path('apps/<app_name>/<link_name>/remove_mariadb', views.remove_mariadb, name='remove_mariadb'),
+
+    path('apps/<app_name>/add_buildpack', views.add_buildpack, name='add_buildpack'),
+    path('apps/<app_name>/check_buildpack/<task_id>', views.check_buildpack, name='check_buildpack'),
+    path('apps/<app_name>/remove_buildpack', views.remove_buildpack, name='remove_buildpack'),
+    path('apps/<app_name>/check_buildpack_removal/<task_id>', views.check_buildpack_removal, name='check_buildpack_removal'),
+
     path('apps/<app_name>/setup_letsencrypt', views.setup_letsencrypt, name='setup_letsencrypt'),
     path('apps/<app_name>/check_letsencrypt/<task_id>', views.check_letsencrypt, name='check_letsencrypt'),
     path('apps/<app_name>/add_domain', views.add_domain, name='add_domain'),
