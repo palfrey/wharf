@@ -1,16 +1,17 @@
 from celery.result import AsyncResult
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, reverse
-from django.contrib import messages
-from celery.states import state, FAILURE
-from django.http import HttpResponseBadRequest, HttpResponse, HttpResponseServerError
-from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
+from celery.states import state, FAILURE, SUCCESS, PENDING, STARTED
+from datetime import datetime
+
+import re
 
 import wharf.tasks as tasks
 from .models import TaskLog, App
 from .forms import ConfigFormBulk, CreateDomainForm, CreateAppForm, ConfigForm
-from .helpers import config as configuration, commands, buildpacks, postgres, mariadb, redis, letsencrypt, domains, apps, utils
+from .helpers import config as configuration, commands, buildpacks, postgres, mariadb, redis, letsencrypt, domains, apps, utils, cache
+
+ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
 
 @login_required(login_url='/accounts/login/')
@@ -127,3 +128,59 @@ def show_log(request, task_id):
             'description': task.description
         }
     )
+
+
+@login_required(login_url='/accounts/login/')
+def wait_for_command(request, app_name, task_id, after):
+    res = AsyncResult(task_id)
+    if app_name != '_':
+        app = App.objects.get(name=app_name)
+        task, created = TaskLog.objects.get_or_create(
+            task_id=task_id,
+            defaults={'app': app, 'when': datetime.now()}
+        )
+        description = task.description
+    else:
+        description = ""
+    if res.state == state(SUCCESS):
+        return redirect(
+            reverse(
+                after,
+                kwargs={
+                    'app_name': app_name,
+                    'task_id': task_id
+                }
+            )
+        )
+    log = ansi_escape.sub("", utils.get_log(res))
+    if res.state == state(FAILURE):
+        log += str(res.traceback)
+    return render(request, 'command_wait.html', {
+        'app': app_name,
+        'task_id': task_id,
+        'log': log,
+        'state': res.state,
+        'running': res.state in [state(PENDING), state(STARTED)],
+        'description': description
+    })
+
+
+@login_required(login_url='/accounts/login/')
+def check_letsencrypt(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    log = utils.get_log(res)
+    if log.find("Certificate retrieved successfully") != -1:
+        cache.clear_cache("letsencrypt:ls")
+        return redirect(reverse('app_info', args=[app_name]))
+    else:
+        return render(
+            request,
+            'command_wait.html',
+            {
+                'app': app_name,
+                'task_id': task_id,
+                'log': log,
+                'state': res.state,
+                'running': res.state in [state(PENDING), state(STARTED)]
+            }
+        )
