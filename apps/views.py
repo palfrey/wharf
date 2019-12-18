@@ -671,6 +671,7 @@ def index(request):
                   })
 
 
+# Cloned into utils.py
 @login_required(login_url='/accounts/login/')
 def refresh_all(request):
     cache.clear()
@@ -832,6 +833,7 @@ def github_webhook(request):
         reverse('show_log', kwargs={'task_id': res.id})))
 
 
+# Cloned into utils.py
 @timeout_decorator.timeout(5, use_signals=False)
 def check_status():
     # Clearing the cache and then trying a command makes sure that
@@ -842,6 +844,7 @@ def check_status():
     run_cmd_with_cache("config --global")
 
 
+# Cloned into utils.py
 def status(request):
     try:
         check_status()

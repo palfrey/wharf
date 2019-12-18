@@ -1,8 +1,13 @@
-import wharf.tasks as tasks
 from celery.states import state, PENDING
 from redis import StrictRedis
 from django.conf import settings
+from django.core.cache import cache
+from django.http import HttpResponse, HttpResponseServerError
+from django.shortcuts import redirect, reverse
+from . import cache as cache_helper, commands
 
+import wharf.tasks as tasks
+import timeout_decorator
 
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
 
@@ -91,3 +96,26 @@ def db_list(app_name, data, type_list=None):
         ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"],
         type_list
     )
+
+
+def refresh_all(request):
+    cache.clear()
+    return redirect(reverse('index'))
+
+
+@timeout_decorator.timeout(5, use_signals=False)
+def check_status():
+    # Clearing the cache and then trying a command makes sure that
+    # - The cache is up
+    # - Celery is up
+    # - We can run dokku commands
+    cache_helper.clear_cache("config --global")
+    commands.run_cmd_with_cache("config --global")
+
+
+def status(request):
+    try:
+        check_status()
+        return HttpResponse("All good")
+    except timeout_decorator.TimeoutError:
+        return HttpResponseServerError("Timeout trying to get status")
