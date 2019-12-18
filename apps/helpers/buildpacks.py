@@ -28,7 +28,7 @@ def buildpack_list(app_name):
     return items
 
 
-def create_buildpack(request, app_name):
+def add_buildpack(request, app_name):
 
     if request.method == 'POST':
 
