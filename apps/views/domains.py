@@ -1,4 +1,4 @@
-from . import commands, utils, cache
+from . import commands, utils, cache, letsencrypt
 from celery.result import AsyncResult
 from django.contrib import messages
 from django.shortcuts import redirect, reverse
@@ -17,7 +17,7 @@ def add_domain(request, app_name):
     form = CreateDomainForm(request.POST)
     if form.is_valid():
         cmd = ["domains:add %s %s" % (app_name, form.cleaned_data['name'])]
-        if letsencrypt(app_name) is not None:
+        if letsencrypt.letsencrypt(app_name) is not None:
             cmd.append("letsencrypt %s" % app_name)
         return commands.run_cmd_with_log(
             app_name,
@@ -48,21 +48,11 @@ def check_domain(request, app_name, task_id):
 def remove_domain(request, app_name):
     name = request.POST['name']
     cmd = ["domains:remove %s %s" % (app_name, name)]
-    if letsencrypt(app_name) is not None:
+    if letsencrypt.letsencrypt(app_name) is not None:
         cmd.append("letsencrypt %s" % app_name)
     return commands.run_cmd_with_log(
         app_name,
         "Remove domain %s" % name,
         cmd,
         "check_domain"
-    )
-
-
-def letsencrypt(app_name):
-    data = commands.run_cmd_with_cache("letsencrypt:ls")
-    return utils.generic_list(
-        app_name,
-        data,
-        "App name",
-        ["App name", "Certificate Expiry", "Time before expiry", "Time before renewal"]
     )

@@ -234,7 +234,7 @@ def mariadb_list(app_name):
         raise
 
 
-# Cloned into domains.py
+# Cloned into letsencrypt.py
 def letsencrypt(app_name):
     data = run_cmd_with_cache("letsencrypt:ls")
     return generic_list(app_name, data, "App name",
@@ -506,63 +506,6 @@ def check_buildpack_removal(request, app_name, task_id):
     return redirect(reverse('app_info', args=[app_name]))
 
 
-@login_required(login_url='/accounts/login/')
-def show_log(request, task_id):
-    res = AsyncResult(task_id)
-    task = models.TaskLog.objects.get(task_id=task_id)
-    log = ansi_escape.sub("", get_log(res))
-    if res.state == state(FAILURE):
-        log += str(res.traceback)
-    return render(request, 'command_wait.html', {
-        'app': task.app.name,
-        'task_id': task_id,
-        'log': log,
-        'state': res.state,
-        'running': False,
-        'description': task.description})
-
-
-def app_list():
-    data = run_cmd_with_cache("apps:list")
-    lines = data.split("\n")
-    if lines[0] != "=====> My Apps":
-        raise Exception(data)
-    return lines[1:]
-
-
-@login_required(login_url='/accounts/login/')
-def index(request):
-    try:
-        apps = app_list()
-    except Exception as e:
-        if e.__class__.__name__ in ["AuthenticationException"]:  # Can't use class directly as Celery mangles things
-            return render(request, 'setup_key.html', {'key': tasks.get_public_key.delay().get()})
-        else:
-            raise
-    if request.method == 'POST':
-        app_form = forms.CreateAppForm(request.POST)
-        if app_form.is_valid():
-            return create_app(app_form.cleaned_data['name'])
-    else:
-        app_form = forms.CreateAppForm()
-    config_form = forms.ConfigForm()
-    config_bulk_form = forms.ConfigFormBulk()
-    config = global_config()
-    return render(request, 'list_apps.html',
-                  {
-                      'apps': apps,
-                      'app_form': app_form,
-                      'config_form': config_form,
-                      'config_bulk_form': config_bulk_form,
-                      'config': sorted(config.items())
-                  })
-
-
-@login_required(login_url='/accounts/login/')
-def refresh_all(request):
-    cache.clear()
-    return redirect(reverse('index'))
-
 # Cloned into config.py
 def generic_config(app, data):
     lines = data.split("\n")
@@ -655,6 +598,83 @@ def global_config_bulk_set(request):
         )
     else:
         raise Exception("The submitted form is invalid")
+
+
+# Cloned into letsencrypt.py
+@login_required(login_url='/accounts/login/')
+def setup_letsencrypt(request, app_name):
+    return run_cmd_with_log(app_name, "Enable Let's Encrypt", "letsencrypt %s" % app_name, "check_letsencrypt")
+
+
+# Cloned into letsencrypt.py
+def check_letsencrypt(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    log = get_log(res)
+    if log.find("Certificate retrieved successfully") != -1:
+        clear_cache("letsencrypt:ls")
+        return redirect(reverse('app_info', args=[app_name]))
+    else:
+        return render(request, 'command_wait.html',
+                      {'app': app_name, 'task_id': task_id, 'log': log, 'state': res.state,
+                       'running': res.state in [state(PENDING), state(STARTED)]})
+
+
+@login_required(login_url='/accounts/login/')
+def show_log(request, task_id):
+    res = AsyncResult(task_id)
+    task = models.TaskLog.objects.get(task_id=task_id)
+    log = ansi_escape.sub("", get_log(res))
+    if res.state == state(FAILURE):
+        log += str(res.traceback)
+    return render(request, 'command_wait.html', {
+        'app': task.app.name,
+        'task_id': task_id,
+        'log': log,
+        'state': res.state,
+        'running': False,
+        'description': task.description})
+
+
+def app_list():
+    data = run_cmd_with_cache("apps:list")
+    lines = data.split("\n")
+    if lines[0] != "=====> My Apps":
+        raise Exception(data)
+    return lines[1:]
+
+
+@login_required(login_url='/accounts/login/')
+def index(request):
+    try:
+        apps = app_list()
+    except Exception as e:
+        if e.__class__.__name__ in ["AuthenticationException"]:  # Can't use class directly as Celery mangles things
+            return render(request, 'setup_key.html', {'key': tasks.get_public_key.delay().get()})
+        else:
+            raise
+    if request.method == 'POST':
+        app_form = forms.CreateAppForm(request.POST)
+        if app_form.is_valid():
+            return create_app(app_form.cleaned_data['name'])
+    else:
+        app_form = forms.CreateAppForm()
+    config_form = forms.ConfigForm()
+    config_bulk_form = forms.ConfigFormBulk()
+    config = global_config()
+    return render(request, 'list_apps.html',
+                  {
+                      'apps': apps,
+                      'app_form': app_form,
+                      'config_form': config_form,
+                      'config_bulk_form': config_bulk_form,
+                      'config': sorted(config.items())
+                  })
+
+
+@login_required(login_url='/accounts/login/')
+def refresh_all(request):
+    cache.clear()
+    return redirect(reverse('index'))
 
 
 def process_info(app_name):
@@ -782,23 +802,6 @@ def check_app(request, app_name, task_id):
     messages.success(request, "Created %s" % app_name)
     clear_cache("apps:list")
     return redirect(reverse('app_info', args=[app_name]))
-
-
-@login_required(login_url='/accounts/login/')
-def setup_letsencrypt(request, app_name):
-    return run_cmd_with_log(app_name, "Enable Let's Encrypt", "letsencrypt %s" % app_name, "check_letsencrypt")
-
-
-def check_letsencrypt(request, app_name, task_id):
-    res = AsyncResult(task_id)
-    log = get_log(res)
-    if log.find("Certificate retrieved successfully") != -1:
-        clear_cache("letsencrypt:ls")
-        return redirect(reverse('app_info', args=[app_name]))
-    else:
-        return render(request, 'command_wait.html',
-                      {'app': app_name, 'task_id': task_id, 'log': log, 'state': res.state,
-                       'running': res.state in [state(PENDING), state(STARTED)]})
 
 
 @csrf_exempt
