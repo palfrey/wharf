@@ -619,58 +619,6 @@ def check_letsencrypt(request, app_name, task_id):
                        'running': res.state in [state(PENDING), state(STARTED)]})
 
 
-@login_required(login_url='/accounts/login/')
-def show_log(request, task_id):
-    res = AsyncResult(task_id)
-    task = models.TaskLog.objects.get(task_id=task_id)
-    log = ansi_escape.sub("", get_log(res))
-    if res.state == state(FAILURE):
-        log += str(res.traceback)
-    return render(request, 'command_wait.html', {
-        'app': task.app.name,
-        'task_id': task_id,
-        'log': log,
-        'state': res.state,
-        'running': False,
-        'description': task.description})
-
-
-def app_list():
-    data = run_cmd_with_cache("apps:list")
-    lines = data.split("\n")
-    if lines[0] != "=====> My Apps":
-        raise Exception(data)
-    return lines[1:]
-
-
-@login_required(login_url='/accounts/login/')
-def index(request):
-    try:
-        apps = app_list()
-    except Exception as e:
-        if e.__class__.__name__ in ["AuthenticationException"]:  # Can't use class directly as Celery mangles things
-            return render(request, 'setup_key.html', {'key': tasks.get_public_key.delay().get()})
-        else:
-            raise
-    if request.method == 'POST':
-        app_form = forms.CreateAppForm(request.POST)
-        if app_form.is_valid():
-            return create_app(app_form.cleaned_data['name'])
-    else:
-        app_form = forms.CreateAppForm()
-    config_form = forms.ConfigForm()
-    config_bulk_form = forms.ConfigFormBulk()
-    config = global_config()
-    return render(request, 'list_apps.html',
-                  {
-                      'apps': apps,
-                      'app_form': app_form,
-                      'config_form': config_form,
-                      'config_bulk_form': config_bulk_form,
-                      'config': sorted(config.items())
-                  })
-
-
 # Cloned into utils.py
 @login_required(login_url='/accounts/login/')
 def refresh_all(request):
@@ -678,29 +626,27 @@ def refresh_all(request):
     return redirect(reverse('index'))
 
 
-def process_info(app_name):
-    data = run_cmd_with_cache("ps:report %s" % app_name)
-    lines = data.split("\n")
-    if lines[0].find("%s process information" % app_name) == -1 and lines[0].find(
-            "%s ps information" % app_name) == -1:  # Different versions
-        raise Exception(data)
-    results = {}
-    processes = {}
-    process_re = re.compile("Status\s+([^\.]+\.\d+):?\s+(\S+)")
-    for line in lines[1:]:
-        if line.strip().startswith("Status "):
-            matches = process_re.search(line)
-            if matches == None:
-                raise Exception(line)
-            matches = matches.groups()
-            processes[matches[0]] = matches[1]
-        else:
-            (name, rest) = line.split(":", 1)
-            results[name.strip()] = rest.strip()
-    results["processes"] = processes
-    return results
+# Cloned into utils.py
+@timeout_decorator.timeout(5, use_signals=False)
+def check_status():
+    # Clearing the cache and then trying a command makes sure that
+    # - The cache is up
+    # - Celery is up
+    # - We can run dokku commands
+    clear_cache("config --global")
+    run_cmd_with_cache("config --global")
 
 
+# Cloned into utils.py
+def status(request):
+    try:
+        check_status()
+        return HttpResponse("All good")
+    except timeout_decorator.TimeoutError:
+        return HttpResponseServerError("Timeout trying to get status")
+
+
+# Cloned into apps.py
 @login_required(login_url='/accounts/login/')
 def app_info(request, app_name):
     app, _ = models.App.objects.get_or_create(name=app_name)
@@ -759,6 +705,100 @@ def app_info(request, app_name):
     })
 
 
+# Cloned into apps.py
+def create_app(app_name):
+    models.App(name=app_name).save()
+    return run_cmd_with_log(app_name, "Add app %s" % app_name, "apps:create %s" % app_name, "check_app")
+
+
+# Cloned into apps.py
+def check_app(request, app_name, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Creating %s... done" % app_name) == -1:
+        raise Exception(data)
+    messages.success(request, "Created %s" % app_name)
+    clear_cache("apps:list")
+    return redirect(reverse('app_info', args=[app_name]))
+
+
+# Cloned into apps.py
+def app_list():
+    data = run_cmd_with_cache("apps:list")
+    lines = data.split("\n")
+    if lines[0] != "=====> My Apps":
+        raise Exception(data)
+    return lines[1:]
+
+
+# Cloned into apps.py
+@login_required(login_url='/accounts/login/')
+def index(request):
+    try:
+        apps = app_list()
+    except Exception as e:
+        if e.__class__.__name__ in ["AuthenticationException"]:  # Can't use class directly as Celery mangles things
+            return render(request, 'setup_key.html', {'key': tasks.get_public_key.delay().get()})
+        else:
+            raise
+    if request.method == 'POST':
+        app_form = forms.CreateAppForm(request.POST)
+        if app_form.is_valid():
+            return create_app(app_form.cleaned_data['name'])
+    else:
+        app_form = forms.CreateAppForm()
+    config_form = forms.ConfigForm()
+    config_bulk_form = forms.ConfigFormBulk()
+    config = global_config()
+    return render(request, 'list_apps.html',
+                  {
+                      'apps': apps,
+                      'app_form': app_form,
+                      'config_form': config_form,
+                      'config_bulk_form': config_bulk_form,
+                      'config': sorted(config.items())
+                  })
+
+# Cloned into apps.py
+@login_required(login_url='/accounts/login/')
+def show_log(request, task_id):
+    res = AsyncResult(task_id)
+    task = models.TaskLog.objects.get(task_id=task_id)
+    log = ansi_escape.sub("", get_log(res))
+    if res.state == state(FAILURE):
+        log += str(res.traceback)
+    return render(request, 'command_wait.html', {
+        'app': task.app.name,
+        'task_id': task_id,
+        'log': log,
+        'state': res.state,
+        'running': False,
+        'description': task.description})
+
+# Cloned into apps.py
+def process_info(app_name):
+    data = run_cmd_with_cache("ps:report %s" % app_name)
+    lines = data.split("\n")
+    if lines[0].find("%s process information" % app_name) == -1 and lines[0].find(
+            "%s ps information" % app_name) == -1:  # Different versions
+        raise Exception(data)
+    results = {}
+    processes = {}
+    process_re = re.compile("Status\s+([^\.]+\.\d+):?\s+(\S+)")
+    for line in lines[1:]:
+        if line.strip().startswith("Status "):
+            matches = process_re.search(line)
+            if matches == None:
+                raise Exception(line)
+            matches = matches.groups()
+            processes[matches[0]] = matches[1]
+        else:
+            (name, rest) = line.split(":", 1)
+            results[name.strip()] = rest.strip()
+    results["processes"] = processes
+    return results
+
+# Cloned into apps.py
 @login_required(login_url='/accounts/login/')
 def deploy(request, app_name):
     if request.POST['action'] == "deploy":
@@ -773,13 +813,13 @@ def deploy(request, app_name):
     else:
         raise Exception(request.POST['action'])
 
-
+# Cloned into apps.py
 def check_deploy(request, app_name, task_id):
     clear_cache("config %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
 
-
+# Cloned into apps.py
 def check_rebuild(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
@@ -789,22 +829,7 @@ def check_rebuild(request, app_name, task_id):
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
 
-
-def create_app(app_name):
-    models.App(name=app_name).save()
-    return run_cmd_with_log(app_name, "Add app %s" % app_name, "apps:create %s" % app_name, "check_app")
-
-
-def check_app(request, app_name, task_id):
-    res = AsyncResult(task_id)
-    data = get_log(res)
-    if data.find("Creating %s... done" % app_name) == -1:
-        raise Exception(data)
-    messages.success(request, "Created %s" % app_name)
-    clear_cache("apps:list")
-    return redirect(reverse('app_info', args=[app_name]))
-
-
+# Cloned into apps.py
 @csrf_exempt
 def github_webhook(request):
     secret = settings.GITHUB_SECRET.encode('utf-8')
@@ -831,23 +856,3 @@ def github_webhook(request):
     clear_cache("config %s" % app.name)
     return HttpResponse("Running deploy. Deploy log is at %s" % request.build_absolute_uri(
         reverse('show_log', kwargs={'task_id': res.id})))
-
-
-# Cloned into utils.py
-@timeout_decorator.timeout(5, use_signals=False)
-def check_status():
-    # Clearing the cache and then trying a command makes sure that
-    # - The cache is up
-    # - Celery is up
-    # - We can run dokku commands
-    clear_cache("config --global")
-    run_cmd_with_cache("config --global")
-
-
-# Cloned into utils.py
-def status(request):
-    try:
-        check_status()
-        return HttpResponse("All good")
-    except timeout_decorator.TimeoutError:
-        return HttpResponseServerError("Timeout trying to get status")
