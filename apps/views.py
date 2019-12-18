@@ -563,7 +563,7 @@ def refresh_all(request):
     cache.clear()
     return redirect(reverse('index'))
 
-
+# Cloned into config.py
 def generic_config(app, data):
     lines = data.split("\n")
     if lines[0] != "=====> %s env vars" % app:
@@ -575,16 +575,19 @@ def generic_config(app, data):
     return config
 
 
+# Cloned into config.py
 def app_config(app_name):
     data = run_cmd_with_cache("config %s" % app_name)
     return generic_config(app_name, data)
 
 
+# Cloned into config.py
 def global_config():
     data = run_cmd_with_cache("config --global")
     return generic_config("global", data)
 
 
+# Cloned into config.py
 def check_config_set(request, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
@@ -594,18 +597,21 @@ def check_config_set(request, task_id):
     messages.success(request, 'Config updated')
 
 
+# Cloned into config.py
 def check_app_config_set(request, app_name, task_id):
     check_config_set(request, task_id)
     clear_cache("config %s" % app_name)
     return redirect(reverse('app_info', args=[app_name]))
 
 
+# Cloned into config.py
 def check_global_config_set(request, app_name, task_id):
     check_config_set(request, task_id)
     clear_cache("config --global")
     return redirect(reverse('index'))
 
 
+# Cloned into config.py
 def format_config_string(data, splitter=":"):
     """
     Formats the config string submitted by the user to allow inserting multiple values in a single Dokku config:set use.
@@ -627,6 +633,7 @@ def format_config_string(data, splitter=":"):
     return cmd_string
 
 
+# Cloned into config.py
 def global_config_bulk_set(request):
     """
     Inserts all the key:value items received in the submitted string.
