@@ -41,6 +41,12 @@ def check_global_config_set(request, app_name, task_id):
     return redirect(reverse('index'))
 
 
+def check_app_config_set(request, app_name, task_id):
+    check_config_set(request, task_id)
+    cache.clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', args=[app_name]))
+
+
 def format_config_string(data, splitter=":"):
     """
     Formats the config string submitted by the user to allow inserting multiple values in a single Dokku config:set use.
