@@ -4,6 +4,7 @@
 #
 #    pip-compile
 #
+-e git+https://github.com/niwinz/django-jinja.git@819a5faddea5341d990ac337b05e7827ac5b4431#egg=django-jinja
 amqp==2.3.2               # via kombu
 asgiref==3.2.3            # via django
 asn1crypto==0.24.0        # via cryptography
@@ -17,7 +18,6 @@ cryptography==2.3         # via paramiko
 dj-database-url==0.5.0
 django-celery-results==1.0.1
 django-jinja-bootstrap-form==4.2.3
-django-jinja==2.4.1       # via django-jinja-bootstrap-form
 django-redis==4.9.0
 django==3.0.2
 gitdb2==2.0.3             # via gitpython
