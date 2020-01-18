@@ -5,7 +5,7 @@ set -eux -o pipefail
 REDIS_URL=dummy python3 manage.py test
 wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
 if [ ! -f /etc/apt/sources.list.d/dokku.list ]; then
-    echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ xenial main" | sudo tee /etc/apt/sources.list.d/dokku.list
+    echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ bionic main" | sudo tee /etc/apt/sources.list.d/dokku.list
     sudo apt-get update
 fi
 echo dokku dokku/skip_key_file boolean true | sudo debconf-set-selections
