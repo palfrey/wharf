@@ -12,3 +12,5 @@ keys
 .idea
 screenshot.png
 ssh-key
+.DS_Store
+
