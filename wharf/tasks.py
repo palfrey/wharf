@@ -65,7 +65,7 @@ def run_ssh_command(self, command):
             pkey = RSAKey.from_private_key_file(keyfile)
         else:
             pkey = None
-        client.connect(settings.DOKKU_HOST, port=settings.DOKKU_SSH_PORT, username="dokku", pkey=pkey)
+        client.connect(settings.DOKKU_HOST, port=settings.DOKKU_SSH_PORT, username="dokku", pkey=pkey, allow_agent=False, look_for_keys=False)
         transport = client.get_transport()
         channel = transport.open_session()
         channel.exec_command(c)
