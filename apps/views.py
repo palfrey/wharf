@@ -492,35 +492,35 @@ def app_info(request, app_name):
     else:
         form = forms.ConfigFormBulk()
 
-    original_buildpack_items = buildpack_list(app_name)
-    original_postgres_items = postgres_list(app_name)
-    original_mariadb_items = mariadb_list(app_name)
-    list_postgres = []
-    list_mariadb = []
-
-    if type(original_postgres_items) is dict:
-        list_postgres.append(postgres_list(app_name))
-    else:
-        list_postgres = original_postgres_items
-
-    if type(original_mariadb_items) is dict:
-        list_mariadb.append(mariadb_list(app_name))
-    else:
-        list_mariadb = original_mariadb_items
+    # original_buildpack_items = buildpack_list(app_name)
+    # original_postgres_items = postgres_list(app_name)
+    # original_mariadb_items = mariadb_list(app_name)
+    # list_postgres = []
+    # list_mariadb = []
+    #
+    # if type(original_postgres_items) is dict:
+    #     list_postgres.append(postgres_list(app_name))
+    # else:
+    #     list_postgres = original_postgres_items
+    #
+    # if type(original_mariadb_items) is dict:
+    #     list_mariadb.append(mariadb_list(app_name))
+    # else:
+    #     list_mariadb = original_mariadb_items
 
     return render(request, 'app_info.html', {
-        'postgres': list_postgres,
-        'redis': redis_list(app_name),
-        'mariadb': list_mariadb,
+        # 'postgres': list_postgres,
+        # 'redis': redis_list(app_name),
+        # 'mariadb': list_mariadb,
+        # 'buildpacks': original_buildpack_items,
+        # 'git_url': config.get('GITHUB_URL', None),
         'letsencrypt': letsencrypt(app_name),
-        'buildpacks': original_buildpack_items,
         'process': process_info(app_name),
         'logs': ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
         'domains': domains_list(app_name),
         'domain_form': forms.CreateDomainForm(),
         'config_bulk_form': form,
         'app': app_name,
-        'git_url': config.get('GITHUB_URL', None),
         'config': sorted(config.items()),
         'task_logs': models.TaskLog.objects.filter(app=app).order_by('-when').all(),
     })

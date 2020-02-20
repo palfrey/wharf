@@ -20,7 +20,24 @@
                 <div class="container-fluid">
                     <!-- Process information -->
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <div class="card card-chart">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Applications links</h4>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="#">Manage all applications links</a>
+                                    </h5>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">info</i>Applications link page can take a few seconds to load
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
                                     <h4 class="card-title">Process info</h4>
@@ -40,7 +57,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
                                     <h4 class="card-title">Processes</h4>
@@ -174,6 +191,7 @@
                         </div>
                     </div>
                     <!-- End Domains and SSL -->
+                    <!-- Environment variables -->
                     <div class="row">
                         <div class="col-lg-12 col-md-12">
                             <div class="card">
@@ -248,10 +266,10 @@
                             </div>
                         </div>
                     </div>
+                    <!-- End Environment variables -->
                 </div>
             </div>
             {% include "components/footer/footer-content.html" %}
         </div>
     </div>
 {% endblock %}
-{#{% include "components/apps/details/details.html" %}#}
