@@ -144,7 +144,7 @@ def index(request):
     config_form = forms.ConfigForm()
     config_bulk_form = forms.ConfigFormBulk()
     config = global_config()
-    return render(request, 'list_apps.html',
+    return render(request, 'dashboard.html',
                   {
                       'apps': apps,
                       'app_form': app_form,
@@ -152,6 +152,42 @@ def index(request):
                       'config_bulk_form': config_bulk_form,
                       'config': sorted(config.items())
                   })
+
+
+@login_required(login_url='/accounts/login/')
+def apps_list(request):
+    """
+    Renders the application list
+    """
+    try:
+        apps = app_list()
+    except Exception as e:
+        if e.__class__.__name__ in ["AuthenticationException"]:  # Can't use class directly as Celery mangles things
+            return render(request, 'setup_key.html', {'key': tasks.get_public_key.delay().get()})
+        else:
+            raise
+    return render(request, 'apps_list.html', {
+        'apps': apps
+    })
+
+
+@login_required(login_url='/accounts/login')
+def global_variables_list(request):
+    """
+    Renders the global variables list
+    """
+    try:
+        global_env_vars_list = global_config()
+    except Exception as e:
+        if e.__class__.__name__ in ["AuthenticationException"]:  # Can't use class directly as Celery mangles things
+            return render(request, 'setup_key.html', {'key': tasks.get_public_key.delay().get()})
+        else:
+            raise
+
+    return render(request, 'global_env_vars_list.html', {
+        'config': sorted(global_env_vars_list.items())
+    })
+
 
 
 @login_required(login_url='/accounts/login/')
@@ -572,7 +608,6 @@ def remove_mariadb(request, app_name, link_name):
 
 @login_required(login_url='/accounts/login/')
 def remove_buildpack(request, app_name):
-
     if request.method == 'POST':
 
         buildpack_form = forms.BuildpackRemoveForm(request.POST)
@@ -596,7 +631,6 @@ def remove_buildpack(request, app_name):
 
 
 def add_buildpack(request, app_name):
-
     if request.method == 'POST':
 
         buildpack_form = forms.BuildpackAddForm(request.POST)
@@ -607,7 +641,8 @@ def add_buildpack(request, app_name):
 
             cmd = "buildpacks:%s%s %s %s" % (
                 buildpack_type,
-                " --index %s" % buildpack_form.cleaned_data['buildpack_index'] if buildpack_form.cleaned_data['buildpack_index'] is not None else 1,
+                " --index %s" % buildpack_form.cleaned_data['buildpack_index'] if buildpack_form.cleaned_data[
+                                                                                      'buildpack_index'] is not None else 1,
                 app_name,
                 buildpack_url
             )
