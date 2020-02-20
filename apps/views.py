@@ -189,6 +189,38 @@ def global_variables_list(request):
     })
 
 
+@login_required(login_url='/accounts/login')
+def app_configuration(request, app_name):
+    """
+    Renders the application links and buildpacks
+    """
+    original_buildpack_items = buildpack_list(app_name)
+    original_postgres_items = postgres_list(app_name)
+    original_mariadb_items = mariadb_list(app_name)
+    list_postgres = []
+    list_mariadb = []
+
+    if type(original_postgres_items) is dict:
+        list_postgres.append(postgres_list(app_name))
+    else:
+        list_postgres = original_postgres_items
+
+    if type(original_mariadb_items) is dict:
+        list_mariadb.append(mariadb_list(app_name))
+    else:
+        list_mariadb = original_mariadb_items
+
+    app_links = {
+        'postgres': list_postgres,
+        'redis': redis_list(app_name),
+        'mariadb': list_mariadb,
+        'buildpacks': original_buildpack_items,
+    }
+
+    return render(request, 'app_configuration.html', {
+        'app_links': app_links
+    })
+
 
 @login_required(login_url='/accounts/login/')
 def refresh_all(request):
