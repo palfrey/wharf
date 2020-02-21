@@ -69,7 +69,7 @@
                                                                 <td>{{ item['EXPOSED PORTS'] }}</td>
                                                                 <td>{{ item['LINKS'] }}</td>
                                                                 <td>
-                                                                    <form class="d-inline" action="{{ url('remove_postgres', app_name=app, link_name=item['LINKS']) }}" method="POST">
+                                                                    <form class="d-inline" action="{{ url('remove_postgres', app_name=app_name, link_name=item['LINKS']) }}" method="POST">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" value="{{ item['LINKS'] }}" name="link_name" />
                                                                         <button type="submit" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm">
@@ -87,7 +87,7 @@
                                                     </tbody>
                                                 </table>
                                             </div>
-                                            <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
+                                            <form class="form-inline" action="{{ url('create_postgres', app_name=app_name) }}" method="POST">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-primary">Create Postgres link</button>
                                             </form>
@@ -115,7 +115,7 @@
                                                                 <td>{{ item['EXPOSED PORTS'] }}</td>
                                                                 <td>{{ item['LINKS'] }}</td>
                                                                 <td>
-                                                                    <form class="d-inline" action="{{ url('remove_mariadb', app_name=app, link_name=item['LINKS']) }}" method="POST">
+                                                                    <form class="d-inline" action="{{ url('remove_mariadb', app_name=app_name, link_name=item['LINKS']) }}" method="POST">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" value="{{ item['LINKS'] }}" name="link_name" />
                                                                         <button type="submit" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm">
@@ -133,7 +133,7 @@
                                                     </tbody>
                                                 </table>
                                             </div>
-                                            <form class="form-inline" action="{{ url('create_mariadb', app_name=app) }}" method="POST">
+                                            <form class="form-inline" action="{{ url('create_mariadb', app_name=app_name) }}" method="POST">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-primary">Create MariaDB link</button>
                                             </form>
@@ -161,7 +161,7 @@
                                                                 <td>{{ item['EXPOSED PORTS'] }}</td>
                                                                 <td>{{ item['LINKS'] }}</td>
                                                                 <td>
-                                                                    <form class="d-inline" action="{{ url('remove_redis', app_name=app, link_name=item['LINKS']) }}" method="POST">
+                                                                    <form class="d-inline" action="{{ url('remove_redis', app_name=app_name, link_name=item['LINKS']) }}" method="POST">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" value="{{ item['LINKS'] }}" name="link_name" />
                                                                         <button type="submit" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm">
@@ -179,7 +179,7 @@
                                                     </tbody>
                                                 </table>
                                             </div>
-                                            <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
+                                            <form class="form-inline" action="{{ url('create_redis', app_name=app_name) }}" method="POST">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-primary">Create Redis link</button>
                                             </form>
@@ -205,7 +205,7 @@
                                                                     {% endif %}
                                                                 </td>
                                                                 <td>
-                                                                    <form class="d-inline" action="{{ url('remove_buildpack', app_name=app) }}" method="POST">
+                                                                    <form class="d-inline" action="{{ url('remove_buildpack', app_name=app_name) }}" method="POST">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" value="{{ item }}" name="buildpack_url" />
                                                                         <button type="submit" rel="tooltip" title="Remove this buildpack" class="btn btn-danger btn-link btn-sm">

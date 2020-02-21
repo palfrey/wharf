@@ -20,50 +20,19 @@
                 <div class="container-fluid">
                     <!-- Process information -->
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
-                                    <h4 class="card-title">Applications links</h4>
+                                    <h4 class="card-title">General information</h4>
                                 </div>
                                 <div class="card-body">
-                                    <h5 class="card-title">
-                                        <a href="{{ url('app_configuration', app_name=app) }}">Manage application configuration</a>
-                                    </h5>
-                                </div>
-                                <div class="card-footer">
-                                    <div class="stats">
-                                        <i class="material-icons">info</i>Applications link page can take a few seconds to load
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card card-chart">
-                                <div class="card-header card-header-primary">
-                                    <h4 class="card-title">Process info</h4>
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Status</h5>
+                                    <h5 class="card-title">Process info</h5>
                                     <ul>
                                         {% for (k,v) in process.items() if k!= 'processes' %}
                                             <li>{{ k }}: {{ v }}</li>
                                         {% endfor %}
                                     </ul>
-                                </div>
-                                <div class="card-footer">
-                                    <div class="stats">
-                                        <i class="material-icons">access_time</i> updated LOREM times ago
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card card-chart">
-                                <div class="card-header card-header-primary">
-                                    <h4 class="card-title">Processes</h4>
-                                </div>
-                                <div class="card-body">
-                                    <h5 class="card-title">Status</h5>
+                                    <h5 class="card-title">Processes</h5>
                                     <ul>
                                         {% for (k,v) in process['processes'].items() %}
                                             <li>{{ k }}: {{ v }}</li>
@@ -77,7 +46,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
                                     <h4 class="card-title">Tasks log</h4>
@@ -97,6 +66,23 @@
                                 <div class="card-footer">
                                     <div class="stats">
                                         <i class="material-icons">access_time</i> updated LOREM times ago
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card card-chart">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Applications links</h4>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="{{ url('app_configuration', app_name=app) }}">Manage application configuration</a>
+                                    </h5>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">info</i>Applications link page can take a few seconds to load
                                     </div>
                                 </div>
                             </div>
@@ -151,10 +137,14 @@
                                         <div class="tab-pane active" id="profile">
                                             <div class="table-responsive">
                                                 <table class="table">
+                                                    <thead class="text-primary">
+                                                        <th>Name</th>
+                                                        <th>Action</th>
+                                                    </thead>
                                                     <tbody>
                                                     {% for domain in domains %}
                                                         <tr>
-                                                            <td style="width: 100%">
+                                                            <td style="width: 91.5%">
                                                                 <a href="{{ 'https' if letsencrypt else 'http' }}://{{ domain }}"
                                                                    rel="nofollow noopener noreferrer"
                                                                    target="_blank">{{ domain }}</a>
@@ -246,7 +236,7 @@
                                         <div class="tab-pane active" id="app-env-vars-list">
                                             <div class="table-responsive">
                                                 <table class="table">
-                                                    <thead class=" text-primary">
+                                                    <thead class="text-primary">
                                                         <th>Name</th>
                                                         <th>Value</th>
                                                         <th>Action</th>
