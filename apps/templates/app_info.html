@@ -20,7 +20,7 @@
                 <div class="container-fluid">
                     <!-- Process information -->
                     <div class="row">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
                                     <h4 class="card-title">Applications links</h4>
@@ -37,7 +37,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
                                     <h4 class="card-title">Process info</h4>
@@ -57,7 +57,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
                                     <h4 class="card-title">Processes</h4>
@@ -77,12 +77,36 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            <div class="card card-chart">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Tasks log</h4>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Status</h5>
+                                    {% if task_logs %}
+                                        <ul>
+                                            {% for tl in task_logs %}
+                                                <li><a href="{{ url('show_log', task_id=tl.task_id) }}">{{ tl.nice_when() }} - {{ tl.description }}</a></li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <h5 class="card-title">No tasks to run yet</h5>
+                                    {% endif %}
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">access_time</i> updated LOREM times ago
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
-                                    <h4 class="card-title">Log output</h4>
+                                    <h4 class="card-title">Application log output</h4>
                                 </div>
                                 <div class="card-body logs-output">
                                     {{ logs }}
@@ -143,10 +167,9 @@
                                                                     {% csrf_token %}
                                                                     <input type="hidden" name="name"
                                                                            value="{{ domain }}"/>
-                                                                    <button type="button" rel="tooltip"
+                                                                    <button type="submit" rel="tooltip"
                                                                             title="Remove this domain"
-                                                                            class="btn btn-danger btn-link btn-sm"
-                                                                            onclick="this.submit()">
+                                                                            class="btn btn-danger btn-link btn-sm">
                                                                         <i class="material-icons">close</i>
                                                                     </button>
                                                                 </form>
@@ -236,10 +259,9 @@
                                                             <td>
                                                                 <form class="d-inline" action="#" method="POST">
                                                                     {% csrf_token %}
-                                                                    <button type="button" rel="tooltip"
+                                                                    <button type="submit" rel="tooltip"
                                                                             title="Remove this variable"
-                                                                            class="btn btn-danger btn-link btn-sm"
-                                                                            onclick="this.submit()">
+                                                                            class="btn btn-danger btn-link btn-sm">
                                                                         <i class="material-icons">close</i>
                                                                     </button>
                                                                 </form>

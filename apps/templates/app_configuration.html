@@ -72,7 +72,7 @@
                                                                     <form class="d-inline" action="{{ url('remove_postgres', app_name=app, link_name=item['LINKS']) }}" method="POST">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" value="{{ item['LINKS'] }}" name="link_name" />
-                                                                        <button type="button" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm" onclick="this.submit()">
+                                                                        <button type="submit" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm">
                                                                             <i class="material-icons">close</i>
                                                                         </button>
                                                                     </form>
@@ -118,7 +118,7 @@
                                                                     <form class="d-inline" action="{{ url('remove_mariadb', app_name=app, link_name=item['LINKS']) }}" method="POST">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" value="{{ item['LINKS'] }}" name="link_name" />
-                                                                        <button type="button" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm" onclick="this.submit()">
+                                                                        <button type="submit" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm">
                                                                             <i class="material-icons">close</i>
                                                                         </button>
                                                                     </form>
@@ -164,7 +164,7 @@
                                                                     <form class="d-inline" action="{{ url('remove_redis', app_name=app, link_name=item['LINKS']) }}" method="POST">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" value="{{ item['LINKS'] }}" name="link_name" />
-                                                                        <button type="button" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm" onclick="this.submit()">
+                                                                        <button type="submit" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm">
                                                                             <i class="material-icons">close</i>
                                                                         </button>
                                                                     </form>
@@ -208,7 +208,7 @@
                                                                     <form class="d-inline" action="{{ url('remove_buildpack', app_name=app) }}" method="POST">
                                                                         {% csrf_token %}
                                                                         <input type="hidden" value="{{ item }}" name="buildpack_url" />
-                                                                        <button type="button" rel="tooltip" title="Remove this buildpack" class="btn btn-danger btn-link btn-sm" onclick="this.submit()">
+                                                                        <button type="submit" rel="tooltip" title="Remove this buildpack" class="btn btn-danger btn-link btn-sm">
                                                                             <i class="material-icons">close</i>
                                                                         </button>
                                                                     </form>

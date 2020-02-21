@@ -540,6 +540,7 @@ def app_info(request, app_name):
     #     list_mariadb.append(mariadb_list(app_name))
     # else:
     #     list_mariadb = original_mariadb_items
+    task_logs = models.TaskLog.objects.filter(app=app).order_by('when').all()
 
     return render(request, 'app_info.html', {
         # 'postgres': list_postgres,
@@ -555,7 +556,7 @@ def app_info(request, app_name):
         'config_bulk_form': form,
         'app': app_name,
         'config': sorted(config.items()),
-        'task_logs': models.TaskLog.objects.filter(app=app).order_by('-when').all(),
+        'task_logs': task_logs,
     })
 
 
