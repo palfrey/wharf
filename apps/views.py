@@ -218,7 +218,8 @@ def app_configuration(request, app_name):
     }
 
     return render(request, 'app_configuration.html', {
-        'app_links': app_links
+        'app_links': app_links,
+        'app_name': app_name
     })
 
 

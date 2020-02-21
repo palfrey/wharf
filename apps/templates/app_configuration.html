@@ -14,7 +14,7 @@
                                 <div class="card-header card-header-tabs card-header-primary">
                                     <div class="nav-tabs-navigation">
                                         <div class="nav-tabs-wrapper">
-                                            <h4 class="nav-tabs-title">Application Links: </h4>
+                                            <h4 class="nav-tabs-title">Links and Buildpacks: </h4>
                                             <ul class="nav nav-tabs" data-tabs="tabs">
                                                 <li class="nav-item">
                                                     <a class="nav-link tech-icon active" href="#postgres" data-toggle="tab">
@@ -47,20 +47,20 @@
                                 <div class="card-body">
                                     <div class="tab-content">
                                         <div class="tab-pane active" id="postgres">
-                                            {% if app_links.postgres %}
-                                                <div class="table-responsive">
-                                                    <table class="table">
-                                                        <thead>
-                                                        <tr>
-                                                            <th scope="col">Name</th>
-                                                            <th scope="col">Status</th>
-                                                            <th scope="col">Version</th>
-                                                            <th scope="col">Exposed ports</th>
-                                                            <th scope="col">Links</th>
-                                                            <th scope="col">Action</th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th scope="col">Name</th>
+                                                        <th scope="col">Status</th>
+                                                        <th scope="col">Version</th>
+                                                        <th scope="col">Exposed ports</th>
+                                                        <th scope="col">Links</th>
+                                                        <th scope="col">Action</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% if app_links.postgres %}
                                                         {% for item in app_links.postgres %}
                                                             <tr>
                                                                 <td>{{ item['NAME'] }}</td>
@@ -79,21 +79,23 @@
                                                                 </td>
                                                             </tr>
                                                         {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            {% else: %}
-                                                <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-primary">Create Postgres link</button>
-                                                </form>
-                                            {% endif %}
+                                                    {% else: %}
+                                                        <tr>
+                                                            <td colspan="6">No Postgres applications linked</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-primary">Create Postgres link</button>
+                                            </form>
                                         </div>
                                         <div class="tab-pane" id="mariadb">
-                                            {% if app_links.mariadb %}
-                                                <div class="table-responsive">
-                                                    <table class="table">
-                                                        <thead>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
                                                         <tr>
                                                             <th scope="col">Name</th>
                                                             <th scope="col">Status</th>
@@ -102,8 +104,9 @@
                                                             <th scope="col">Links</th>
                                                             <th scope="col">Action</th>
                                                         </tr>
-                                                        </thead>
-                                                        <tbody>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% if app_links.mariadb %}
                                                         {% for item in app_links.mariadb %}
                                                             <tr>
                                                                 <td>{{ item['NAME'] }}</td>
@@ -122,31 +125,34 @@
                                                                 </td>
                                                             </tr>
                                                         {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            {% else: %}
-                                                <form class="form-inline" action="{{ url('create_mariadb', app_name=app) }}" method="POST">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-primary">Create MariaDB link</button>
-                                                </form>
-                                            {% endif %}
+                                                    {% else: %}
+                                                        <tr>
+                                                            <td colspan="6">No MariaDB applications linked</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <form class="form-inline" action="{{ url('create_mariadb', app_name=app) }}" method="POST">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-primary">Create MariaDB link</button>
+                                            </form>
                                         </div>
                                         <div class="tab-pane" id="redis">
-                                            {% if app_links.redis %}
-                                                <div class="table-responsive">
-                                                    <table class="table">
-                                                        <thead>
-                                                        <tr>
-                                                            <th scope="col">Name</th>
-                                                            <th scope="col">Status</th>
-                                                            <th scope="col">Version</th>
-                                                            <th scope="col">Exposed ports</th>
-                                                            <th scope="col">Links</th>
-                                                            <th scope="col">Action</th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th scope="col">Name</th>
+                                                        <th scope="col">Status</th>
+                                                        <th scope="col">Version</th>
+                                                        <th scope="col">Exposed ports</th>
+                                                        <th scope="col">Links</th>
+                                                        <th scope="col">Action</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% if app_links.redis %}
                                                         {% for item in app_links.redis %}
                                                             <tr>
                                                                 <td>{{ item['NAME'] }}</td>
@@ -165,15 +171,18 @@
                                                                 </td>
                                                             </tr>
                                                         {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            {% else: %}
-                                                <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
-                                                    {% csrf_token %}
-                                                    <button type="submit" class="btn btn-primary">Create Redis link</button>
-                                                </form>
-                                            {% endif %}
+                                                    {% else: %}
+                                                        <tr>
+                                                            <td colspan="6">No Redis applications linked</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-primary">Create Redis link</button>
+                                            </form>
                                         </div>
                                         <div class="tab-pane" id="buildpacks">
                                             <div class="table-responsive">
