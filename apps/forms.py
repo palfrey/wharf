@@ -25,6 +25,13 @@ class ConfigFormBulk(forms.Form):
     )
 
 
+class ConfigRemoveForm(forms.Form):
+
+    configKeyName = forms.CharField(
+        label='Env variable key (name)'
+    )
+
+
 class BuildpackAddForm(forms.Form):
 
     buildpack_url = forms.CharField(

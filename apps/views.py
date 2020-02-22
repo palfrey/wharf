@@ -253,6 +253,19 @@ def check_config_set(request, task_id):
     messages.success(request, 'Config updated')
 
 
+def check_config_unset(request, task_id):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    lines = data.split("\n")
+    if lines[0] != '-----> Unsetting ':
+        regex = r"-----> Skipping ([a-zA-Z]*), it is not set in the environment"
+        matches = re.finditer(regex, lines[0], re.MULTILINE)
+        total_matches = sum(1 for _ in matches)
+        if total_matches < 1:
+            raise Exception(data)
+    messages.success(request, 'Config updated')
+
+
 def check_app_config_set(request, app_name, task_id):
     check_config_set(request, task_id)
     clear_cache("config %s" % app_name)
@@ -261,6 +274,12 @@ def check_app_config_set(request, app_name, task_id):
 
 def check_global_config_set(request, app_name, task_id):
     check_config_set(request, task_id)
+    clear_cache("config --global")
+    return redirect(reverse('index'))
+
+
+def check_app_config_unset(request, app_name, task_id):
+    check_config_unset(request, task_id)
     clear_cache("config --global")
     return redirect(reverse('index'))
 
@@ -495,6 +514,16 @@ def remove_domain(request, app_name):
     return run_cmd_with_log(app_name, "Remove domain %s" % name, commands, "check_domain")
 
 
+def remove_app_env_var(request, app_name):
+    form = forms.ConfigRemoveForm(request.POST)
+
+    if form.is_valid():
+        return run_cmd_with_log(app_name,
+                                "Removing app configuration",
+                                "config:unset %s %s" % (app_name, form.cleaned_data['configKeyName']),
+                                "check_app_config_unset")
+
+
 @login_required(login_url='/accounts/login/')
 def app_info(request, app_name):
     app, _ = models.App.objects.get_or_create(name=app_name)
@@ -518,30 +547,9 @@ def app_info(request, app_name):
                                     "check_app_config_set")
     else:
         form = forms.ConfigFormBulk()
-
-    # original_buildpack_items = buildpack_list(app_name)
-    # original_postgres_items = postgres_list(app_name)
-    # original_mariadb_items = mariadb_list(app_name)
-    # list_postgres = []
-    # list_mariadb = []
-    #
-    # if type(original_postgres_items) is dict:
-    #     list_postgres.append(postgres_list(app_name))
-    # else:
-    #     list_postgres = original_postgres_items
-    #
-    # if type(original_mariadb_items) is dict:
-    #     list_mariadb.append(mariadb_list(app_name))
-    # else:
-    #     list_mariadb = original_mariadb_items
     task_logs = models.TaskLog.objects.filter(app=app).order_by('when').all()
 
     return render(request, 'app_info.html', {
-        # 'postgres': list_postgres,
-        # 'redis': redis_list(app_name),
-        # 'mariadb': list_mariadb,
-        # 'buildpacks': original_buildpack_items,
-        # 'git_url': config.get('GITHUB_URL', None),
         'letsencrypt': letsencrypt(app_name),
         'process': process_info(app_name),
         'logs': ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
