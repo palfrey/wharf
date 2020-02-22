@@ -141,17 +141,11 @@ def index(request):
             return create_app(app_form.cleaned_data['name'])
     else:
         app_form = forms.CreateAppForm()
-    config_form = forms.ConfigForm()
-    config_bulk_form = forms.ConfigFormBulk()
-    config = global_config()
-    return render(request, 'dashboard.html',
-                  {
-                      'apps': apps,
-                      'app_form': app_form,
-                      'config_form': config_form,
-                      'config_bulk_form': config_bulk_form,
-                      'config': sorted(config.items())
-                  })
+
+    return render(request, 'dashboard.html', {
+        'apps': apps,
+        'app_form': app_form,
+    })
 
 
 @login_required(login_url='/accounts/login/')
