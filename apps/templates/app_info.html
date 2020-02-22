@@ -26,13 +26,13 @@
                                     <h4 class="card-title">General information</h4>
                                 </div>
                                 <div class="card-body">
-                                    <h5 class="card-title">Process info</h5>
+                                    <h6 class="card-title">Process info</h6>
                                     <ul>
                                         {% for (k,v) in process.items() if k!= 'processes' %}
                                             <li>{{ k }}: {{ v }}</li>
                                         {% endfor %}
                                     </ul>
-                                    <h5 class="card-title">Processes</h5>
+                                    <h6 class="card-title">Processes</h6>
                                     <ul>
                                         {% for (k,v) in process['processes'].items() %}
                                             <li>{{ k }}: {{ v }}</li>
@@ -49,10 +49,10 @@
                         <div class="col-md-4">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
-                                    <h4 class="card-title">Tasks log</h4>
+                                    <h6 class="card-title">Tasks log</h6>
                                 </div>
                                 <div class="card-body">
-                                    <h5 class="card-title">Status</h5>
+                                    <h6 class="card-title">Status</h6>
                                     {% if task_logs %}
                                         <ul>
                                             {% for tl in task_logs %}
@@ -76,9 +76,9 @@
                                     <h4 class="card-title">Applications links</h4>
                                 </div>
                                 <div class="card-body">
-                                    <h5 class="card-title">
+                                    <h6 class="card-title">
                                         <a href="{{ url('app_configuration', app_name=app) }}">Manage application configuration</a>
-                                    </h5>
+                                    </h6>
                                 </div>
                                 <div class="card-footer">
                                     <div class="stats">
