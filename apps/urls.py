@@ -12,6 +12,7 @@ urlpatterns = [
     path('apps', views.apps_list, name='apps_list'), # NEW VIEW
     path('global-variables', views.global_variables_list, name='global_variables_list'), # NEW VIEW
     path('apps/<app_name>/configuration', views.app_configuration, name='app_configuration'), # NEW VIEW
+    path('apps/new-app', views.new_app_page, name='new_app_page'), # NEW VIEW
     path('apps/<app_name>/check_global_config_set/<task_id>', views.check_global_config_set, name='check_global_config_set'),
     path('apps/<app_name>/check_app/<task_id>', views.check_app, name='check_app'),
     path('apps/<app_name>', views.app_info, name='app_info'),

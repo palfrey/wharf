@@ -155,6 +155,20 @@ def index(request):
 
 
 @login_required(login_url='/accounts/login/')
+def new_app_page(request):
+    if request.method == 'POST':
+        app_form = forms.CreateAppForm(request.POST)
+        if app_form.is_valid():
+            return create_app(app_form.cleaned_data['name'])
+    else:
+        app_form = forms.CreateAppForm()
+
+    return render(request, 'app_new.html', {
+        'app_form': app_form
+    })
+
+
+@login_required(login_url='/accounts/login/')
 def apps_list(request):
     """
     Renders the application list
