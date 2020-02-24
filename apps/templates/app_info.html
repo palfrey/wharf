@@ -1,4 +1,275 @@
 {% extends "base.html" %}
 {% block body %}
-{% include "components/apps/details/details.html" %}
+    <style>
+        .logs-output {
+            white-space: pre-line;
+            font-family: Menlo, Monaco, SFMono-Regular, Consolas, Liberation Mono, Courier, monospace !important;
+            overflow: scroll;
+            height: 300px;
+            font-size: 90%;
+            padding: 10px 10px 10px 22px;
+        }
+    </style>
+    <div class="wrapper ">
+        {% include "components/sidebar/sidebar.html" %}
+        <div class="main-panel">
+            <!-- Navbar -->
+            {% include "components/navbar/navbar.html" %}
+            <!-- End Navbar -->
+            <div class="content">
+                <div class="container-fluid">
+                    <!-- Process information -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card card-chart">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Applications links</h4>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="{{ url('app_configuration', app_name=app) }}">Manage application configuration</a>
+                                    </h5>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">info</i>Applications link page can take a few seconds to load
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card card-chart">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Process info</h4>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Status</h5>
+                                    <ul>
+                                        {% for (k,v) in process.items() if k!= 'processes' %}
+                                            <li>{{ k }}: {{ v }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">access_time</i> updated LOREM times ago
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card card-chart">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Processes</h4>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Status</h5>
+                                    <ul>
+                                        {% for (k,v) in process['processes'].items() %}
+                                            <li>{{ k }}: {{ v }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">access_time</i> updated LOREM times ago
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card card-chart">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Log output</h4>
+                                </div>
+                                <div class="card-body logs-output">
+                                    {{ logs }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Process information -->
+                    <!-- Domains and SSL -->
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="card">
+                                <div class="card-header card-header-tabs card-header-primary">
+                                    <div class="nav-tabs-navigation">
+                                        <div class="nav-tabs-wrapper">
+                                            <h4 class="nav-tabs-title">Domains and SSL:</h4>
+                                            <ul class="nav nav-tabs" data-tabs="tabs">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" href="#profile" data-toggle="tab">
+                                                        <i class="material-icons">domain</i> Domains registered
+                                                        <div class="ripple-container"></div>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#messages" data-toggle="tab">
+                                                        <i class="material-icons">add_box</i> Add new domain
+                                                        <div class="ripple-container"></div>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#settings" data-toggle="tab">
+                                                        <i class="material-icons">security</i> SSL Status
+                                                        <div class="ripple-container"></div>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="tab-content">
+                                        <div class="tab-pane active" id="profile">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <tbody>
+                                                    {% for domain in domains %}
+                                                        <tr>
+                                                            <td style="width: 100%">
+                                                                <a href="{{ 'https' if letsencrypt else 'http' }}://{{ domain }}"
+                                                                   rel="nofollow noopener noreferrer"
+                                                                   target="_blank">{{ domain }}</a>
+                                                            </td>
+                                                            <td class="td-actions text-right"
+                                                                style="width: fit-content;">
+                                                                <form class="d-inline"
+                                                                      action="{{ url('remove_domain', app_name=app) }}"
+                                                                      method="POST">
+                                                                    {% csrf_token %}
+                                                                    <input type="hidden" name="name"
+                                                                           value="{{ domain }}"/>
+                                                                    <button type="button" rel="tooltip"
+                                                                            title="Remove this domain"
+                                                                            class="btn btn-danger btn-link btn-sm"
+                                                                            onclick="this.submit()">
+                                                                        <i class="material-icons">close</i>
+                                                                    </button>
+                                                                </form>
+                                                            </td>
+                                                        </tr>
+                                                    {% else %}
+                                                        <tr>
+                                                            <td colspan="2">No domains registered in this app</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane" id="messages">
+                                            <form action="{{ url('add_domain', app_name=app) }}" method="POST">
+                                                {% csrf_token %}
+                                                {{ domain_form | bootstrap }}
+                                                <input class="btn btn-lg btn-block btn-outline-primary" type="submit" value="Submit"/>
+                                            </form>
+                                        </div>
+                                        <div class="tab-pane" id="settings">
+                                            {% if letsencrypt %}
+                                                <ul>
+                                                    {% for (k,v) in letsencrypt.items() if k != 'App name' %}
+                                                        <li>{{ k }}: {{ v }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            {% else %}
+                                                <form class="form-inline"
+                                                      action="{{ url('setup_letsencrypt', app_name=app) }}"
+                                                      method="POST">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-primary">Setup Let's Encrypt
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Domains and SSL -->
+                    <!-- Environment variables -->
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="card">
+                                <div class="card-header card-header-tabs card-header-primary">
+                                    <div class="nav-tabs-navigation">
+                                        <div class="nav-tabs-wrapper">
+                                            <h4 class="nav-tabs-title">Environment variables:</h4>
+                                            <ul class="nav nav-tabs" data-tabs="tabs">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" href="#app-env-vars-list"
+                                                       data-toggle="tab">
+                                                        <i class="material-icons">format_list_bulleted</i> Variables
+                                                        list
+                                                        <div class="ripple-container"></div>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#add-new-env-var" data-toggle="tab">
+                                                        <i class="material-icons">add_box</i> Add new item
+                                                        <div class="ripple-container"></div>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="tab-content">
+                                        <div class="tab-pane active" id="app-env-vars-list">
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead class=" text-primary">
+                                                        <th>Name</th>
+                                                        <th>Value</th>
+                                                        <th>Action</th>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% for (k,v) in config %}
+                                                        <tr>
+                                                            <td>{{ k }}</td>
+                                                            <td>{{ v }}</td>
+                                                            <td>
+                                                                <form class="d-inline" action="#" method="POST">
+                                                                    {% csrf_token %}
+                                                                    <button type="button" rel="tooltip"
+                                                                            title="Remove this variable"
+                                                                            class="btn btn-danger btn-link btn-sm"
+                                                                            onclick="this.submit()">
+                                                                        <i class="material-icons">close</i>
+                                                                    </button>
+                                                                </form>
+                                                            </td>
+                                                        </tr>
+                                                    {% else %}
+                                                        <tr>
+                                                            <td>No env variables defined</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane" id="add-new-env-var">
+                                            <form action="{{ url('app_info', app_name=app) }}" method="POST">
+                                                {% csrf_token %}
+                                                {{ config_bulk_form }}
+                                                <input class="btn btn-lg btn-block btn-outline-primary" type="submit" value="Submit" />
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- End Environment variables -->
+                </div>
+            </div>
+            {% include "components/footer/footer-content.html" %}
+        </div>
+    </div>
 {% endblock %}
