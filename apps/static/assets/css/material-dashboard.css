@@ -19753,4 +19753,20 @@ Copyright (c) 2015 Daniel Eden
   }
 }
 
+/* Wharf - Filipe Souza */
+.card-header-toolbar {
+  margin-top: 10px !important;
+  padding: 8px !important;
+  line-height: 1em !important;
+}
+
+.card .card-header-toolbar.card-header-tabs .nav-tabs > li {
+  margin-right: 10px !important;
+}
+
+.card .card-header-toolbar.card-header-tabs .nav-tabs .nav-item .nav-link {
+  padding: 5px 10px;
+}
+
+
 /*# sourceMappingURL=dashboard-free.css.map */
