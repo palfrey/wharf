@@ -13,4 +13,6 @@ keys
 screenshot.png
 ssh-key
 .DS_Store
+.env
+
 

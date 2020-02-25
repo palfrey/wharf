@@ -155,7 +155,24 @@ def index(request):
 
 
 @login_required(login_url='/accounts/login/')
+def new_global_env_var_page(request):
+    if request.method == 'POST':
+        global_config_bulk_set(request)
+
+    global_config_form = forms.ConfigFormBulk()
+
+    return render(request, 'global_env_var_new.html', {
+        'global_config_form': global_config_form
+    })
+
+
+@login_required(login_url='/accounts/login/')
 def new_app_page(request):
+    """
+    Renders the new app form page
+    :param request:
+    :return:
+    """
     if request.method == 'POST':
         app_form = forms.CreateAppForm(request.POST)
         if app_form.is_valid():
@@ -172,6 +189,8 @@ def new_app_page(request):
 def apps_list(request):
     """
     Renders the application list
+    :param request:
+    :return:
     """
     try:
         apps = app_list()
@@ -189,6 +208,8 @@ def apps_list(request):
 def global_variables_list(request):
     """
     Renders the global variables list
+    :param request:
+    :return:
     """
     try:
         global_env_vars_list = global_config()
@@ -207,6 +228,9 @@ def global_variables_list(request):
 def app_configuration(request, app_name):
     """
     Renders the application links and buildpacks
+    :param request: 
+    :param app_name: 
+    :return: 
     """
     original_buildpack_items = buildpack_list(app_name)
     original_postgres_items = postgres_list(app_name)
