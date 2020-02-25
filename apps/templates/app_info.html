@@ -26,13 +26,16 @@
                                     <h4 class="card-title">Applications links</h4>
                                 </div>
                                 <div class="card-body">
-                                    <h5 class="card-title">
-                                        <a href="{{ url('app_configuration', app_name=app) }}">Manage application configuration</a>
+                                    <h5 class="card-title" style="text-align: center;">
+                                        <a class="btn btn-lg btn-info"
+                                           href="{{ url('app_configuration', app_name=app) }}">Manage application configuration
+                                        <i class="material-icons">settings</i>
+                                        </a>
                                     </h5>
                                 </div>
                                 <div class="card-footer">
                                     <div class="stats">
-                                        <i class="material-icons">info</i>Applications link page can take a few seconds to load
+                                        <i class="material-icons">info</i>Manage Links and buildpacks
                                     </div>
                                 </div>
                             </div>
@@ -45,9 +48,13 @@
                                 <div class="card-body">
                                     <h5 class="card-title">Status</h5>
                                     <ul>
-                                        {% for (k,v) in process.items() if k!= 'processes' %}
-                                            <li>{{ k }}: {{ v }}</li>
-                                        {% endfor %}
+                                        {%  if proccess %}
+                                            {% for (k,v) in process.items() if k!= 'processes' %}
+                                                <li>{{ k }}: {{ v }}</li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li>No processes running</li>
+                                        {% endif %}
                                     </ul>
                                 </div>
                                 <div class="card-footer">
@@ -65,9 +72,13 @@
                                 <div class="card-body">
                                     <h5 class="card-title">Status</h5>
                                     <ul>
-                                        {% for (k,v) in process['processes'].items() %}
-                                            <li>{{ k }}: {{ v }}</li>
-                                        {% endfor %}
+                                        {%  if proccess %}
+                                            {% for (k,v) in process['processes'].items() %}
+                                                <li>{{ k }}: {{ v }}</li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li>No processes running</li>
+                                        {% endif %}
                                     </ul>
                                 </div>
                                 <div class="card-footer">
