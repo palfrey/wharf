@@ -245,12 +245,13 @@
                                                             <td>{{ k }}</td>
                                                             <td>{{ v }}</td>
                                                             <td>
-                                                                <form class="d-inline" action="#" method="POST">
+                                                                <form class="d-inline" id="remove-app-env-var" action="{{ url('remove_app_env_var', app_name=app) }}" method="POST">
                                                                     {% csrf_token %}
+                                                                    <input type="hidden" value="{{ k }}" name="name">
                                                                     <button type="button" rel="tooltip"
-                                                                            title="Remove this variable"
+                                                                            title="Remove this domain"
                                                                             class="btn btn-danger btn-link btn-sm"
-                                                                            onclick="this.submit()">
+                                                                            onclick="document.getElementById('remove-app-env-var').submit();">
                                                                         <i class="material-icons">close</i>
                                                                     </button>
                                                                 </form>
