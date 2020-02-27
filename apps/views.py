@@ -317,7 +317,7 @@ def check_config_unset(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
     lines = data.split("\n")
-    if lines[0] != '-----> Unsetting ':
+    if data.find("-----> Unsetting ") != -1:
         raise Exception(data)
     messages.success(request, 'Config updated')
 
