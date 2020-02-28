@@ -241,21 +241,16 @@
                                                     </thead>
                                                     <tbody>
                                                     {% for (k,v) in config %}
-                                                        <tr>
+                                                        <tr data-value="{{ k }}">
                                                             <td>{{ k }}</td>
                                                             <td>{{ v }}</td>
                                                             <td>
                                                                 <!-- {{ url('remove_app_env_var', app_name=app) }} -->
-                                                                <form class="d-inline" id="remove-app-env-var" action="#" method="POST">
-                                                                    {% csrf_token %}
-                                                                    <input type="hidden" value="{{ k }}" name="name">
-                                                                    <button type="button" rel="tooltip"
-                                                                            title="Remove {{ k }} variable"
-                                                                            class="btn btn-danger btn-link btn-sm"
-                                                                            onclick="document.getElementById('remove-app-env-var').submit();">
-                                                                        <i class="material-icons">close</i>
-                                                                    </button>
-                                                                </form>
+                                                                <button type="button" rel="tooltip"
+                                                                        title="Remove this variable"
+                                                                        class="btn btn-danger btn-link btn-sm">
+                                                                    <i class="material-icons">close</i>
+                                                                </button>
                                                             </td>
                                                         </tr>
                                                     {% else %}
