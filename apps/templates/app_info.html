@@ -245,7 +245,8 @@
                                                             <td>{{ k }}</td>
                                                             <td>{{ v }}</td>
                                                             <td>
-                                                                <form class="d-inline" id="remove-app-env-var" action="{{ url('remove_app_env_var', app_name=app) }}" method="POST">
+                                                                <!-- {{ url('remove_app_env_var', app_name=app) }} -->
+                                                                <form class="d-inline" id="remove-app-env-var" action="#" method="POST">
                                                                     {% csrf_token %}
                                                                     <input type="hidden" value="{{ k }}" name="name">
                                                                     <button type="button" rel="tooltip"

@@ -309,12 +309,12 @@ def check_global_config_set(request, app_name, task_id):
 
 
 def check_app_config_unset(request, app_name, task_id):
-    check_config_unset(request, app_name, task_id)
+    check_config_unset(request, task_id)
     clear_cache("config %s" % app_name)
-    return redirect(reverse('index'))
+    return redirect(reverse('app_info'))
 
 
-def check_config_unset(request, app_name, task_id):
+def check_config_unset(request, task_id):
     """
     Verify if the given application environment variable was successfully removed.
     :param request:
@@ -561,6 +561,7 @@ def remove_domain(request, app_name):
 @login_required(login_url='/accounts/login/')
 def remove_app_env_var(request, app_name):
     name = request.POST['name']
+    raise Exception(name)
     command = "config:unset %s %s" % (app_name, name)
     return run_cmd_with_log(
         app_name,
