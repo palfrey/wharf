@@ -249,7 +249,7 @@
                                                                     {% csrf_token %}
                                                                     <input type="hidden" value="{{ k }}" name="name">
                                                                     <button type="button" rel="tooltip"
-                                                                            title="Remove this domain"
+                                                                            title="Remove {{ k }} variable"
                                                                             class="btn btn-danger btn-link btn-sm"
                                                                             onclick="document.getElementById('remove-app-env-var').submit();">
                                                                         <i class="material-icons">close</i>

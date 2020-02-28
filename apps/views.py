@@ -308,6 +308,12 @@ def check_global_config_set(request, app_name, task_id):
     return redirect(reverse('index'))
 
 
+def check_app_config_unset(request, app_name, task_id):
+    check_config_unset(request, app_name, task_id)
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('index'))
+
+
 def check_config_unset(request, app_name, task_id):
     """
     Verify if the given application environment variable was successfully removed.
@@ -317,7 +323,7 @@ def check_config_unset(request, app_name, task_id):
     res = AsyncResult(task_id)
     data = get_log(res)
     lines = data.split("\n")
-    if data.find("-----> Unsetting ") != -1:
+    if "Unsetting" not in lines[0]:
         raise Exception(data)
     messages.success(request, 'Config updated')
 
