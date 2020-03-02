@@ -311,7 +311,7 @@ def check_global_config_set(request, app_name, task_id):
 def check_app_config_unset(request, app_name, task_id):
     check_config_unset(request, task_id)
     clear_cache("config %s" % app_name)
-    return redirect(reverse('index'))
+    return redirect(reverse('app_info', kwargs={'app_name': app_name}))
 
 
 def check_config_unset(request, task_id):
