@@ -308,6 +308,26 @@ def check_global_config_set(request, app_name, task_id):
     return redirect(reverse('index'))
 
 
+def check_app_config_unset(request, app_name, task_id):
+    check_config_unset(request, task_id)
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('index'))
+
+
+def check_config_unset(request, task_id):
+    """
+    Verify if the given application environment variable was successfully removed.
+    :param request:
+    :param task_id:
+    """
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    lines = data.split("\n")
+    if "Unsetting" not in lines[0]:
+        raise Exception(data)
+    messages.success(request, 'Config updated')
+
+
 def format_config_string(data, splitter=":"):
     """
     Formats the config string submitted by the user to allow inserting multiple values in a single Dokku config:set use.
@@ -539,6 +559,18 @@ def remove_domain(request, app_name):
 
 
 @login_required(login_url='/accounts/login/')
+def remove_app_env_var(request, app_name):
+    name = request.POST['name']
+    command = "config:unset %s %s" % (app_name, name)
+    return run_cmd_with_log(
+        app_name,
+        "Removing %s env variable from %s" % (name, app_name),
+        command,
+        "check_config_unset"
+    )
+
+
+@login_required(login_url='/accounts/login/')
 def app_info(request, app_name):
     app, _ = models.App.objects.get_or_create(name=app_name)
     config = app_config(app_name)
@@ -562,28 +594,7 @@ def app_info(request, app_name):
     else:
         form = forms.ConfigFormBulk()
 
-    # original_buildpack_items = buildpack_list(app_name)
-    # original_postgres_items = postgres_list(app_name)
-    # original_mariadb_items = mariadb_list(app_name)
-    # list_postgres = []
-    # list_mariadb = []
-    #
-    # if type(original_postgres_items) is dict:
-    #     list_postgres.append(postgres_list(app_name))
-    # else:
-    #     list_postgres = original_postgres_items
-    #
-    # if type(original_mariadb_items) is dict:
-    #     list_mariadb.append(mariadb_list(app_name))
-    # else:
-    #     list_mariadb = original_mariadb_items
-
     return render(request, 'app_info.html', {
-        # 'postgres': list_postgres,
-        # 'redis': redis_list(app_name),
-        # 'mariadb': list_mariadb,
-        # 'buildpacks': original_buildpack_items,
-        # 'git_url': config.get('GITHUB_URL', None),
         'letsencrypt': letsencrypt(app_name),
         'process': process_info(app_name),
         'logs': ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
