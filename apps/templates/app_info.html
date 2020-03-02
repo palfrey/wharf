@@ -240,7 +240,6 @@
                                                         <th>Action</th>
                                                     </thead>
                                                     <tbody>
-                                                    {% csrf_token %}
                                                     {% for (k,v) in config %}
                                                         <tr>
                                                             <td>{{ k }}</td>
@@ -250,7 +249,7 @@
                                                                         title="Remove this variable"
                                                                         class="btn btn-danger btn-link btn-sm"
                                                                         data-attribute="{{ k }}"
-                                                                        onclick="submitForms(this.getAttribute('data-attribute'), '{{ url('remove_app_env_var', app_name=app) }}');"
+                                                                        onclick="removeAppEnvVar(this.getAttribute('data-attribute'), '{{ url('remove_app_env_var', app_name=app) }}');"
                                                                 >
                                                                     <i class="material-icons">close</i>
                                                                 </button>
@@ -284,19 +283,28 @@
         </div>
     </div>
     <script type="text/javascript">
-        function submitForms(data, target, csrf){
+        function removeAppEnvVar(data, target, csrf){
             var form = document.createElement('form');
             document.body.appendChild(form);
-            form.method = "POST";
+            form.method = 'POST';
             form.action = target;
 
             var elName = document.createElement('input');
-            elName.name="name";
+            elName.name = 'name';
             elName.value = data;
             elName.type = 'hidden';
             form.appendChild(elName);
 
+
+            var elCSRF = document.createElement('input');
+            elCSRF.name = 'csrfmiddlewaretoken';
+            elCSRF.value = '{{ csrf_token }}';
+            elCSRF.type = 'hidden';
+            form.appendChild(elCSRF);
+
             console.log(data, target);
+
+            form.submit();
         }
     </script>
 {% endblock %}
