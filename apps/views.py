@@ -8,7 +8,7 @@ from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
-from pprint import pprint
+from dynamic_preferences.forms import global_preference_form_builder
 
 import requests
 import time
@@ -259,6 +259,14 @@ def app_configuration(request, app_name):
         'app_links': app_links,
         'app': app_name
     })
+
+
+@login_required(login_url='/accounts/login')
+def settings(request):
+    """
+    Renders the settings page
+    """
+    return render(request, 'settings.html')
 
 
 @login_required(login_url='/accounts/login/')

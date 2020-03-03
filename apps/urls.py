@@ -12,6 +12,7 @@ urlpatterns = [
 
     # NEW VIEWS
 
+    path('settings', views.settings, name='settings_page'),
     path('global/variables', views.global_variables_list, name='global_variables_list'),
     path('global/new-env', views.new_global_env_var_page, name='new_global_env_var_page'),
     path('apps', views.apps_list, name='apps_list'),
