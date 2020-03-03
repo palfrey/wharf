@@ -1,5 +1,36 @@
 {% extends "base.html" %}
 {% block body %}
+    <style>
+      .tech-icon {
+        flex-direction: column;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        height: inherit;
+      }
+    .tech-icon i {
+        width: 30px;
+        height: 30px;
+        font-size: 30px;
+    }
+    .tech-icon span {
+        padding-top: 6px;
+        padding-bottom: 4px;
+        display: inline-block;
+        line-height: 1;
+    }
+    .card .card-header-toolbar.card-header-tabs {
+        margin-bottom: 15px !important;
+    }
+    </style>
     <div class="wrapper ">
         {% include "components/sidebar/sidebar.html" %}
         <div class="main-panel">
@@ -13,30 +44,34 @@
                             <div class="card">
                                 <div class="card-header card-header-tabs card-header-primary">
                                     <div class="nav-tabs-navigation">
-                                        <div class="nav-tabs-wrapper">
+                                        <div class="nav-tabs-wrapper flex-column">
                                             <h4 class="nav-tabs-title">Application Links: </h4>
                                             <ul class="nav nav-tabs" data-tabs="tabs">
                                                 <li class="nav-item">
                                                     <a class="nav-link tech-icon active" href="#postgres" data-toggle="tab">
-                                                        <i class="icon-postgres"></i> Postgres
+                                                        <i class="icon-postgres"></i>
+                                                        <span>Postgres</span>
                                                         <div class="ripple-container"></div>
                                                     </a>
                                                 </li>
                                                 <li class="nav-item">
                                                     <a class="nav-link tech-icon" href="#mariadb" data-toggle="tab">
-                                                        <i class="icon-mariadb"></i> MariaDB
+                                                        <i class="icon-mariadb"></i>
+                                                        <span>MariaDB</span>
                                                         <div class="ripple-container"></div>
                                                     </a>
                                                 </li>
                                                 <li class="nav-item">
                                                     <a class="nav-link tech-icon" href="#redis" data-toggle="tab">
-                                                        <i class="icon-redis"></i> Redis
+                                                        <i class="icon-redis"></i>
+                                                        <span>Redis</span>
                                                         <div class="ripple-container"></div>
                                                     </a>
                                                 </li>
                                                 <li class="nav-item">
                                                     <a class="nav-link tech-icon" href="#buildpacks" data-toggle="tab">
-                                                        <i class="icon-heroku"></i> Buildpacks
+                                                        <i class="icon-heroku"></i>
+                                                        <span>Buildpacks</span>
                                                         <div class="ripple-container"></div>
                                                     </a>
                                                 </li>
