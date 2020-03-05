@@ -14,6 +14,7 @@ sudo dokku plugin:install-dependencies --core
 (dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git redis
 (dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git --committish 1.9.5 postgres
 (dokku plugin:list | grep letsencrypt) || sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
+dokku plugin:list
 dokku letsencrypt:cron-job --add
 (dokku apps:list | grep wharf) || dokku apps:create wharf
 (dokku redis:list | grep wharf) || (dokku redis:create wharf && dokku redis:link wharf wharf)
