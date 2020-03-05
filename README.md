@@ -8,8 +8,8 @@ Setup
 -----
 1. [Install Dokku](http://dokku.viewdocs.io/dokku/getting-started/installation)
 2. Install the following plugins:
-  * https://github.com/dokku/dokku-redis
-  * https://github.com/dokku/dokku-postgres
+  * https://github.com/dokku/dokku-redis (versions up to 1.10.4, see #75)
+  * https://github.com/dokku/dokku-postgres (versions up to 1.9.5, see #75)
   * https://github.com/dokku/dokku-letsencrypt
 3. Setup the Let's Encrypt plugin to auto-renew (`dokku letsencrypt:cron-job --add`)
 4. Create the app (`dokku apps:create wharf`)
@@ -24,6 +24,8 @@ Setup
 
 Helpful hints
 -------------
+* If you're running SSH on a non-standard port, set `DOKKU_SSH_PORT` e.g. `dokku config:set wharf DOKKU_SSH_PORT=2222`
+* If Dokku is running somewhere else than the local machine, set `DOKKU_SSH_HOST` e.g. `dokku config:set wharf DOKKU_SSH_HOST=foo.example.com`
 * If there's a Dockerfile in your repository, it'll [try and deploy using that by default](http://dokku.viewdocs.io/dokku/deployment/methods/dockerfiles/). Set BUILDPACK_URL to override
 * BUILDPACK_URL should be an HTTPS one, not a SSH or heroku/something one
 * You should setup the global domain name when creating Dokku to start with and add a *.&lt;your dokku domain&gt; entry to give new apps more usable names.

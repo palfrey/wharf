@@ -4,6 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 import sys
 import os
 from subprocess import Popen, PIPE, STDOUT, run, check_call, check_output, CalledProcessError
@@ -55,6 +56,8 @@ class Tester:
         self.driver.get_screenshot_as_file("screenshot.png")
         for entry in self.driver.get_log('browser'):
             self.log("Browser: %s" % entry)
+        print(self.driver.page_source)
+        os.system("docker logs wharf.web.1")
 
     def get(self, url):
         self.log("Went to %s" % url)
