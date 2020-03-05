@@ -8,7 +8,7 @@ Setup
 -----
 1. [Install Dokku](http://dokku.viewdocs.io/dokku/getting-started/installation)
 2. Install the following plugins:
-  * https://github.com/dokku/dokku-redis
+  * https://github.com/dokku/dokku-redis (versions up to 1.10.4, see #75)
   * https://github.com/dokku/dokku-postgres (versions up to 1.9.5, see #75)
   * https://github.com/dokku/dokku-letsencrypt
 3. Setup the Let's Encrypt plugin to auto-renew (`dokku letsencrypt:cron-job --add`)
