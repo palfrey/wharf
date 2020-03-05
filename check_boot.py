@@ -3,6 +3,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 import sys
 import os
 from subprocess import Popen, PIPE, STDOUT, run, check_call, check_output, CalledProcessError
@@ -52,6 +53,8 @@ class Tester:
 
     def failure(self):
         self.driver.get_screenshot_as_file("screenshot.png")
+        print(self.driver.page_source)
+        os.system("docker logs wharf.web.1")
 
     def get(self, url):
         self.log("Went to %s" % url)
@@ -66,9 +69,13 @@ class Tester:
         return self.find_element(strat, id).click()
 
     def wait_for_list(self, items):
-        return WebDriverWait(self.driver, 10).until(
-            lambda driver: self.wait_for_one(items)
-        )
+        try:
+            return WebDriverWait(self.driver, 10).until(
+                lambda driver: self.wait_for_one(items)
+            )
+        except TimeoutException:
+            self.failure()
+            raise
 
     def get_main_id(self):
         res = self.wait_for_list([(By.ID, "initial-setup-header"), (By.ID, "list_apps")])
