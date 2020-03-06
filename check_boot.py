@@ -71,9 +71,9 @@ class Tester:
         self.log("Click on %s: '%s'" %(strat, id))
         return self.find_element(strat, id).click()
 
-    def wait_for_list(self, items):
+    def wait_for_list(self, items, timeout=10):
         try:
-            return WebDriverWait(self.driver, 10).until(
+            return WebDriverWait(self.driver, timeout).until(
                 lambda driver: self.wait_for_one(items)
             )
         except TimeoutException:
@@ -130,7 +130,7 @@ try:
         tester.send_keys(By.ID, "id_key", "GITHUB_URL")
         tester.send_keys(By.ID, "id_value", "https://github.com/palfrey/wharf.git")
         tester.click(By.ID, "config_add")
-        tester.wait_for_list([(By.ID, "app_page")])
+        tester.wait_for_list([(By.ID, "app_page")], timeout=300)
         assert tester.page_source().find(github_text) == -1
 
     tester.click(By.ID, "deploy_app")
