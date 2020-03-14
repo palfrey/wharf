@@ -6,7 +6,7 @@ Wharf is an opinionated web frontend for [Dokku](http://dokku.viewdocs.io/dokku/
 
 Screenshots
 -----------
-<a href="./screenshots/apps_list.png"><img style="vertical-align:top" src="./screenshots/apps_list.png" width="20%" /></a> <a href="./screenshots/apps_list.png"><img src="./screenshots/app_index.png" style="vertical-align:top" width="20%" /></a>
+<a href="./screenshots/apps_list.png"><img align="top" src="./screenshots/apps_list.png" width="20%" /></a> <a href="./screenshots/apps_list.png"><img src="./screenshots/app_index.png" align="top" width="20%" /></a>
 
 Setup
 -----
