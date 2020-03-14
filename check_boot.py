@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -53,6 +54,8 @@ class Tester:
 
     def failure(self):
         self.driver.get_screenshot_as_file("screenshot.png")
+        for entry in self.driver.get_log('browser'):
+            self.log("Browser: %s" % entry)
         print(self.driver.page_source)
         os.system("docker logs wharf.web.1")
 
@@ -68,9 +71,9 @@ class Tester:
         self.log("Click on %s: '%s'" %(strat, id))
         return self.find_element(strat, id).click()
 
-    def wait_for_list(self, items):
+    def wait_for_list(self, items, timeout=10):
         try:
-            return WebDriverWait(self.driver, 10).until(
+            return WebDriverWait(self.driver, timeout).until(
                 lambda driver: self.wait_for_one(items)
             )
         except TimeoutException:
@@ -84,8 +87,8 @@ class Tester:
     def page_source(self):
         return self.driver.page_source
 
+tester = Tester()
 try:
-    tester = Tester()
     tester.get(sys.argv[1])
     tester.send_keys(By.NAME, "username", "admin")
     tester.send_keys(By.NAME, "password", "password")
@@ -102,7 +105,7 @@ try:
             check_call("sudo dokku ssh-keys:remove check_boot".split(" "))
         element = tester.find_element(By.ID, "ssh-key")
         cmd = "echo " + element.text + " | sudo dokku ssh-keys:add check_boot"
-        print(cmd)
+        tester.log(cmd)
         ret = os.system(cmd)
         assert ret == 0
         tester.get(sys.argv[1])
@@ -120,6 +123,18 @@ try:
     tester.get(sys.argv[1])
     tester.click(By.XPATH, '//a[text()="wharf"]')
     tester.wait_for_list([(By.ID, "app_page")])
+    assert tester.page_source().find("Wharf: wharf") != -1
+
+    github_text = "Can't deploy due to missing GITHUB_URL"
+    if tester.page_source().find(github_text) != -1:
+        tester.send_keys(By.ID, "id_key", "GITHUB_URL")
+        tester.send_keys(By.ID, "id_value", "https://github.com/palfrey/wharf.git")
+        tester.click(By.ID, "config_add")
+        tester.wait_for_list([(By.ID, "app_page")], timeout=300)
+        assert tester.page_source().find(github_text) == -1
+
+    tester.click(By.ID, "deploy_app")
+    tester.wait_for_list([(By.ID, "app_page")], timeout=300)
     assert tester.page_source().find("Wharf: wharf") != -1
 finally:
     tester.driver.quit()

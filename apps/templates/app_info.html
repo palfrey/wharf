@@ -10,8 +10,8 @@ Can't deploy due to missing GITHUB_URL in config (which should be set to the "Cl
 <form class="form-inline" action="{{ url('deploy', app_name=app) }}" method="POST">
   {% csrf_token %}
   <input type="hidden" name="url" value="{{ git_url }}" />
-  <button type="submit" class="btn btn-primary" name="action" value="deploy">Deploy app</button>&nbsp;&nbsp;
-  <button type="submit" class="btn btn-warning" name="action" value="rebuild">Rebuild app</button>
+  <button type="submit" class="btn btn-primary" name="action" value="deploy" id="deploy_app">Deploy app</button>&nbsp;&nbsp;
+  <button type="submit" class="btn btn-warning" name="action" value="rebuild" id="rebuild_app">Rebuild app</button>
 </form>
 {% endif %}
 <h2>Task logs</h2>
@@ -55,7 +55,7 @@ No tasks run yet
 <form action="{{ url('app_info', app_name=app) }}" method="POST">
   {% csrf_token %}
   {{ form | bootstrap }}
-  <input class="form-control" type="submit" value="Submit" />
+  <input class="form-control" type="submit" value="Submit" id="config_add" />
 </form>
 <h3>Postgres</h3>
 {% if postgres %}
