@@ -134,7 +134,7 @@ try:
         assert tester.page_source().find(github_text) == -1
 
     tester.click(By.ID, "deploy_app")
-    tester.wait_for_list([(By.ID, "app_page")])
+    tester.wait_for_list([(By.ID, "app_page")], timeout=300)
     assert tester.page_source().find("Wharf: wharf") != -1
 finally:
     tester.driver.quit()
