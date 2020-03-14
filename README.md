@@ -4,6 +4,10 @@ Wharf
 
 Wharf is an opinionated web frontend for [Dokku](http://dokku.viewdocs.io/dokku/). You can also use the command line version, but most features you'll need day-to-day are in the Web UI
 
+Screenshots
+-----------
+<a href="./screenshots/apps_list.png"><img src="./screenshots/apps_list.png" width="20%" /></a> <a href="./screenshots/apps_list.png"><img src="./screenshots/app_index.png" width="20%" /></a>
+
 Setup
 -----
 1. [Install Dokku](http://dokku.viewdocs.io/dokku/getting-started/installation)
