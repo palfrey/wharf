@@ -19772,16 +19772,25 @@ Copyright (c) 2015 Daniel Eden
   border: none;
 }
 
-.env-var-ripple {
-  background-position: center;
-  transition: background 0.8s;
-  outline: none;
-  border: none;
-  cursor: pointer;
+.env-var-btn {
+  outline: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  background: none !important;
+  color: transparent;
+  box-shadow: none;
 }
 
-.env-var-ripple:focus {
+.env-var-btn:hover {
+  box-shadow: none !important;
+  color: transparent !important;
+}
+
+.env-var-btn:focus {
   outline: none;
+  box-shadow: none !important;
+  color: transparent !important;
 }
 
 .env-var-hidden-value-toogle::before {

@@ -35,6 +35,7 @@
                                         <thead class=" text-primary">
                                         <th>Name</th>
                                         <th>Value</th>
+                                        <th>Action</th>
                                         </thead>
                                         <tbody>
                                         {% for (k,v) in config %}
@@ -50,10 +51,21 @@
                                                         autofocus="off"
                                                         id="env-var-hidden-value-input-{{ k }}"
                                                     />
+                                                </td>
+                                                <td>
                                                     <button
-                                                        class="env-var-ripple material-icons env-var-hidden-value-toogle"
-                                                        data-key-name="{{ k }}"
+                                                        class="btn env-var-btn material-icons env-var-hidden-value-toogle"
+                                                        rel="tooltip"
+                                                        title="See variable value"
+                                                        data-attribute="{{ k }}"
                                                     >
+                                                    </button>
+                                                    <button type="button" rel="tooltip"
+                                                        title="Remove this domain"
+                                                        class="btn btn-danger btn-link btn-sm"
+                                                        data-attribute="{{ k }}"
+                                                    >
+                                                        <i class="material-icons">close</i>
                                                     </button>
                                                 </td>
                                             </tr>
