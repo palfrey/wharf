@@ -239,8 +239,25 @@
                                                     {% for (k,v) in config %}
                                                         <tr>
                                                             <td>{{ k }}</td>
-                                                            <td>{{ v }}</td>
                                                             <td>
+                                                                <input
+                                                                    type="password"
+                                                                    value="{{ v }}"
+                                                                    class="env-var-hidden-value"
+                                                                    disabled="disabled"
+                                                                    autocomplete="off"
+                                                                    autofocus="off"
+                                                                    id="env-var-hidden-value-input-{{ k }}"
+                                                                />
+                                                            </td>
+                                                            <td>
+                                                                <button
+                                                                    class="btn env-var-btn material-icons env-var-hidden-value-toogle"
+                                                                    rel="tooltip"
+                                                                    title="See variable value"
+                                                                    data-attribute="{{ k }}"
+                                                                >
+                                                                </button>
                                                                 <button type="button" rel="tooltip"
                                                                         title="Remove this variable"
                                                                         class="btn btn-danger btn-link btn-sm"
