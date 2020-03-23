@@ -8,7 +8,6 @@ from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
-from dynamic_preferences.forms import global_preference_form_builder
 
 import requests
 import time
