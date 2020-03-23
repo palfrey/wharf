@@ -9,9 +9,20 @@ urlpatterns = [
     path('refresh', views.refresh_all, name='refresh_all'),
     path('create_app', views.create_app, name='create_app'),
     path('global_config_bulk_set', views.global_config_bulk_set, name='global_config_bulk_set'),
-    path('apps', views.apps_list, name='apps_list'), # NEW VIEW
-    path('global-variables', views.global_variables_list, name='global_variables_list'), # NEW VIEW
-    path('apps/<app_name>/configuration', views.app_configuration, name='app_configuration'), # NEW VIEW
+
+    # NEW VIEWS
+
+    path('settings', views.settings, name='settings_page'),
+    path('global/variables', views.global_variables_list, name='global_variables_list'),
+    path('global/new-env', views.new_global_env_var_page, name='new_global_env_var_page'),
+    path('apps', views.apps_list, name='apps_list'),
+    path('apps/new-app', views.new_app_page, name='new_app_page'),
+    path('apps/<app_name>/configuration', views.app_configuration, name='app_configuration'),
+    path('apps/<app_name>/remove-env-var', views.remove_app_env_var, name='remove_app_env_var'),
+    path('apps/<app_name>/remove-env-var/<task_id>', views.check_app_config_unset, name='check_config_unset'),
+
+    # END NEW VIEWS
+
     path('apps/<app_name>/check_global_config_set/<task_id>', views.check_global_config_set, name='check_global_config_set'),
     path('apps/<app_name>/check_app/<task_id>', views.check_app, name='check_app'),
     path('apps/<app_name>', views.app_info, name='app_info'),

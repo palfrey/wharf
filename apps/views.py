@@ -8,7 +8,6 @@ from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseBadRequest, HttpResponse, HttpResponseServerError
 from django.contrib.auth.decorators import login_required
-from pprint import pprint
 
 import requests
 import time
@@ -141,10 +140,47 @@ def index(request):
             return create_app(app_form.cleaned_data['name'])
     else:
         app_form = forms.CreateAppForm()
+    config_form = forms.ConfigForm()
+    config_bulk_form = forms.ConfigFormBulk()
+    config = global_config()
+    return render(request, 'dashboard.html',
+                  {
+                      'apps': apps,
+                      'app_form': app_form,
+                      'config_form': config_form,
+                      'config_bulk_form': config_bulk_form,
+                      'config': sorted(config.items())
+                  })
 
-    return render(request, 'dashboard.html', {
-        'apps': apps,
-        'app_form': app_form,
+
+@login_required(login_url='/accounts/login/')
+def new_global_env_var_page(request):
+    if request.method == 'POST':
+        global_config_bulk_set(request)
+
+    global_config_form = forms.ConfigFormBulk()
+
+    return render(request, 'global_env_var_new.html', {
+        'global_config_form': global_config_form
+    })
+
+
+@login_required(login_url='/accounts/login/')
+def new_app_page(request):
+    """
+    Renders the new app form page
+    :param request:
+    :return:
+    """
+    if request.method == 'POST':
+        app_form = forms.CreateAppForm(request.POST)
+        if app_form.is_valid():
+            return create_app(app_form.cleaned_data['name'])
+    else:
+        app_form = forms.CreateAppForm()
+
+    return render(request, 'app_new.html', {
+        'app_form': app_form
     })
 
 
@@ -152,6 +188,8 @@ def index(request):
 def apps_list(request):
     """
     Renders the application list
+    :param request:
+    :return:
     """
     try:
         apps = app_list()
@@ -169,6 +207,8 @@ def apps_list(request):
 def global_variables_list(request):
     """
     Renders the global variables list
+    :param request:
+    :return:
     """
     try:
         global_env_vars_list = global_config()
@@ -187,6 +227,9 @@ def global_variables_list(request):
 def app_configuration(request, app_name):
     """
     Renders the application links and buildpacks
+    :param request: 
+    :param app_name: 
+    :return: 
     """
     original_buildpack_items = buildpack_list(app_name)
     original_postgres_items = postgres_list(app_name)
@@ -213,8 +256,16 @@ def app_configuration(request, app_name):
 
     return render(request, 'app_configuration.html', {
         'app_links': app_links,
-        'app_name': app_name
+        'app': app_name
     })
+
+
+@login_required(login_url='/accounts/login')
+def settings(request):
+    """
+    Renders the settings page
+    """
+    return render(request, 'settings.html')
 
 
 @login_required(login_url='/accounts/login/')
@@ -253,19 +304,6 @@ def check_config_set(request, task_id):
     messages.success(request, 'Config updated')
 
 
-def check_config_unset(request, task_id):
-    res = AsyncResult(task_id)
-    data = get_log(res)
-    lines = data.split("\n")
-    if lines[0] != '-----> Unsetting ':
-        regex = r"-----> Skipping ([a-zA-Z]*), it is not set in the environment"
-        matches = re.finditer(regex, lines[0], re.MULTILINE)
-        total_matches = sum(1 for _ in matches)
-        if total_matches < 1:
-            raise Exception(data)
-    messages.success(request, 'Config updated')
-
-
 def check_app_config_set(request, app_name, task_id):
     check_config_set(request, task_id)
     clear_cache("config %s" % app_name)
@@ -280,8 +318,22 @@ def check_global_config_set(request, app_name, task_id):
 
 def check_app_config_unset(request, app_name, task_id):
     check_config_unset(request, task_id)
-    clear_cache("config --global")
-    return redirect(reverse('index'))
+    clear_cache("config %s" % app_name)
+    return redirect(reverse('app_info', kwargs={'app_name': app_name}))
+
+
+def check_config_unset(request, task_id):
+    """
+    Verify if the given application environment variable was successfully removed.
+    :param request:
+    :param task_id:
+    """
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    lines = data.split("\n")
+    if "Unsetting" not in lines[0]:
+        raise Exception(data)
+    messages.success(request, 'Config updated')
 
 
 def format_config_string(data, splitter=":"):
@@ -514,14 +566,16 @@ def remove_domain(request, app_name):
     return run_cmd_with_log(app_name, "Remove domain %s" % name, commands, "check_domain")
 
 
+@login_required(login_url='/accounts/login/')
 def remove_app_env_var(request, app_name):
-    form = forms.ConfigRemoveForm(request.POST)
-
-    if form.is_valid():
-        return run_cmd_with_log(app_name,
-                                "Removing app configuration",
-                                "config:unset %s %s" % (app_name, form.cleaned_data['configKeyName']),
-                                "check_app_config_unset")
+    name = request.POST['name']
+    command = "config:unset %s %s" % (app_name, name)
+    return run_cmd_with_log(
+        app_name,
+        "Removing %s env variable from %s" % (name, app_name),
+        command,
+        "check_config_unset"
+    )
 
 
 @login_required(login_url='/accounts/login/')
@@ -547,7 +601,6 @@ def app_info(request, app_name):
                                     "check_app_config_set")
     else:
         form = forms.ConfigFormBulk()
-    task_logs = models.TaskLog.objects.filter(app=app).order_by('when').all()
 
     return render(request, 'app_info.html', {
         'letsencrypt': letsencrypt(app_name),
@@ -558,7 +611,7 @@ def app_info(request, app_name):
         'config_bulk_form': form,
         'app': app_name,
         'config': sorted(config.items()),
-        'task_logs': task_logs,
+        'task_logs': models.TaskLog.objects.filter(app=app).order_by('-when').all(),
     })
 
 

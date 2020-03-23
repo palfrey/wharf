@@ -75,6 +75,8 @@ LOGIN_URL = "/"
 SESSION_COOKIE_SAMESITE = None
 LOGIN_EXEMPT_URLS = ["webhook", "favicon.ico", "status"]
 
+GLOBAL_COMMAND_CACHE_EXPIRATION = os.environ.get('GLOBAL_COMMAND_CACHE_EXPIRATION', 30)
+
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',

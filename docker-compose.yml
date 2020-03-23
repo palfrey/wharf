@@ -8,16 +8,8 @@ services:
       - .:/app
     ports:
       - 8000:8000
-    environment:
-      - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
-      - BROKER_URL=redis://redis:6379/0
-      - CACHE_URL=redis://redis:6379/1
-      - DOKKU_SSH_HOST=${DOKKU_SSH_HOST:-127.0.0.1}
-      - DOKKU_SSH_PORT=${DOKKU_SSH_PORT:-22}
-      - GITHUB_SECRET=${GITHUB_SECRET:-password}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-password}
-      - SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=${SOCIAL_AUTH_GOOGLE_OAUTH2_KEY:-lorem}
-      - SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=${SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET:-ipsum}
+    env_file:
+      - .env
     depends_on:
       - postgres
       - redis
@@ -26,14 +18,8 @@ services:
     command: ./wait-for-it.sh postgres:5432 --strict --timeout=0 -- ./wait-for-it.sh redis:6379 --strict --timeout=0 -- bash -c "python manage.py celery"
     volumes:
       - .:/app
-    environment:
-      - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
-      - BROKER_URL=redis://redis:6379/0
-      - CACHE_URL=redis://redis:6379/1
-      - DOKKU_SSH_HOST=${DOKKU_SSH_HOST:-127.0.0.1}
-      - DOKKU_SSH_PORT=${DOKKU_SSH_PORT:-22}
-      - SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=${SOCIAL_AUTH_GOOGLE_OAUTH2_KEY:-lorem}
-      - SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=${SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET:-ipsum}
+    env_file:
+      - .env
     depends_on:
       - postgres
       - redis

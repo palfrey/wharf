@@ -23,66 +23,67 @@
                         <div class="col-md-4">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
-                                    <h4 class="card-title">General information</h4>
-                                </div>
-                                <div class="card-body">
-                                    <h6 class="card-title">Process info</h6>
-                                    <ul>
-                                        {% for (k,v) in process.items() if k!= 'processes' %}
-                                            <li>{{ k }}: {{ v }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                    <h6 class="card-title">Processes</h6>
-                                    <ul>
-                                        {% for (k,v) in process['processes'].items() %}
-                                            <li>{{ k }}: {{ v }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                                <div class="card-footer">
-                                    <div class="stats">
-                                        <i class="material-icons">access_time</i> updated LOREM times ago
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card card-chart">
-                                <div class="card-header card-header-primary">
-                                    <h6 class="card-title">Tasks log</h6>
-                                </div>
-                                <div class="card-body">
-                                    <h6 class="card-title">Status</h6>
-                                    {% if task_logs %}
-                                        <ul>
-                                            {% for tl in task_logs %}
-                                                <li><a href="{{ url('show_log', task_id=tl.task_id) }}">{{ tl.nice_when() }} - {{ tl.description }}</a></li>
-                                            {% endfor %}
-                                        </ul>
-                                    {% else %}
-                                        <h5 class="card-title">No tasks to run yet</h5>
-                                    {% endif %}
-                                </div>
-                                <div class="card-footer">
-                                    <div class="stats">
-                                        <i class="material-icons">access_time</i> updated LOREM times ago
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card card-chart">
-                                <div class="card-header card-header-primary">
                                     <h4 class="card-title">Applications links</h4>
                                 </div>
                                 <div class="card-body">
-                                    <h6 class="card-title">
-                                        <a href="{{ url('app_configuration', app_name=app) }}">Manage application configuration</a>
-                                    </h6>
+                                    <h5 class="card-title" style="text-align: center;">
+                                        <a class="btn btn-md btn-info"
+                                           href="{{ url('app_configuration', app_name=app) }}">Configure links and more
+                                        <i class="material-icons">settings</i>
+                                        </a>
+                                    </h5>
                                 </div>
                                 <div class="card-footer">
                                     <div class="stats">
-                                        <i class="material-icons">info</i>Applications link page can take a few seconds to load
+                                        <i class="material-icons">info</i>Manage Links and buildpacks
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card card-chart">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Process info</h4>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Status</h5>
+                                    <ul>
+                                        {%  if proccess %}
+                                            {% for (k,v) in process.items() if k!= 'processes' %}
+                                                <li>{{ k }}: {{ v }}</li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li>No processes running</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">access_time</i> updated LOREM times ago
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card card-chart">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title">Processes</h4>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Status</h5>
+                                    <ul>
+                                        {%  if proccess %}
+                                            {% for (k,v) in process['processes'].items() %}
+                                                <li>{{ k }}: {{ v }}</li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li>No processes running</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                        <i class="material-icons">access_time</i> updated LOREM times ago
                                     </div>
                                 </div>
                             </div>
@@ -92,7 +93,7 @@
                         <div class="col-md-12">
                             <div class="card card-chart">
                                 <div class="card-header card-header-primary">
-                                    <h4 class="card-title">Application log output</h4>
+                                    <h4 class="card-title">Log output</h4>
                                 </div>
                                 <div class="card-body logs-output">
                                     {{ logs }}
@@ -137,32 +138,25 @@
                                         <div class="tab-pane active" id="profile">
                                             <div class="table-responsive">
                                                 <table class="table">
-                                                    <thead class="text-primary">
-                                                        <th>Name</th>
-                                                        <th>Action</th>
-                                                    </thead>
                                                     <tbody>
                                                     {% for domain in domains %}
                                                         <tr>
-                                                            <td style="width: 91.5%">
+                                                            <td style="width: 100%">
                                                                 <a href="{{ 'https' if letsencrypt else 'http' }}://{{ domain }}"
                                                                    rel="nofollow noopener noreferrer"
                                                                    target="_blank">{{ domain }}</a>
                                                             </td>
                                                             <td class="td-actions text-right"
                                                                 style="width: fit-content;">
-                                                                <form class="d-inline"
-                                                                      action="{{ url('remove_domain', app_name=app) }}"
-                                                                      method="POST">
-                                                                    {% csrf_token %}
-                                                                    <input type="hidden" name="name"
-                                                                           value="{{ domain }}"/>
-                                                                    <button type="submit" rel="tooltip"
-                                                                            title="Remove this domain"
-                                                                            class="btn btn-danger btn-link btn-sm">
-                                                                        <i class="material-icons">close</i>
-                                                                    </button>
-                                                                </form>
+                                                                <input type="hidden" name="name"
+                                                                       value="{{ domain }}"/>
+                                                                <button type="button" rel="tooltip"
+                                                                        title="Remove this domain"
+                                                                        class="btn btn-danger btn-link btn-sm"
+                                                                        data-attribute="{{ domain }}"
+                                                                        onclick="removeTarget(this.getAttribute('data-attribute'), '{{ url('remove_domain', app_name=app) }}');">
+                                                                    <i class="material-icons">close</i>
+                                                                </button>
                                                             </td>
                                                         </tr>
                                                     {% else %}
@@ -236,25 +230,42 @@
                                         <div class="tab-pane active" id="app-env-vars-list">
                                             <div class="table-responsive">
                                                 <table class="table">
-                                                    <thead class="text-primary">
-                                                        <th>Name</th>
-                                                        <th>Value</th>
+                                                    <thead class=" text-primary">
+                                                        <th width="38%">Name</th>
+                                                        <th width="55%">Value</th>
                                                         <th>Action</th>
                                                     </thead>
                                                     <tbody>
                                                     {% for (k,v) in config %}
                                                         <tr>
                                                             <td>{{ k }}</td>
-                                                            <td>{{ v }}</td>
                                                             <td>
-                                                                <form class="d-inline" action="#" method="POST">
-                                                                    {% csrf_token %}
-                                                                    <button type="submit" rel="tooltip"
-                                                                            title="Remove this variable"
-                                                                            class="btn btn-danger btn-link btn-sm">
-                                                                        <i class="material-icons">close</i>
-                                                                    </button>
-                                                                </form>
+                                                                <input
+                                                                    type="password"
+                                                                    value="{{ v }}"
+                                                                    class="env-var-hidden-value"
+                                                                    disabled="disabled"
+                                                                    autocomplete="off"
+                                                                    autofocus="off"
+                                                                    id="env-var-hidden-value-input-{{ k }}"
+                                                                />
+                                                            </td>
+                                                            <td>
+                                                                <button
+                                                                    class="btn env-var-btn material-icons env-var-hidden-value-toogle"
+                                                                    rel="tooltip"
+                                                                    title="See variable value"
+                                                                    data-attribute="{{ k }}"
+                                                                >
+                                                                </button>
+                                                                <button type="button" rel="tooltip"
+                                                                        title="Remove this variable"
+                                                                        class="btn btn-danger btn-link btn-sm"
+                                                                        data-attribute="{{ k }}"
+                                                                        onclick="removeTarget(this.getAttribute('data-attribute'), '{{ url('remove_app_env_var', app_name=app) }}');"
+                                                                >
+                                                                    <i class="material-icons">close</i>
+                                                                </button>
                                                             </td>
                                                         </tr>
                                                     {% else %}
@@ -284,4 +295,27 @@
             {% include "components/footer/footer-content.html" %}
         </div>
     </div>
+    <script type="text/javascript">
+        function removeTarget(data, target){
+            var form = document.createElement('form');
+            document.body.appendChild(form);
+            form.method = 'POST';
+            form.action = target;
+
+            var elName = document.createElement('input');
+            elName.name = 'name';
+            elName.value = data;
+            elName.type = 'hidden';
+            form.appendChild(elName);
+
+
+            var elCSRF = document.createElement('input');
+            elCSRF.name = 'csrfmiddlewaretoken';
+            elCSRF.value = '{{ csrf_token }}';
+            elCSRF.type = 'hidden';
+            form.appendChild(elCSRF);
+
+            form.submit();
+        }
+    </script>
 {% endblock %}

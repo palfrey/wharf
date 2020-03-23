@@ -54,13 +54,15 @@ class BuildpackRemoveForm(forms.Form):
 
 class CreateAppForm(forms.Form):
     name = forms.CharField(
-        label='App name',
+        label='Name',
         max_length=100,
         widget=forms.TextInput(
             attrs={
-                'autocomplete': 'new-password'
+                'autocomplete': 'new-password',
+                'class': 'form-control',
             }
-        )
+        ),
+        # validators=[RegexValidator('^(\w+\d+|\d+\w+)+$', message="Try another app name")],
     )
 
 
