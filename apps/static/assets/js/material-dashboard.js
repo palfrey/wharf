@@ -732,3 +732,24 @@ function debounce(func, wait, immediate) {
     if (immediate && !timeout) func.apply(context, args);
   };
 };
+
+/* Wharf - Filipe Souza */
+var elements = document.getElementsByClassName("env-var-hidden-value-toogle");
+
+var toogle_hidden_value = function() {
+    var attribute = this.getAttribute("data-key-name");
+    var targetEl = document.getElementById('env-var-hidden-value-input-'+attribute);
+    if(targetEl.type === 'text')
+    {
+        targetEl.type = 'password';
+    }
+    else if(targetEl.type === 'password')
+    {
+        targetEl.type = 'text';
+    }
+    console.log(targetEl.type);
+};
+
+for (var i = 0; i < elements.length; i++) {
+    elements[i].addEventListener('click', toogle_hidden_value, false);
+}
