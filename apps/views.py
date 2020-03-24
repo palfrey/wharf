@@ -131,7 +131,15 @@ def index(request):
         apps = app_list()
     except Exception as e:
         if e.__class__.__name__ in ["AuthenticationException"]:  # Can't use class directly as Celery mangles things
-            return render(request, 'setup_key.html', {'key': tasks.get_public_key.delay().get()})
+            return render(
+                request,
+                'setup_key.html',
+                {
+                    'key': tasks.get_public_key.delay().get(),
+                    'navbar': {
+                        'screen': 'setup'
+                    }
+                },)
         else:
             raise
     if request.method == 'POST':

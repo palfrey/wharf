@@ -749,6 +749,17 @@ var toogle_hidden_value = function() {
     }
 };
 
+var ssh_key_to_clipboard = function() {
+    const el = document.createElement('textarea');
+    el.value = document.getElementById('ssh-pub-key').innerText;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+};
+
 for (var i = 0; i < elements.length; i++) {
     elements[i].addEventListener('click', toogle_hidden_value, false);
 }
+
+document.getElementById('ssh-key-to-clipboard').addEventListener('click', ssh_key_to_clipboard, false);
