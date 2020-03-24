@@ -1,4 +1,38 @@
 {% extends "base.html" %}
 {% block body %}
-{% include "components/setup/initial-key/initial-key.html" %}
+    <div class="wrapper">
+        <div class="main-panel full-width-main-panel">
+            {% include "components/navbar/navbar.html" %}
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card card-chart">
+                                <div class="card-header card-header-primary">
+                                    <h2 class="card-title">Initial setup</h2>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-description">
+                                        Save the following key (as one line) to a file on your server, and run the
+                                        <a href="http://dokku.viewdocs.io/dokku/deployment/user-management/#adding-ssh-keys"
+                                           rel="nofollow noopener noreferrer" target="_blank">
+                                            <code>ssh-keys:add</code> command
+                                        </a>, to setup the SSH key access:
+                                        <p>
+                                            <code id="ssh-pub-key">
+                                                {{ key }}
+                                            </code>
+                                        </p>
+                                        <button class="btn btn-outline-light ssh-key-to-clipboard" id="ssh-key-to-clipboard"><i class="material-icons">file_copy</i> copy key to clipboard</button>
+                                        <a href="#" onclick="location.reload();" class="btn btn-primary">Click here to reload and check access</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include "components/footer/footer-content.html" %}
+        </div>
+    </div>
 {% endblock %}
