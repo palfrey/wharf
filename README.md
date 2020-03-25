@@ -27,7 +27,7 @@ But with the development of frontend screens, some backend adjustments was neces
 Also the tests for the original project are not approved, because of my lack of knowledge about Python and Django, leading the original project to a inefficient state. 
 
 
-##Pre requisites
+## Pre requisites
 
 1. [Install Dokku](http://dokku.viewdocs.io/dokku/getting-started/installation) on your server.
 
