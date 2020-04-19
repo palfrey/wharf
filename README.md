@@ -9,23 +9,10 @@
 7. [Roadmap](#roadmap)
 8. [Screenshots](#screenshots)
 
-This is a forked version of Wharf. Check out the original project to more details.
-
 Wharf is an web frontend for [Dokku](http://dokku.viewdocs.io/dokku/). 
 
 Dokku it is a great Heroku-like tool, with a extensive command line operation. This web interface aims to 
 simplify some routine tasks when managing applications on Dokku.
-
-
-## About this fork
-
-The original Wharf project has the functional backend needed. But the front-end was not usable at the time. So, this project
-idea is to bring a modern and simple as possible front end interface to Wharfs functions.
-
-But with the development of frontend screens, some backend adjustments was necessary, making this project merely impossible to merge with original project without sacrificing much of it.
-
-Also the tests for the original project are not approved, because of my lack of knowledge about Python and Django, leading the original project to a inefficient state. 
-
 
 ## Pre requisites
 
