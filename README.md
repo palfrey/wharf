@@ -69,8 +69,8 @@ Setup a dokku machine with Vagrant and a Wharf development environment with Dock
     * SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET
     * SECRET_KEY
 
-3. Run `docker-compose up --d` to start project services up.
-    * Recommended running `docker-compose up --d --build --force-recreate`. This will generate new SSH key and invalidate any configuration or data.
+3. Run `docker-compose up -d` to start project services up.
+    * Recommended running `docker-compose up -d --build --force-recreate`. This will generate a new SSH key and invalidate any configuration or data.
     * `host.docker.internal` works on Mac/Windows, but not on Linux (see https://github.com/docker/for-linux/issues/264). 
     * On Linux hosts, you should set `DOKKU_SSH_HOST` to whatever your IP is (not localhost, but a local IP is fine)
     
