@@ -1,4 +1,6 @@
-# Wharf - A web UI for Dokku
+Wharf
+=====
+[![Build Status](https://travis-ci.com/palfrey/wharf.svg?branch=master)](https://travis-ci.com/palfrey/wharf)
 
 1. [About this fork](#about-this-fork)
 2. [Pre requisites](#pre-requisites)
@@ -48,7 +50,9 @@ simplify some routine tasks when managing applications on Dokku.
 
 ## Enabling Github auto-deploy webhooks
 
-Github functions and deploys are disabled (at least not accessible) in this fork. 
+1. Set `GITHUB_SECRET` config item to something secret
+2. Goto [settings/webhooks](https://developer.github.com/webhooks/creating/#setting-up-a-webhook) in Github
+3. Make a new webhook for &lt;your Wharf instance&gt;/webhook with Content type as `application/json` and Secret to the secret from `GITHUB_SECRET`
 
 ## Development setup
 
