@@ -109,6 +109,16 @@ TEMPLATES = [
             "app_dirname": "templates",
         },
     },
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'OPTIONS': {
+            'context_processors': [
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        }
+    },
 ]
 
 if "CACHE_URL" in os.environ:

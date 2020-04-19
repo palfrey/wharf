@@ -13,36 +13,33 @@ Wharf
 
 Wharf is an web frontend for [Dokku](http://dokku.viewdocs.io/dokku/). 
 
-Dokku it is a great Heroku-like tool, with a extensive command line operation. This web interface aims to 
+Dokku is a great Heroku-like tool, with a extensive command line operation. This web interface aims to 
 simplify some routine tasks when managing applications on Dokku.
-
-## Pre requisites
-
-1. [Install Dokku](http://dokku.viewdocs.io/dokku/getting-started/installation) on your server.
-
-2. Install the following plugins:
-  * https://github.com/dokku/dokku-redis
-  * https://github.com/dokku/dokku-postgres
-  * https://github.com/dokku/dokku-letsencrypt
-  * https://github.com/dokku/dokku-mariadb
-  
-3. [A Google API & Services OAuth Credentials to login in.](https://console.developers.google.com/apis/credentials), with API Key and OAuth 2.0 Client IDs setup.
 
 ## Setup
 
-1. Setup the Let's Encrypt plugin to auto-renew: (`dokku letsencrypt:cron-job --add`)
-2. Create a new app: (`dokku apps:create wharf`)
-3. Add SSH key storage:
+1. [Install Dokku](http://dokku.viewdocs.io/dokku/getting-started/installation) (versions up to 0.19.13, see [#78](https://github.com/palfrey/wharf/issues/78))
+2. Install the following plugins:
+  * https://github.com/dokku/dokku-redis (versions up to 1.10.4, see [#75](https://github.com/palfrey/wharf/issues/75))
+  * https://github.com/dokku/dokku-postgres (versions up to 1.9.5, see [#75](https://github.com/palfrey/wharf/issues/75))
+  * https://github.com/dokku/dokku-letsencrypt
+  * https://github.com/dokku/dokku-mariadb
+3. Get a [A Google API & Services OAuth Credentials to login in.](https://console.developers.google.com/apis/credentials), with API Key and OAuth 2.0 Client IDs setup.
+3. Setup the Let's Encrypt plugin to auto-renew: (`dokku letsencrypt:cron-job --add`)
+4. Create a new app: (`dokku apps:create wharf`)
+5. Add SSH key storage:
   * `mkdir /var/lib/dokku/data/storage/wharf-ssh/`
   * `chown dokku:dokku /var/lib/dokku/data/storage/wharf-ssh/`
   * `dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/root/.ssh`
-4. Add a Redis link (`dokku redis:create wharf && dokku redis:link wharf wharf`)
-5. Add Postgres link (`dokku postgres:create wharf && dokku postgres:link wharf wharf`)
-6. Set `ADMIN_PASSWORD` to something secret (`dokku config:set wharf ADMIN_PASSWORD=somesecret`)
-7. Deploy this Git repo [as per the standard Dokku instructions](http://dokku.viewdocs.io/dokku/deployment/application-deployment/)
+6. Add a Redis link (`dokku redis:create wharf && dokku redis:link wharf wharf`)
+7. Add Postgres link (`dokku postgres:create wharf && dokku postgres:link wharf wharf`)
+8. Set `ADMIN_PASSWORD` to something secret (`dokku config:set wharf ADMIN_PASSWORD=somesecret`)
+9. Deploy this Git repo [as per the standard Dokku instructions](http://dokku.viewdocs.io/dokku/deployment/application-deployment/)
 
 ## Helpful hints
 
+* If you're running SSH on a non-standard port, set `DOKKU_SSH_PORT` e.g. `dokku config:set wharf DOKKU_SSH_PORT=2222`
+* If Dokku is running somewhere else than the local machine, set `DOKKU_SSH_HOST` e.g. `dokku config:set wharf DOKKU_SSH_HOST=foo.example.com`
 * If there's a Dockerfile in your repository, it'll [try and deploy using that by default](http://dokku.viewdocs.io/dokku/deployment/methods/dockerfiles/).
  Set BUILDPACK_URL to override this behaviour.
 * BUILDPACK_URL should be an HTTPS one, not a SSH or heroku/something one

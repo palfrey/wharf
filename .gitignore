@@ -11,8 +11,7 @@ where.png
 keys
 .idea
 screenshot.png
-ssh-key
 .DS_Store
 .env
-
-
+ssh-key
+src/
