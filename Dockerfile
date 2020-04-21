@@ -10,3 +10,4 @@ RUN apt-get update
 RUN apt-get install -y yarn
 RUN yarn install
 COPY . /app
+RUN python manage.py collectstatic --no-input
