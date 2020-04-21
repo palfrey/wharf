@@ -15,3 +15,4 @@ screenshot.png
 .env
 ssh-key
 src/
+node_modules/

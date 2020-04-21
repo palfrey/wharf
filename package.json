@@ -1,0 +1,14 @@
+{
+  "name": "wharf",
+  "version": "1.0.0",
+  "description": "Web frontend for Dokku",
+  "repository": "https://github.com/palfrey/wharf",
+  "author": "Tom Parker-Shemilt <palfrey@tevp.net>",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/material-dashboard/assets'), 'apps/static/assets') } catch (e) { }\""
+  },
+  "dependencies": {
+    "material-dashboard": "^2.1.0"
+  }
+}
