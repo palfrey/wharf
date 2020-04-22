@@ -4,3 +4,5 @@ db.sqlite3
 __pycache__
 .vagrant/
 node_modules/
+/static/
+/apps/static/assets
