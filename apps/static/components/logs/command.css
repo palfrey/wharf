@@ -1,0 +1,19 @@
+.logs-heading {
+  height: 180px;
+}
+.logs-content {
+  height: calc(100vh - 348px);
+  overflow: auto;
+}
+
+.logs-output {
+    white-space: pre-line;
+    font-family: Menlo,Monaco,SFMono-Regular,Consolas,Liberation Mono,Courier,monospace !important;
+    overflow: scroll;
+    border: 2px solid #ccc;
+    background-color: #f6f6f6;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 90%;
+    height: calc(100% - 45px);
+}

@@ -1,0 +1,33 @@
+<div class="sidebar" data-color="purple" data-background-color="white" data-image="{{ static('assets/img/sidebar-1.jpg') }}">
+    <div class="logo">
+        <a href="#" class="simple-text logo-normal">WHARF</a>
+    </div>
+    <div class="sidebar-wrapper">
+        <ul class="nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">
+                    <i class="material-icons">dashboard</i>
+                    <p>Home</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url('apps_list') }}">
+                    <i class="material-icons">apps</i>
+                    <p>Applications</p>
+                </a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ url('global_variables_list') }}">
+                    <i class="material-icons">tune</i>
+                    <p>Global Variables</p>
+                </a>
+            </li>
+            <li class="nav-item ">
+                <a class="nav-link" href="{{ url('settings_page') }}">
+                    <i class="material-icons">settings</i>
+                    <p>Settings (WIP)</p>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

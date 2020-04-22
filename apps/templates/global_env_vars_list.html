@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="wrapper ">
+    {% include "components/sidebar/sidebar.html" %}
+    <div class="main-panel">
+        <!-- Navbar -->
+        {% include "components/navbar/navbar.html" %}
+        <!-- End Navbar -->
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header card-header-primary">
+                                <h4 class="card-title ">Global environment variables</h4>
+                                <p class="card-category">This is a list of the global env variables defined in Dokku</p>
+                            </div>
+                            <div class="card-header card-header-toolbar card-header-tabs card-header-info">
+                                <div class="nav-tabs-navigation">
+                                    <div class="nav-tabs-wrapper">
+                                        <ul class="nav nav-tabs" data-tabs="tabs">
+                                            <li class="nav-item">
+                                                <a class="nav-link" rel="tooltip" title="Add a new global variable" href="{{ url('new_global_env_var_page') }}">
+                                                    <i class="material-icons">add_box</i> Add new
+                                                    <div class="ripple-container"></div>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead class="text-primary">
+                                            <th width="38%">Name</th>
+                                            <th width="55%">Value</th>
+                                            <th>Action</th>
+                                        </thead>
+                                        <tbody>
+                                        {% for (k,v) in config %}
+                                            <tr>
+                                                <td>{{ k }}</td>
+                                                <td>
+                                                    <input
+                                                        type="password"
+                                                        value="{{ v }}"
+                                                        class="env-var-hidden-value"
+                                                        disabled="disabled"
+                                                        autocomplete="off"
+                                                        autofocus="off"
+                                                        id="env-var-hidden-value-input-{{ k }}"
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        class="btn env-var-btn material-icons env-var-hidden-value-toogle"
+                                                        rel="tooltip"
+                                                        title="See variable value"
+                                                        data-attribute="{{ k }}"
+                                                    >
+                                                    </button>
+                                                    <button type="button" rel="tooltip"
+                                                        title="Remove this domain"
+                                                        class="btn btn-danger btn-link btn-sm"
+                                                        data-attribute="{{ k }}"
+                                                    >
+                                                        <i class="material-icons">close</i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% else %}
+                                            <tr>
+                                                <td>No global env variables defined</td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% include "components/footer/footer-content.html" %}
+    </div>
+</div>
+{% endblock %}

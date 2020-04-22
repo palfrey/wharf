@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block body %}
+    <div class="wrapper ">
+        {% include "components/sidebar/sidebar.html" %}
+        <div class="main-panel">
+            <!-- Navbar -->
+            {% include "components/navbar/navbar.html" %}
+            <!-- End Navbar -->
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Application list</h4>
+                                    <p class="card-category"> Click on a item to access it's configurations</p>
+                                </div>
+                                <div class="card-header card-header-toolbar card-header-tabs card-header-info">
+                                    <div class="nav-tabs-navigation">
+                                        <div class="nav-tabs-wrapper">
+                                            <ul class="nav nav-tabs" data-tabs="tabs">
+                                                <li class="nav-item">
+                                                    <a class="nav-link" rel="tooltip" title="Add a new application" href="{{ url('new_app_page') }}">
+                                                        <i class="material-icons">add_box</i> Add new
+                                                        <div class="ripple-container"></div>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table">
+                                            <thead class="text-primary">
+                                            <th>Name</th>
+                                            <th>Deploy lock</th>
+                                            </thead>
+                                            <tbody>
+                                            {% for app in apps %}
+                                                <tr>
+                                                    <td><a href="{{ url('app_info', app_name=app) }}" title="{{ app }}" rel="nofollow noopener noreferrer">{{ app }}</a></td>
+                                                    <td>Inactive</td>
+                                                </tr>
+                                            {% else %}
+                                                <tr>
+                                                    <td>No apps to list</td>
+                                                </tr>
+                                            {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include "components/footer/footer-content.html" %}
+        </div>
+    </div>
+{% endblock %}

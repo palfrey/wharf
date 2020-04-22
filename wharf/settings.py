@@ -14,20 +14,19 @@ import os
 import dj_database_url
 import subprocess
 import re
+from decouple import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 SECRET_KEY = os.environ.get("SECRET_KEY", ')u-_udqved=rq9p3fc-6mv6xh7y%slo-5d=h1590(k19e+srxt')
 
-DEBUG = 'DYNO' not in os.environ # Debug off when deployed
+DEBUG = 'DYNO' not in os.environ  # Debug off when deployed
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -41,10 +40,12 @@ INSTALLED_APPS = [
     'django_jinja',
     'bootstrapform_jinja',
     'django_celery_results',
+    'social_django',
     'apps'
 ]
 
 MIDDLEWARE = [
+    'social_django.middleware.SocialAuthExceptionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,16 +53,41 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'wharf.auth.LoginRequiredMiddleware'
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'wharf.auth.SettingsBackend',
+    'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend'
 ]
 
+# Social Login Django
+SOCIAL_AUTH_POSTGRES_JSONFIELD = True
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY', '')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET', '')
+SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_USER_ID = True
+
+SOCIAL_AUTH_STRATEGY = 'social_django.strategy.DjangoStrategy'
+SOCIAL_AUTH_STORAGE = 'social_django.models.DjangoStorage'
+
 LOGIN_REDIRECT_URL = "/"
+LOGIN_URL = "/"
+SESSION_COOKIE_SAMESITE = None
 LOGIN_EXEMPT_URLS = ["webhook", "favicon.ico", "status"]
+
+GLOBAL_COMMAND_CACHE_EXPIRATION = os.environ.get('GLOBAL_COMMAND_CACHE_EXPIRATION', 30)
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
 
 ROOT_URLCONF = 'wharf.urls'
 
@@ -76,6 +102,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
             "match_extension": None,
             "app_dirname": "templates",
@@ -115,7 +143,7 @@ WSGI_APPLICATION = 'wharf.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
 
-DATABASES = {'default': dj_database_url.config(default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3')) }
+DATABASES = {'default': dj_database_url.config(default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'))}
 
 # Password validation
 # https://docs.djangoproject.com/en/2.0/ref/settings/#auth-password-validators
@@ -135,7 +163,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
@@ -149,7 +176,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
@@ -159,7 +185,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # Wharf settings
 
 DOKKU_HOST = os.environ.get("DOKKU_SSH_HOST", None)
-if DOKKU_HOST == None: # default, so need to detect host
+if DOKKU_HOST == None:  # default, so need to detect host
     route = subprocess.check_output(["/sbin/ip", "route"]).decode("utf-8")
     ip = re.match("default via (\d+\.\d+\.\d+.\d+)", route)
     DOKKU_HOST = ip.groups()[0]
@@ -181,7 +207,7 @@ else:
 CELERY_RESULT_BACKEND = 'django-cache'
 CELERY_BROKER_URL = broker_url
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_SERIALISER = "pickle" # To fix exception serialisation. See https://github.com/celery/celery/pull/3592
+CELERY_TASK_SERIALISER = "pickle"  # To fix exception serialisation. See https://github.com/celery/celery/pull/3592
 
 LOGGING = {
     'version': 1,

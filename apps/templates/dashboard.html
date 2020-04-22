@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block body %}
+    <div class="wrapper ">
+        {% include "components/sidebar/sidebar.html" %}
+        <div class="main-panel">
+            <!-- Navbar -->
+            {% include "components/navbar/navbar.html" %}
+            <!-- End Navbar -->
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card card-stats">
+                                <div class="card-header card-header-warning card-header-icon">
+                                    <div class="card-icon">
+                                        <i class="material-icons">list</i>
+                                    </div>
+                                    <p class="card-category">Applications</p>
+                                    <h6 class="card-title">{{apps|length}}</h6>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card card-stats">
+                                <div class="card-header card-header-success card-header-icon">
+                                    <div class="card-icon">
+                                        <i class="material-icons">memory</i>
+                                    </div>
+                                    <p class="card-category">RAM usage</p>
+                                    <h6 class="card-title">750M/4G</h6>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card card-stats">
+                                <div class="card-header card-header-danger card-header-icon">
+                                    <div class="card-icon">
+                                        <i class="material-icons">storage</i>
+                                    </div>
+                                    <p class="card-category">Storage usage</p>
+                                    <h6 class="card-title">10G/35G</h6>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="card card-stats">
+                                <div class="card-header card-header-info card-header-icon">
+                                    <div class="card-icon">
+                                        <i class="fa fa-microchip"></i>
+                                    </div>
+                                    <p class="card-category">CPU Usage (%)</p>
+                                    <h6 class="card-title">10/100</h6>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="stats">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include "components/footer/footer-content.html" %}
+        </div>
+    </div>
+{% endblock %}

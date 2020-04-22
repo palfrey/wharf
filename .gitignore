@@ -7,7 +7,12 @@ repos/
 .vagrant/
 __pycache__/
 *.log
-screenshot.png
+where.png
 keys
+.idea
+screenshot.png
+.DS_Store
+.env
 ssh-key
 src/
+node_modules/

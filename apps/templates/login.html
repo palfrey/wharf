@@ -1,30 +1,4 @@
 {% extends "base.html" %}
 {% block body %}
-
-<h1>Wharf: Login</h1>
-
-Initial login is admin/password, but this can be changed by setting ADMIN_LOGIN 
-and ADMIN_PASSWORD in the environment variables.
-
-{% if form.errors %}
-<p>Your username and password didn't match. Please try again.</p>
-{% endif %}
-
-<form method="post" action="{{ url('login') }}">
-{% csrf_token %}
-<table>
-<tr>
-    <td>ADMIN_LOGIN</td>
-    <td>{{ form.username }}</td>
-</tr>
-<tr>
-    <td>ADMIN_PASSWORD</td>
-    <td>{{ form.password }}</td>
-</tr>
-</table>
-
-<input type="submit" value="login" name="submit" />
-<input type="hidden" name="next" value="{{ next }}" />
-</form>
-
+{% include "components/login/login.html" %}
 {% endblock %}

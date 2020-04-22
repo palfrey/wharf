@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% block body %}
+    <style>
+      .tech-icon {
+        flex-direction: column;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        position: relative;
+        display: -ms-flexbox;
+        display: flex;
+        -ms-flex-align: center;
+        align-items: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        height: inherit;
+      }
+    .tech-icon i {
+        width: 30px;
+        height: 30px;
+        font-size: 30px;
+    }
+    .tech-icon span {
+        padding-top: 6px;
+        padding-bottom: 4px;
+        display: inline-block;
+        line-height: 1;
+    }
+    .card .card-header-toolbar.card-header-tabs {
+        margin-bottom: 15px !important;
+    }
+    </style>
+    <div class="wrapper ">
+        {% include "components/sidebar/sidebar.html" %}
+        <div class="main-panel">
+            <!-- Navbar -->
+            {% include "components/navbar/navbar.html" %}
+            <!-- End Navbar -->
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="card">
+                                <div class="card-header card-header-tabs card-header-primary">
+                                    <div class="nav-tabs-navigation">
+                                        <div class="nav-tabs-wrapper flex-column">
+                                            <h4 class="nav-tabs-title">Application Links: </h4>
+                                            <ul class="nav nav-tabs" data-tabs="tabs">
+                                                <li class="nav-item">
+                                                    <a class="nav-link tech-icon active" href="#postgres" data-toggle="tab">
+                                                        <i class="icon-postgres"></i>
+                                                        <span>Postgres</span>
+                                                        <div class="ripple-container"></div>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link tech-icon" href="#mariadb" data-toggle="tab">
+                                                        <i class="icon-mariadb"></i>
+                                                        <span>MariaDB</span>
+                                                        <div class="ripple-container"></div>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link tech-icon" href="#redis" data-toggle="tab">
+                                                        <i class="icon-redis"></i>
+                                                        <span>Redis</span>
+                                                        <div class="ripple-container"></div>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link tech-icon" href="#buildpacks" data-toggle="tab">
+                                                        <i class="icon-heroku"></i>
+                                                        <span>Buildpacks</span>
+                                                        <div class="ripple-container"></div>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="tab-content">
+                                        <div class="tab-pane active" id="postgres">
+                                            <div class="card-header card-header-toolbar card-header-tabs card-header-info">
+                                                <div class="nav-tabs-navigation">
+                                                    <div class="nav-tabs-wrapper">
+                                                        <ul class="nav nav-tabs" data-tabs="tabs">
+                                                            <li class="nav-item">
+                                                                <a class="nav-link" rel="tooltip" title="Add a new PostgreSQL application" href="{{ url('create_postgres', app_name=app) }}">
+                                                                    <i class="material-icons">add_box</i> Add new
+                                                                    <div class="ripple-container"></div>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th scope="col">Name</th>
+                                                            <th scope="col">Status</th>
+                                                            <th scope="col">Version</th>
+                                                            <th scope="col">Exposed ports</th>
+                                                            <th scope="col">Links</th>
+                                                            <th scope="col">Action</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% if app_links.postgres %}
+                                                        {% for item in app_links.postgres %}
+                                                            <tr>
+                                                                <td>{{ item['NAME'] }}</td>
+                                                                <td>{{ item['STATUS'] }}</td>
+                                                                <td>{{ item['VERSION'] }}</td>
+                                                                <td>{{ item['EXPOSED PORTS'] }}</td>
+                                                                <td>{{ item['LINKS'] }}</td>
+                                                                <td>
+                                                                    <form class="d-inline" action="{{ url('remove_postgres', app_name=app, link_name=item['LINKS']) }}" method="POST">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" value="{{ item['LINKS'] }}" name="link_name" />
+                                                                        <button type="button" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm" onclick="this.submit()">
+                                                                            <i class="material-icons">close</i>
+                                                                        </button>
+                                                                    </form>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else: %}
+                                                        <tr>
+                                                            <td colspan="6">No PostgreSQL linked applications</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane" id="mariadb">
+                                            <div class="card-header card-header-toolbar card-header-tabs card-header-info">
+                                                <div class="nav-tabs-navigation">
+                                                    <div class="nav-tabs-wrapper">
+                                                        <ul class="nav nav-tabs" data-tabs="tabs">
+                                                            <li class="nav-item">
+                                                                <a class="nav-link" rel="tooltip" title="Add a new MariaDB application" href="{{ url('create_mariadb', app_name=app) }}">
+                                                                    <i class="material-icons">add_box</i> Add new
+                                                                    <div class="ripple-container"></div>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th scope="col">Name</th>
+                                                        <th scope="col">Status</th>
+                                                        <th scope="col">Version</th>
+                                                        <th scope="col">Exposed ports</th>
+                                                        <th scope="col">Links</th>
+                                                        <th scope="col">Action</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% if app_links.mariadb %}
+                                                        {% for item in app_links.mariadb %}
+                                                            <tr>
+                                                                <td>{{ item['NAME'] }}</td>
+                                                                <td>{{ item['STATUS'] }}</td>
+                                                                <td>{{ item['VERSION'] }}</td>
+                                                                <td>{{ item['EXPOSED PORTS'] }}</td>
+                                                                <td>{{ item['LINKS'] }}</td>
+                                                                <td>
+                                                                    <form class="d-inline" action="{{ url('remove_mariadb', app_name=app, link_name=item['LINKS']) }}" method="POST">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" value="{{ item['LINKS'] }}" name="link_name" />
+                                                                        <button type="button" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm" onclick="this.submit()">
+                                                                            <i class="material-icons">close</i>
+                                                                        </button>
+                                                                    </form>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else: %}
+                                                        <tr>
+                                                            <td colspan="6">No MariaDB linked applications</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane" id="redis">
+                                            <div class="card-header card-header-toolbar card-header-tabs card-header-info">
+                                                <div class="nav-tabs-navigation">
+                                                    <div class="nav-tabs-wrapper">
+                                                        <ul class="nav nav-tabs" data-tabs="tabs">
+                                                            <li class="nav-item">
+                                                                <a class="nav-link" rel="tooltip" title="Add a new Redis application" href="{{ url('create_redis', app_name=app) }}">
+                                                                    <i class="material-icons">add_box</i> Add new
+                                                                    <div class="ripple-container"></div>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th scope="col">Name</th>
+                                                        <th scope="col">Status</th>
+                                                        <th scope="col">Version</th>
+                                                        <th scope="col">Exposed ports</th>
+                                                        <th scope="col">Links</th>
+                                                        <th scope="col">Action</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% if app_links.redis %}
+                                                        {% for item in app_links.redis %}
+                                                            <tr>
+                                                                <td>{{ item['NAME'] }}</td>
+                                                                <td>{{ item['STATUS'] }}</td>
+                                                                <td>{{ item['VERSION'] }}</td>
+                                                                <td>{{ item['EXPOSED PORTS'] }}</td>
+                                                                <td>{{ item['LINKS'] }}</td>
+                                                                <td>
+                                                                    <form class="d-inline" action="{{ url('remove_redis', app_name=app, link_name=item['LINKS']) }}" method="POST">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" value="{{ item['LINKS'] }}" name="link_name" />
+                                                                        <button type="button" rel="tooltip" title="Remove this link" class="btn btn-danger btn-link btn-sm" onclick="this.submit()">
+                                                                            <i class="material-icons">close</i>
+                                                                        </button>
+                                                                    </form>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else: %}
+                                                        <tr>
+                                                            <td colspan="6">No Redis linked applications</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane" id="buildpacks">
+                                            <div class="card-header card-header-toolbar card-header-tabs card-header-info">
+                                                <div class="nav-tabs-navigation">
+                                                    <div class="nav-tabs-wrapper">
+                                                        <ul class="nav nav-tabs" data-tabs="tabs">
+                                                            <li class="nav-item">
+                                                                <a class="nav-link" rel="tooltip" title="Add a new Buildpack" href="#">
+                                                                    <i class="material-icons">add_box</i> Add new
+                                                                    <div class="ripple-container"></div>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table">
+                                                    <thead>
+                                                    <tr>
+                                                        <th scope="col">Buildpack</th>
+                                                        <th scope="col">Action</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {% if app_links.buildpacks %}
+                                                        {% for item in app_links.buildpacks %}
+                                                            <tr>
+                                                                <td>
+                                                                    {% if "https" or "http" in item %}
+                                                                        <a href="{{ item }}" rel="nofollow noopener noreferrer" target="_blank">{{ item }}</a>
+                                                                    {% else %}
+                                                                        <span class="buildpack-name-item">{{ item }}</span>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td>
+                                                                    <form class="d-inline" action="{{ url('remove_buildpack', app_name=app) }}" method="POST">
+                                                                        {% csrf_token %}
+                                                                        <input type="hidden" value="{{ item }}" name="buildpack_url" />
+                                                                        <button type="button" rel="tooltip" title="Remove this buildpack" class="btn btn-danger btn-link btn-sm" onclick="this.submit()">
+                                                                            <i class="material-icons">close</i>
+                                                                        </button>
+                                                                    </form>
+                                                                </td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else: %}
+                                                        <tr>
+                                                            <td colspan="2">No buildpacks in this app</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% include "components/footer/footer-content.html" %}
+        </div>
+    </div>
+{% endblock %}

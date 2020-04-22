@@ -13,6 +13,8 @@ gitpython
 humanize
 timeout-decorator
 selenium
+social-auth-app-django
+python-decouple
 
 redis < 3 # Version 3 does various things we're not compatible with yet, so don't automatically upgrade
--e git+https://github.com/niwinz/django-jinja.git@819a5faddea5341d990ac337b05e7827ac5b4431#egg=django-jinja # Need a fix for https://github.com/niwinz/django-jinja/issues/236
+django-jinja >= 2.5 # Need a fix for https://github.com/niwinz/django-jinja/issues/236

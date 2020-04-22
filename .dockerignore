@@ -3,3 +3,6 @@ db.sqlite3
 .vscode
 __pycache__
 .vagrant/
+node_modules/
+/static/
+/apps/static/assets

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block body %}
+    <div class="wrapper">
+        {% include "components/sidebar/sidebar.html" %}
+        <div class="main-panel">
+            <!-- Navbar -->
+            {% include "components/navbar/navbar.html" %}
+            <!-- End Navbar -->
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header card-header-primary">
+                                    <h4 class="card-title ">Create new global environment variables</h4>
+                                </div>
+                                <div class="card-body">
+                                    <form class="form" action="{{ url('global_config_bulk_set') }}" method="POST">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="kind" value="config" />
+                                        {{ global_config_form }}
+                                        <button type="submit" class="btn btn-primary pull-right" id="create_app">Create</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
