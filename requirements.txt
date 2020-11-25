@@ -27,7 +27,7 @@ jinja2==2.11.2            # via -r requirements.in, django-jinja
 kombu==4.2.1              # via celery
 markupsafe==1.1.1         # via jinja2
 paramiko==2.4.2           # via -r requirements.in
-psycopg2-binary==2.7.5    # via -r requirements.in
+psycopg2-binary==2.8.6    # via -r requirements.in
 pyasn1==0.4.3             # via paramiko
 pycparser==2.18           # via cffi
 pynacl==1.2.1             # via paramiko
