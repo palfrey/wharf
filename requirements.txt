@@ -32,7 +32,7 @@ pyasn1==0.4.3             # via paramiko
 pycparser==2.18           # via cffi
 pynacl==1.2.1             # via paramiko
 pytz==2018.4              # via celery, django
-redis==2.10.6             # via -r requirements.in, celery, django-redis
+redis==3.5.3              # via -r requirements.in, celery, django-redis
 requests==2.20.1          # via -r requirements.in
 selenium==3.141.0         # via -r requirements.in
 six==1.11.0               # via bcrypt, cryptography, pynacl
