@@ -4,7 +4,6 @@
 #
 #    pip-compile
 #
--e git+https://github.com/niwinz/django-jinja.git@819a5faddea5341d990ac337b05e7827ac5b4431#egg=django-jinja
 amqp==2.3.2               # via kombu
 asgiref==3.2.3            # via django
 bcrypt==3.1.4             # via paramiko
@@ -17,6 +16,7 @@ cryptography==3.2         # via paramiko
 dj-database-url==0.5.0    # via -r requirements.in
 django-celery-results==1.0.1  # via -r requirements.in
 django-jinja-bootstrap-form==4.2.3  # via -r requirements.in
+django-jinja==2.7.0       # via -r requirements.in, django-jinja-bootstrap-form
 django-redis==4.11.0      # via -r requirements.in
 django==3.0.7             # via -r requirements.in, django-jinja, django-jinja-bootstrap-form, django-redis
 gitdb2==2.0.3             # via gitpython
@@ -27,7 +27,7 @@ jinja2==2.11.2            # via -r requirements.in, django-jinja
 kombu==4.2.1              # via celery
 markupsafe==1.1.1         # via jinja2
 paramiko==2.4.2           # via -r requirements.in
-psycopg2-binary==2.7.5    # via -r requirements.in
+psycopg2-binary==2.8.6    # via -r requirements.in
 pyasn1==0.4.3             # via paramiko
 pycparser==2.18           # via cffi
 pynacl==1.2.1             # via paramiko
