@@ -130,11 +130,11 @@ try:
         tester.send_keys(By.ID, "id_key", "GITHUB_URL")
         tester.send_keys(By.ID, "id_value", "https://github.com/palfrey/wharf.git")
         tester.click(By.ID, "config_add")
-        tester.wait_for_list([(By.ID, "app_page")], timeout=300)
+        tester.wait_for_list([(By.ID, "app_page")], timeout=900)
         assert tester.page_source().find(github_text) == -1
 
     tester.click(By.ID, "deploy_app")
-    tester.wait_for_list([(By.ID, "app_page")], timeout=300)
+    tester.wait_for_list([(By.ID, "app_page")], timeout=900)
     assert tester.page_source().find("Wharf: wharf") != -1
 finally:
     tester.driver.quit()
