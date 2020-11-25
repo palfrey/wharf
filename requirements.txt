@@ -23,7 +23,7 @@ gitdb2==2.0.3             # via gitpython
 gitpython==2.1.10         # via -r requirements.in
 humanize==0.5.1           # via -r requirements.in
 idna==2.6                 # via requests
-jinja2==2.10.1            # via -r requirements.in, django-jinja
+jinja2==2.11.2            # via -r requirements.in, django-jinja
 kombu==4.2.1              # via celery
 markupsafe==1.1.1         # via jinja2
 paramiko==2.4.2           # via -r requirements.in
