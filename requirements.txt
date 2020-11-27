@@ -19,8 +19,8 @@ django-jinja-bootstrap-form==4.2.3  # via -r requirements.in
 django-jinja==2.7.0       # via -r requirements.in, django-jinja-bootstrap-form
 django-redis==4.11.0      # via -r requirements.in
 django==3.0.7             # via -r requirements.in, django-jinja, django-jinja-bootstrap-form, django-redis
-gitdb2==2.0.3             # via gitpython
-gitpython==2.1.10         # via -r requirements.in
+gitdb==4.0.5              # via gitpython
+gitpython==3.1.11         # via -r requirements.in
 humanize==3.1.0           # via -r requirements.in
 idna==2.6                 # via requests
 jinja2==2.11.2            # via -r requirements.in, django-jinja
@@ -35,7 +35,7 @@ redis==2.10.6             # via -r requirements.in, celery, django-redis
 requests==2.25.0          # via -r requirements.in
 selenium==3.141.0         # via -r requirements.in
 six==1.11.0               # via bcrypt, cryptography, pynacl
-smmap2==2.0.3             # via gitdb2
+smmap==3.0.4              # via gitdb
 sqlparse==0.3.0           # via django
 timeout-decorator==0.5.0  # via -r requirements.in
 urllib3==1.24.3           # via requests, selenium
