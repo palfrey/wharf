@@ -27,6 +27,8 @@ jobs:
         with:
           install: true
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # All of history
       - name: Cache pip
         uses: actions/cache@v2
         with:
