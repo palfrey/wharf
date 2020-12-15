@@ -36,7 +36,7 @@ docker ps
 sudo apt-get install -y net-tools
 sudo netstat -nlp
 dokku domains:report
-python3 check_boot.py localhost
+python3 check_boot.py http://localhost
 if [ ! -f $KEY_DIR/id_rsa ]; then
     echo "Can't find keys in key dir"
     ls $KEY_DIR
