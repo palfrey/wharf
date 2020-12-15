@@ -22,15 +22,18 @@ jobs:
         uses: docker/setup-buildx-action@v1
         with:
           install: true
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        continue-on-error: true # Because it's buggy sometimes
-        with:
-          path: /tmp/.buildx-cache
-          key: frontend-${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            frontend-${{ runner.os }}-buildx-
       - uses: actions/checkout@v2
+      - name: Cache pip
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install pip==20.2
+          pip install -r requirements.txt
       - run: docker build .
       - run: sudo apt-get update
       - run: sudo apt-get install -y chromium-chromedriver
