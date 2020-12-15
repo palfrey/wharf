@@ -32,8 +32,8 @@ jobs:
             frontend-${{ runner.os }}-buildx-
       - uses: actions/checkout@v2
       - run: docker build .
-      - run: apt-get update
-      - run: apt-get install -y chromium-chromedriver
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y chromium-chromedriver
       - run: chromium-browser --version
       - run: which chromium-browser
       - run: ./test.sh
