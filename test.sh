@@ -33,6 +33,8 @@ sudo chown dokku:dokku $KEY_DIR
 GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku HEAD:refs/heads/master
 hostname --long
 docker ps
+sudo apt-get install -y net-tools
+sudo netstat -nlp
 python3 check_boot.py $(dokku url wharf)
 if [ ! -f $KEY_DIR/id_rsa ]; then
     echo "Can't find keys in key dir"
