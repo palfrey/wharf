@@ -13,6 +13,8 @@ jobs:
       CHROMEDRIVER_PATH: /usr/lib/chromium-browser/chromedriver
       CHROMIUM_BROWSER: /usr/bin/chromium-browser
     steps:
+      - run: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      - run: sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
       - name: "Set up Python"
         uses: actions/setup-python@v2
         with:
