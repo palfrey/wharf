@@ -90,7 +90,7 @@ Status: {{ redis['STATUS'] }}
 {% endif %}
 <h3>Process Info</h3>
 <ul>
-  {% for (k,v) in process.items() if k!= 'processes' %}
+  {% for (k,v) in process.items() if k != 'processes' %}
   <li>{{k}}: {{v}}</li>
   {% endfor %}
 </ul>

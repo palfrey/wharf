@@ -238,6 +238,8 @@ def letsencrypt(app_name):
 def process_info(app_name):
     data = run_cmd_with_cache("ps:report %s" % app_name)
     lines = data.split("\n")
+    if lines[0].find("exit status") != -1:
+        lines = lines[1:]
     if lines[0].find("%s process information" % app_name) == -1 and lines[0].find("%s ps information" % app_name) == -1: # Different versions
         raise Exception(data)
     results = {}
