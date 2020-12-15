@@ -1,6 +1,6 @@
 Wharf
 =====
-[![Build Status](https://travis-ci.com/palfrey/wharf.svg?branch=master)](https://travis-ci.com/palfrey/wharf)
+[![CI](https://github.com/palfrey/wharf/workflows/CI/badge.svg)](https://github.com/palfrey/wharf/actions)
 
 Wharf is an opinionated web frontend for [Dokku](http://dokku.viewdocs.io/dokku/). You can also use the command line version, but most features you'll need day-to-day are in the Web UI
 
