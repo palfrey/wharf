@@ -21,7 +21,7 @@ django-redis==4.11.0      # via -r requirements.in
 django==3.0.7             # via -r requirements.in, django-jinja, django-jinja-bootstrap-form, django-redis
 gitdb==4.0.5              # via gitpython
 gitpython==3.1.11         # via -r requirements.in
-humanize==3.1.0           # via -r requirements.in
+humanize==3.2.0           # via -r requirements.in
 idna==2.6                 # via requests
 jinja2==2.11.2            # via -r requirements.in, django-jinja
 kombu==4.2.1              # via celery
