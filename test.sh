@@ -31,7 +31,12 @@ fi
 sudo chown dokku:dokku $KEY_DIR
 (dokku storage:list wharf | grep ssh) || dokku storage:mount wharf $KEY_DIR:/root/.ssh
 GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku HEAD:refs/heads/master
-python3 check_boot.py $(dokku url wharf)
+hostname --long
+docker ps
+sudo apt-get install -y net-tools
+sudo netstat -nlp
+dokku domains:report
+python3 check_boot.py http://localhost
 if [ ! -f $KEY_DIR/id_rsa ]; then
     echo "Can't find keys in key dir"
     ls $KEY_DIR
