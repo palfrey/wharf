@@ -1,4 +1,4 @@
-django
+django ~= 3.0.0
 django-jinja-bootstrap-form
 dj-database-url
 requests
