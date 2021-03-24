@@ -13,7 +13,7 @@ sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y d
 sudo dokku plugin:install-dependencies --core
 (dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git --committish 1.10.4 redis
 (dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git --committish 1.9.5 postgres
-(dokku plugin:list | grep letsencrypt) || sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git --commitish 0.9.4 letsencrypt
+(dokku plugin:list | grep letsencrypt) || sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git --committish 0.9.4 letsencrypt
 dokku plugin:list
 dokku letsencrypt:cron-job --add
 (dokku apps:list | grep wharf) || dokku apps:create wharf
