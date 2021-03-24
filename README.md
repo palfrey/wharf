@@ -14,7 +14,7 @@ Setup
 2. Install the following plugins:
   * https://github.com/dokku/dokku-redis (versions up to 1.10.4, see [#75](https://github.com/palfrey/wharf/issues/75))
   * https://github.com/dokku/dokku-postgres (versions up to 1.9.5, see [#75](https://github.com/palfrey/wharf/issues/75))
-  * https://github.com/dokku/dokku-letsencrypt
+  * https://github.com/dokku/dokku-letsencrypt (versions up to 0.9.4 see [#115](https://github.com/palfrey/wharf/issues/115))
 3. Setup the Let's Encrypt plugin to auto-renew (`dokku letsencrypt:cron-job --add`)
 4. Create the app (`dokku apps:create wharf`)
 5. Add SSH key storage:
