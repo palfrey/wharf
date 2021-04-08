@@ -39,7 +39,7 @@ django-jinja==2.7.0
     #   django-jinja-bootstrap-form
 django-redis==4.11.0
     # via -r requirements.in
-django==3.0.13
+django==3.0.14
     # via
     #   -r requirements.in
     #   django-jinja
