@@ -25,6 +25,7 @@ if [ ! -f ~/.ssh/id_rsa ]; then
 fi
 (dokku ssh-keys:list | grep travis) || sudo dokku ssh-keys:add travis ~/.ssh/id_rsa.pub
 dokku ssh-keys:list
+sudo cat /home/dokku/.ssh/authorized_keys
 KEY_DIR=`pwd`/keys
 if [ ! -d $KEY_DIR ]; then
     mkdir -p $KEY_DIR
