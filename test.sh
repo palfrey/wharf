@@ -20,7 +20,7 @@ dokku letsencrypt:cron-job --add
 (dokku redis:list | grep wharf) || (dokku redis:create wharf && dokku redis:link wharf wharf)
 (dokku postgres:list | grep wharf) || (dokku postgres:create wharf && dokku postgres:link wharf wharf)
 (git remote | grep dokku) || git remote add dokku ssh://dokku@localhost/wharf
-if [ ! -f ~/.ssh/id_rsa.pub ]; then
+if [ ! -f ~/.ssh/id_rsa ]; then
     yes y | ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
 fi
 (dokku ssh-keys:list | grep travis) || sudo dokku ssh-keys:add travis ~/.ssh/id_rsa.pub
@@ -31,7 +31,7 @@ if [ ! -d $KEY_DIR ]; then
 fi
 sudo chown dokku:dokku $KEY_DIR
 (dokku storage:list wharf | grep ssh) || dokku storage:mount wharf $KEY_DIR:/root/.ssh
-GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push dokku HEAD:refs/heads/master
+GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -v" git push dokku HEAD:refs/heads/master
 hostname --long
 docker ps
 sudo apt-get install -y net-tools
