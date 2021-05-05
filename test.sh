@@ -26,7 +26,9 @@ fi
 (dokku ssh-keys:list | grep travis) || sudo dokku ssh-keys:add travis ~/.ssh/id_rsa.pub
 dokku ssh-keys:list
 sudo chmod 600 /home/dokku/.ssh/authorized_keys
+sudo getfacl /home/dokku/.ssh/authorized_keys
 sudo ls -la /home/dokku/.ssh
+sudo getfacl /home/dokku/
 sudo ls -la /home/dokku/
 KEY_DIR=`pwd`/keys
 if [ ! -d $KEY_DIR ]; then
