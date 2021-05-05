@@ -24,6 +24,7 @@ if [ ! -f ~/.ssh/id_rsa.pub ]; then
     yes y | ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
 fi
 (dokku ssh-keys:list | grep travis) || sudo dokku ssh-keys:add travis ~/.ssh/id_rsa.pub
+dokku ssh-keys:list
 KEY_DIR=`pwd`/keys
 if [ ! -d $KEY_DIR ]; then
     mkdir -p $KEY_DIR
