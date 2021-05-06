@@ -27,10 +27,6 @@ fi
 dokku ssh-keys:list
 sudo chmod 600 /home/dokku/.ssh/authorized_keys
 sudo chmod 700 /home/dokku/.ssh
-sudo getfacl /home/dokku/.ssh/authorized_keys
-sudo ls -la /home/dokku/.ssh
-sudo getfacl /home/dokku/
-sudo ls -la /home/dokku/
 KEY_DIR=`pwd`/keys
 if [ ! -d $KEY_DIR ]; then
     mkdir -p $KEY_DIR
