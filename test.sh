@@ -2,6 +2,8 @@
 
 set -eux -o pipefail
 
+export PYTHONUNBUFFERED=1
+
 REDIS_URL=dummy python3 manage.py test
 wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
 if [ ! -f /etc/apt/sources.list.d/dokku.list ]; then
@@ -25,9 +27,8 @@ if [ ! -f ~/.ssh/id_rsa ]; then
 fi
 (dokku ssh-keys:list | grep travis) || sudo dokku ssh-keys:add travis ~/.ssh/id_rsa.pub
 dokku ssh-keys:list
-sudo cat /home/dokku/.ssh/authorized_keys
-sudo ls -l /home/dokku/.ssh
-sudo ls -l /home/dokku/
+sudo chmod 600 /home/dokku/.ssh/authorized_keys
+sudo chmod 700 /home/dokku/.ssh
 KEY_DIR=`pwd`/keys
 if [ ! -d $KEY_DIR ]; then
     mkdir -p $KEY_DIR
