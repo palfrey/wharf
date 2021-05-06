@@ -2,6 +2,8 @@
 
 set -eux -o pipefail
 
+export PYTHONUNBUFFERED=1
+
 REDIS_URL=dummy python3 manage.py test
 wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
 if [ ! -f /etc/apt/sources.list.d/dokku.list ]; then
