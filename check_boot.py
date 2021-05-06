@@ -134,7 +134,13 @@ try:
         assert tester.page_source().find(github_text) == -1
 
     tester.click(By.ID, "deploy_app")
-    tester.wait_for_list([(By.ID, "app_page")], timeout=900)
+    for x in range(30):
+        try:
+            tester.log("Attempt %d" % x)
+            tester.wait_for_list([(By.ID, "app_page")], timeout=30)
+            break
+        except TimeoutException:
+            continue
     assert tester.page_source().find("Wharf: wharf") != -1
 finally:
     tester.driver.quit()
