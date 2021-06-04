@@ -6,7 +6,7 @@
 #
 amqp==2.3.2
     # via kombu
-asgiref==3.2.3
+asgiref==3.3.4
     # via django
 bcrypt==3.1.4
     # via paramiko
@@ -39,7 +39,7 @@ django-jinja==2.7.0
     #   django-jinja-bootstrap-form
 django-redis==4.11.0
     # via -r requirements.in
-django==3.0.13
+django==3.1.9
     # via
     #   -r requirements.in
     #   django-jinja
