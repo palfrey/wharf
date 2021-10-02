@@ -6,7 +6,7 @@
 #
 amqp==2.3.2
     # via kombu
-asgiref==3.2.3
+asgiref==3.4.1
     # via django
 bcrypt==3.1.4
     # via paramiko
@@ -29,22 +29,22 @@ cryptography==3.3.2
     # via paramiko
 dj-database-url==0.5.0
     # via -r requirements.in
-django-celery-results==1.0.1
-    # via -r requirements.in
-django-jinja-bootstrap-form==4.3.4
-    # via -r requirements.in
-django-jinja==2.7.0
-    # via
-    #   -r requirements.in
-    #   django-jinja-bootstrap-form
-django-redis==4.11.0
-    # via -r requirements.in
-django==3.0.13
+django==3.1.13
     # via
     #   -r requirements.in
     #   django-jinja
     #   django-jinja-bootstrap-form
     #   django-redis
+django-celery-results==1.0.1
+    # via -r requirements.in
+django-jinja==2.7.0
+    # via
+    #   -r requirements.in
+    #   django-jinja-bootstrap-form
+django-jinja-bootstrap-form==4.3.4
+    # via -r requirements.in
+django-redis==4.11.0
+    # via -r requirements.in
 gitdb==4.0.5
     # via gitpython
 gitpython==3.1.11
