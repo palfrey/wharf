@@ -61,7 +61,7 @@ kombu==4.2.1
     # via celery
 markupsafe==1.1.1
     # via jinja2
-paramiko==2.7.2
+paramiko==2.10.1
     # via -r requirements.in
 psycopg2-binary==2.8.6
     # via -r requirements.in
@@ -86,6 +86,7 @@ six==1.11.0
     # via
     #   bcrypt
     #   cryptography
+    #   paramiko
     #   pynacl
 smmap==3.0.4
     # via gitdb
