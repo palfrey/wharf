@@ -16,7 +16,7 @@ celery[redis]==4.1.1
     # via
     #   -r requirements.in
     #   django-celery-results
-certifi==2018.4.16
+certifi==2022.12.7
     # via requests
 cffi==1.14.4
     # via
