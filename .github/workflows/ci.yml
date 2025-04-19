@@ -10,7 +10,7 @@ on:
     - cron: '0 0 1 * *'
 jobs:
   Build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       CHROMEDRIVER_PATH: /usr/lib/chromium-browser/chromedriver
       CHROMIUM_BROWSER: /usr/bin/chromium-browser
@@ -28,11 +28,11 @@ jobs:
         uses: docker/setup-buildx-action@v1
         with:
           install: true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # All of history
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
