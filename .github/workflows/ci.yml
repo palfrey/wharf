@@ -32,7 +32,7 @@ jobs:
         with:
           fetch-depth: 0 # All of history
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
