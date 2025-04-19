@@ -1,0 +1,33 @@
+{
+  $schema: "https://docs.renovatebot.com/renovate-schema.json",
+  extends: [
+    ":ignoreModulesAndTests",
+    "group:monorepos",
+    "group:recommended",
+    "replacements:all",
+    "workarounds:all",
+  ],
+  packageRules: [
+    {
+      // Don't upgrade docker stuff, because it's things like docker-compose
+      // that have to match the deployed ones
+      matchDatasources: ["docker"],
+      enabled: false,
+    },
+    {
+      // Don't really need to upgrade Python
+      matchManagers: ["pyenv"],
+      enabled: false,
+    },
+    {
+      matchUpdateTypes: ["patch", "minor"],
+      groupName: "dependencies (non-major)",
+      schedule: ["* 0-3 * * 6"],
+    },
+    {
+      matchPackageNames: ["*"],
+      prConcurrentLimit: 3,
+      automerge: true,
+    },
+  ],
+}
