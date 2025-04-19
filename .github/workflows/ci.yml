@@ -10,7 +10,7 @@ on:
     - cron: '0 0 1 * *'
 jobs:
   Build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       CHROMEDRIVER_PATH: /usr/lib/chromium-browser/chromedriver
       CHROMIUM_BROWSER: /usr/bin/chromium-browser
