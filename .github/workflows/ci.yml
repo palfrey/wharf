@@ -28,7 +28,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
         with:
           install: true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # All of history
       - name: Cache pip
