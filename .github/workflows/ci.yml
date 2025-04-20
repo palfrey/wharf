@@ -37,11 +37,10 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-        
+      - uses: asdf-vm/actions/install@1117842ea70e2711a0072e3a71265cbfe2c830be
       - name: Install dependencies
-        run: |
-          python -m pip install pip==20.2
-          pip install -r requirements.txt
+        run: make sync
       - run: docker build .
       - run: sudo apt-get update
       - run: sudo apt-get install -y chromium-chromedriver
