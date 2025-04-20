@@ -54,7 +54,7 @@ class Tester:
         for entry in self.driver.get_log('browser'):
             self.log("Browser: %s" % entry)
         print(self.driver.page_source)
-        os.system("docker logs wharf.web.1")
+        os.system("sudo docker logs wharf.web.1")
 
     def get(self, url):
         self.log("Went to %s" % url)
