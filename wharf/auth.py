@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from re import compile
 from django.http import HttpResponseRedirect
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 
 class SettingsBackend:
     """
@@ -72,7 +72,7 @@ class LoginRequiredMiddleware:
             if not any(m.match(path) for m in EXEMPT_URLS):
                 redirect_to = settings.LOGIN_URL
                 # Add 'next' GET variable to support redirection after login
-                if len(path) > 0 and is_safe_url(url=request.path_info, allowed_hosts=None):
+                if len(path) > 0 and url_has_allowed_host_and_scheme(url=request.path_info, allowed_hosts=None):
                     redirect_to = "%s?next=%s" %(settings.LOGIN_URL, request.path_info)
                 return HttpResponseRedirect(redirect_to)
         elif not settings.ADMIN_PASSWORD.startswith("pbkdf2_sha256"):
