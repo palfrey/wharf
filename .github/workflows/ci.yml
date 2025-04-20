@@ -18,9 +18,9 @@ jobs:
       - run: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
       - run: sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
       - run: apt-cache policy docker-ce
-      - run: sudo apt-get install docker-ce
-      - name: "Set up Python"
-        uses: actions/setup-python@v2
+      - run: sudo apt-get install -y docker-ce nginx chromium-chromedriver
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: 3.12
       - name: Set up Docker Buildx
@@ -42,8 +42,6 @@ jobs:
       - name: Install dependencies
         run: make sync
       - run: docker build .
-      - run: sudo apt-get update
-      - run: sudo apt-get install -y chromium-chromedriver
       - run: chromium-browser --version
       - run: which chromium-browser
       - run: |
