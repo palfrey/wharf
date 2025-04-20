@@ -46,4 +46,6 @@ jobs:
       - run: sudo apt-get install -y chromium-chromedriver
       - run: chromium-browser --version
       - run: which chromium-browser
-      - run: ./test.sh
+      - run: |
+          source .venv/bin/activate
+          ./test.sh
