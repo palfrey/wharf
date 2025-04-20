@@ -1,28 +1,25 @@
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.chrome.service import Service
 import sys
 import os
-from subprocess import Popen, PIPE, STDOUT, run, check_call, check_output, CalledProcessError
-import io
+from subprocess import check_call, check_output
 import uuid
 import time
 
 class Tester:
     def __init__(self):
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.headless = True
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--start-maximized')
         chromium_browser = os.environ.get("CHROMIUM_BROWSER", None)
         if chromium_browser != None:
             chrome_options.binary_location = chromium_browser
-        self.driver = webdriver.Chrome(os.environ["CHROMEDRIVER_PATH"], chrome_options=chrome_options, service_args=['--verbose'])
+        self.driver = webdriver.Chrome(options=chrome_options, service=Service(executable_path=os.environ["CHROMEDRIVER_PATH"], service_args=['--verbose']))
         self.driver.implicitly_wait(0)
         self.start = time.time()
 
