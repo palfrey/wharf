@@ -244,7 +244,7 @@ def process_info(app_name):
         raise Exception(data)
     results = {}
     processes = {}
-    process_re = re.compile("Status\s+([^\.]+\.\d+):?\s+(\S+)")
+    process_re = re.compile(r"Status\s+([^\.]+\.\d+):?\s+(\S+)")
     for line in lines[1:]:
         if line.strip().startswith("Status "):
             matches = process_re.search(line)
