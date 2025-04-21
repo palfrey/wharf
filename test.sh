@@ -4,6 +4,11 @@ set -eux -o pipefail
 
 export PYTHONUNBUFFERED=1
 
+if [ -f /etc/nginx/sites-enabled/default ]; then
+    sudo rm /etc/nginx/sites-enabled/default
+    sudo systemctl restart nginx
+fi
+
 REDIS_URL=redis://dummy python3 manage.py test
 wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
 if [ ! -f /etc/apt/sources.list.d/dokku.list ]; then
