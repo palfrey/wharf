@@ -25,6 +25,7 @@ Setup
 7. Add Postgres (`dokku postgres:create wharf && dokku postgres:link wharf wharf`)
 8. Set `ADMIN_PASSWORD` to something secret (`dokku config:set wharf ADMIN_PASSWORD=somesecret`)
 9. Deploy this Git repo [as per the standard Dokku instructions](http://dokku.viewdocs.io/dokku/deployment/application-deployment/)
+10. `dokku ps:scale wharf celery=1`
 
 Helpful hints
 -------------

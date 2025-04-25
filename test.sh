@@ -42,6 +42,7 @@ sudo chown dokku:dokku $KEY_DIR
 (dokku storage:list wharf | grep ssh) || dokku storage:mount wharf $KEY_DIR:/root/.ssh
 GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -v" git push dokku HEAD:refs/heads/master
 hostname --long
+dokku ps:scale wharf celery=1
 sudo docker ps
 sudo apt-get install -y net-tools
 sudo netstat -nlp
