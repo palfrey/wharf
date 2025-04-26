@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Any, cast
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.contrib import messages
@@ -132,9 +132,11 @@ def refresh_all(request: HttpRequest):
     cache.clear()
     return redirect(reverse('index'))
 
-def generic_config(app, data):
+def generic_config(app_name: str, data: str) -> dict[str, Any]:
+    if "does not exist" in data:
+        return {}
     lines = data.split("\n")
-    if lines[0] != "=====> %s env vars" % app:
+    if lines[0] != "=====> %s env vars" % app_name:
         raise Exception(data)
     config = {}
     for line in lines[1:]:
@@ -181,8 +183,8 @@ def check_global_config_set(request: HttpRequest, task_id: str):
 def generic_list(app_name, data, name_field: str, field_names: list[str]):
     lines = data.split("\n")
     if lines[0].find("is not a dokku command") != -1:
-        raise Exception("Need plugin!")
-    if lines[0].find("There are no") != -1:
+        raise Exception("Neeed plugin!")
+    if lines[0].find("does") != -1:
         return None
     fields = dict([(x,{}) for x in field_names])
     last_field: str | None = None
@@ -212,25 +214,36 @@ def generic_list(app_name, data, name_field: str, field_names: list[str]):
         return results[app_name]
     else:
         return None
+    
+def generic_info(data: str):
+    lines = data.split("\n")
+    if lines[0].find("is not a dokku command") != -1:
+        raise Exception("Neeed plugin!")
+    if lines[0].find("does not exist") != -1:
+        return None
+    results = {}
+    for line in lines[1:]:
+        key, value = line.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+        results[key] = value
+    return results
 
-def db_list(app_name: str, data):
-    return generic_list(app_name, data, "NAME", ["NAME", "VERSION", "STATUS", "EXPOSED PORTS", "LINKS"])
-
-def postgres_list(app_name: str):
-    data = run_cmd_with_cache("postgres:list")
+def db_info(cache_key: str):
+    data = run_cmd_with_cache(cache_key)
     try:
-        return db_list(app_name, data)
+        return generic_info(data)
     except:
-        clear_cache("postgres:list")
+        clear_cache(cache_key)
         raise
 
-def redis_list(app_name):
-    data = run_cmd_with_cache("redis:list")
-    try:
-        return db_list(app_name, data)
-    except:
-        clear_cache("redis:list")
-        raise
+def postgres_info(app_name: str):
+    cache_key = "postgres:info %s" % app_name
+    return db_info(cache_key)
+
+def redis_info(app_name: str):
+    cache_key = "redis:info %s" % app_name
+    return db_info(cache_key)
 
 def letsencrypt(app_name: str):
     data = run_cmd_with_cache("letsencrypt:ls")
@@ -238,6 +251,8 @@ def letsencrypt(app_name: str):
 
 def process_info(app_name):
     data = run_cmd_with_cache("ps:report %s" % app_name)
+    if "does not exist" in data:
+        return {}    
     lines = data.split("\n")
     if lines[0].find("exit status") != -1:
         lines = lines[1:]
@@ -245,7 +260,7 @@ def process_info(app_name):
         raise Exception(data)
     results = {}
     processes = {}
-    process_re = re.compile(r"Status\s+([^\.]+\.\d+):?\s+(\S+)")
+    process_re = re.compile(r"Status\s+(\S+ \d+):\s+(\S+) \(CID: [a-z0-9]+\)")
     for line in lines[1:]:
         if line.strip().startswith("Status "):
             matches = process_re.search(line)
@@ -261,6 +276,8 @@ def process_info(app_name):
 
 def domains_list(app_name: str) -> list[str]:
     data = run_cmd_with_cache("domains:report %s" % app_name)
+    if "does not exist" in data:
+        return []    
     vhosts = re.search("Domains app vhosts: (.*)", data)
     assert vhosts is not None
     return [x.strip() for x in vhosts.groups()[0].split(" ") if x != ""]
@@ -305,8 +322,8 @@ def app_info(request: HttpRequest, app_name):
     else:
         form = forms.ConfigForm()
     return render(request, 'app_info.html', {
-        'postgres': postgres_list(app_name),
-        'redis': redis_list(app_name),
+        'postgres': postgres_info(app_name),
+        'redis': redis_info(app_name),
         'letsencrypt': letsencrypt(app_name),
         'process': process_info(app_name),
         'logs': ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
