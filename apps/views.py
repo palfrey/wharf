@@ -1,3 +1,4 @@
+from typing import cast
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.contrib import messages
@@ -57,10 +58,10 @@ def run_cmd_with_log(app_name, description, cmd, after):
     return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': after}))
 
 def get_log(res: AsyncResult):
-    key = tasks.task_key(res.id)
     if res.state > state(PENDING):
-        raw = redis.get(key)
-        if raw == None:
+        key = tasks.task_key(res.id)
+        raw = cast(bytes | None, redis.get(key))
+        if raw is None:
             return ""
         return raw.decode('utf-8')
     else:
