@@ -58,6 +58,7 @@ class Tester:
             self.log("Browser: %s" % entry)
         print(self.driver.page_source)
         os.system("sudo docker logs wharf.web.1")
+        os.system("sudo docker logs wharf.celery.1")
 
     def get(self, url):
         self.log("Went to %s" % url)
@@ -144,8 +145,12 @@ try:
                 return tester.wait_for_list([(By.ID, "app_page")], timeout=900)
 
         tester.wait_for_lambda(wait_for_no_github_text, timeout=900)
-        assert tester.page_source().find(github_text) == -1, tester.page_source()
-
+        page_source = tester.page_source()
+        if page_source.find("github_text") != -1:
+            print(page_source)
+            tester.failure()
+            raise Exception
+        
     tester.click(By.ID, "deploy_app")
     for x in range(30):
         try:
@@ -154,7 +159,11 @@ try:
             break
         except TimeoutException:
             continue
-    print(tester.page_source())
-    assert tester.page_source().find("Wharf: wharf") != -1, tester.page_source()
+    page_source = tester.page_source()
+    if page_source.find("Wharf: wharf") == -1:
+        print(page_source)
+        tester.failure()
+        raise Exception
+
 finally:
     tester.driver.quit()
