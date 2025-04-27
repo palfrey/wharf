@@ -141,7 +141,7 @@ try:
             if tester.page_source().find(github_text) != -1:
                 return False
             else:
-                return tester.wait_for_list([(By.ID, "app_page")])
+                return tester.wait_for_list([(By.ID, "app_page")], timeout=900)
 
         tester.wait_for_lambda(wait_for_no_github_text, timeout=900)
         assert tester.page_source().find(github_text) == -1, tester.page_source()

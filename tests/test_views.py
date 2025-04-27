@@ -4,7 +4,7 @@ from django.http import HttpRequest
 import pytest
 from apps.views import app_info, app_list, check_app
 from celery.result import AsyncResult
-from celery.states import state, PENDING, SUCCESS, FAILURE, STARTED
+from celery.states import state, SUCCESS
 from redis import StrictRedis
 from django.core.cache import cache
 class MockCelery:
