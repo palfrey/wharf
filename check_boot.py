@@ -128,9 +128,9 @@ try:
     assert tester.page_source().find(app_name) != -1
 
     tester.get(sys.argv[1])
-    tester.click(By.XPATH, '//a[text()="wharf"]')
+    tester.click(By.XPATH, f'//a[text()="{app_name}"]')
     tester.wait_for_list([(By.ID, "app_page")])
-    assert tester.page_source().find("Wharf: wharf") != -1
+    assert tester.page_source().find(f"Wharf: {app_name}") != -1
 
     github_text = "Can't deploy due to missing GITHUB_URL"
     if tester.page_source().find(github_text) != -1:
@@ -160,7 +160,7 @@ try:
         except TimeoutException:
             continue
     page_source = tester.page_source()
-    if page_source.find("Wharf: wharf") == -1:
+    if page_source.find(f"Wharf: {app_name}") == -1:
         print(page_source)
         tester.failure()
         raise Exception
