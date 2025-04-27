@@ -154,6 +154,7 @@ try:
             break
         except TimeoutException:
             continue
-    assert tester.page_source().find("Wharf: wharf") != -1
+    print(tester.page_source())
+    assert tester.page_source().find("Wharf: wharf") != -1, tester.page_source()
 finally:
     tester.driver.quit()
