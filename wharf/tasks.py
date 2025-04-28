@@ -43,7 +43,8 @@ def get_public_key():
     return open("%s.pub" % keyfile).read()
 
 @app.task(bind=True)
-def run_ssh_command(self, command):
+def run_ssh_command(self, command: str | list[str]):
+    print("Running command", command)
     key = task_key(self.request.id)
     redis.set(key, "")
     client = SSHClient()
@@ -55,7 +56,7 @@ def run_ssh_command(self, command):
         if not os.path.exists(os.path.dirname(known_hosts)):
             os.mkdir(os.path.dirname(known_hosts))
         open(known_hosts, "w").write("") # so connect doesn't barf when trying to save
-    if type(command) == list:
+    if isinstance(command, list):
         commands = command
     else:
         commands = [command]
