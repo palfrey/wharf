@@ -96,7 +96,7 @@ Status: {{ redis['STATUS'] }}
 </ul>
 <h3>Processes</h3>
 <ul>
-  {% for (k,v) in process['processes'].items() %}
+  {% for (k,v) in process.get('processes',{}).items() %}
   <li>{{k}}: {{v}}</li>
   {% endfor %}
 </ul>

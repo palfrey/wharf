@@ -11,7 +11,7 @@ class App(models.Model):
 class TaskLog(models.Model):
     task_id = models.CharField(max_length=256, primary_key=True)
     when = models.DateTimeField()
-    success = models.NullBooleanField()
+    success = models.BooleanField(null=True, blank=True)
     app = models.ForeignKey(App, on_delete=models.CASCADE)
     description = models.CharField(max_length=256)
 

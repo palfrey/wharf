@@ -160,8 +160,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 DOKKU_HOST = os.environ.get("DOKKU_SSH_HOST", None)
 if DOKKU_HOST == None: # default, so need to detect host
-    route = subprocess.check_output(["/sbin/ip", "route"]).decode("utf-8")
-    ip = re.match("default via (\d+\.\d+\.\d+.\d+)", route)
+    ip_paths = ["/sbin/ip", "/usr/sbin/ip"]
+    ip_path: str | None = None
+    for possible_path in ip_paths:
+        if os.path.exists(possible_path):
+            ip_path = possible_path
+            break
+    else:
+        raise Exception(ip_paths)
+    route = subprocess.check_output([ip_path, "route"], encoding="utf-8")
+    ip = re.match(r"default via (\d+\.\d+\.\d+.\d+)", route)
+    assert ip is not None
     DOKKU_HOST = ip.groups()[0]
 
 DOKKU_SSH_PORT = int(os.environ.get("DOKKU_SSH_PORT", "22"))

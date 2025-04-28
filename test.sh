@@ -4,17 +4,22 @@ set -eux -o pipefail
 
 export PYTHONUNBUFFERED=1
 
-REDIS_URL=dummy python3 manage.py test
+if [ -f /etc/nginx/sites-enabled/default ]; then
+    sudo rm /etc/nginx/sites-enabled/default
+    sudo systemctl restart nginx
+fi
+
+REDIS_URL=redis://dummy python3 manage.py test
 wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
 if [ ! -f /etc/apt/sources.list.d/dokku.list ]; then
-    echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ bionic main" | sudo tee /etc/apt/sources.list.d/dokku.list
+    echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ noble main" | sudo tee /etc/apt/sources.list.d/dokku.list
     sudo apt-get update
 fi
 echo dokku dokku/skip_key_file boolean true | sudo debconf-set-selections
-sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y dokku=0.19.13
+sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y dokku
 sudo dokku plugin:install-dependencies --core
-(dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git --committish 1.10.4 redis
-(dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git --committish 1.9.5 postgres
+(dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git --committish 1.39.3 redis
+(dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git --committish 1.43.0 postgres
 (dokku plugin:list | grep letsencrypt) || sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git --committish 0.9.4 letsencrypt
 dokku plugin:list
 dokku letsencrypt:cron-job --add
@@ -37,10 +42,13 @@ sudo chown dokku:dokku $KEY_DIR
 (dokku storage:list wharf | grep ssh) || dokku storage:mount wharf $KEY_DIR:/root/.ssh
 GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -v" git push dokku HEAD:refs/heads/master
 hostname --long
-docker ps
+dokku ps:scale wharf celery=1
+sudo docker ps
 sudo apt-get install -y net-tools
 sudo netstat -nlp
 dokku domains:report
+dokku proxy:report
+dokku ports:report
 python3 check_boot.py http://localhost
 if [ ! -f $KEY_DIR/id_rsa ]; then
     echo "Can't find keys in key dir"

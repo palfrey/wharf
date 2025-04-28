@@ -10,41 +10,43 @@ on:
     - cron: '0 0 1 * *'
 jobs:
   Build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       CHROMEDRIVER_PATH: /usr/lib/chromium-browser/chromedriver
       CHROMIUM_BROWSER: /usr/bin/chromium-browser
     steps:
+      - run: |
+          sudo systemctl stop apache2
+          sudo apt-get remove -y apache2
       - run: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
       - run: sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
       - run: apt-cache policy docker-ce
-      - run: sudo apt-get install docker-ce
-      - name: "Set up Python"
-        uses: actions/setup-python@v2
+      - run: sudo apt-get install -y docker-ce nginx chromium-chromedriver
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.12
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
         with:
           install: true
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # All of history
       - name: Cache pip
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-pip-        
+      - uses: asdf-vm/actions/install@1117842ea70e2711a0072e3a71265cbfe2c830be
       - name: Install dependencies
-        run: |
-          python -m pip install pip==20.2
-          pip install -r requirements.txt
+        run: make sync
       - run: docker build .
-      - run: sudo apt-get update
-      - run: sudo apt-get install -y chromium-chromedriver
       - run: chromium-browser --version
       - run: which chromium-browser
-      - run: ./test.sh
+      - run: |
+          source .venv/bin/activate
+          ./test.sh

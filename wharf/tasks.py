@@ -2,7 +2,6 @@ from .celery import app
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import RSAKey
 from django.conf import settings
-import select
 import time
 from redis import StrictRedis
 import subprocess
@@ -67,6 +66,7 @@ def run_ssh_command(self, command):
             pkey = None
         client.connect(settings.DOKKU_HOST, port=settings.DOKKU_SSH_PORT, username="dokku", pkey=pkey, allow_agent=False, look_for_keys=False)
         transport = client.get_transport()
+        assert transport is not None
         channel = transport.open_session()
         channel.exec_command(c)
         while True:
