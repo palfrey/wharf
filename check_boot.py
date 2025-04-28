@@ -135,7 +135,7 @@ try:
     github_text = "Can't deploy due to missing GITHUB_URL"
     if tester.page_source().find(github_text) != -1:
         tester.send_keys(By.ID, "id_key", "GITHUB_URL")
-        tester.send_keys(By.ID, "id_value", "https://github.com/heroku/python-getting-started.git")
+        tester.send_keys(By.ID, "id_value", "https://github.com/palfrey/python-getting-started.git")
         tester.click(By.ID, "config_add")
 
         def wait_for_no_github_text(driver: WebDriver) -> WebElement | Literal[False]:
