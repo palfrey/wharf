@@ -56,7 +56,8 @@ class Tester:
         self.driver.get_screenshot_as_file("screenshot.png")
         for entry in self.driver.get_log('browser'):
             self.log("Browser: %s" % entry)
-        print(self.driver.page_source)
+        print(self.driver.current_url)
+        print(self.page_source())
         os.system("sudo docker logs wharf.web.1")
         os.system("sudo docker logs wharf.celery.1")
 
