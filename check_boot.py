@@ -19,6 +19,7 @@ class Tester:
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--start-maximized')
+        chrome_options.add_argument("--allow-insecure-localhost")
         chromium_browser = os.environ.get("CHROMIUM_BROWSER", None)
         if chromium_browser != None:
             chrome_options.binary_location = chromium_browser
