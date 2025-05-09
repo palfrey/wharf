@@ -20,6 +20,7 @@ class Tester:
         os.environ["MOZ_REMOTE_SETTINGS_DEVTOOLS"] = "1"
         firefox_options = webdriver.FirefoxOptions()
         firefox_options.add_argument("-headless")
+        firefox_options.accept_insecure_certs = True
         geckodriver_path = Path("/snap/bin/geckodriver")
         assert geckodriver_path.exists(), geckodriver_path
         self.driver = webdriver.Firefox(options=firefox_options, service=Service(executable_path=geckodriver_path.as_posix(), log_output=subprocess.STDOUT))
