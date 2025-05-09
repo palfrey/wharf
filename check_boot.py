@@ -52,10 +52,13 @@ class Tester:
             if element is not None:
                 return element
         return False
+    
+    def url(self) -> str:
+        return self.driver.current_url
 
     def failure(self):
         self.driver.get_screenshot_as_file("screenshot.png")
-        print(self.driver.current_url)
+        print(self.url)
         print(self.page_source())
         os.system("sudo docker logs wharf.web.1")
         os.system("sudo docker logs wharf.celery.1")
@@ -145,9 +148,7 @@ try:
                 return tester.wait_for_list([(By.ID, "app_page")], timeout=900)
 
         tester.wait_for_lambda(wait_for_no_github_text, timeout=900)
-        page_source = tester.page_source()
-        if page_source.find("github_text") != -1:
-            print(page_source)
+        if tester.page_source().find("github_text") != -1:
             tester.failure()
             raise Exception
         
@@ -155,13 +156,14 @@ try:
     for x in range(30):
         try:
             tester.log("Attempt %d" % x)
+            if tester.url().startswith("https:"):
+                tester.log("going to http page")
+                tester.get(tester.url().replace("https", "http"))
             tester.wait_for_list([(By.ID, "app_page")], timeout=30)
             break
         except TimeoutException:
             continue
-    page_source = tester.page_source()
-    if page_source.find(f"Wharf: {app_name}") == -1:
-        print(page_source)
+    if tester.page_source().find(f"Wharf: {app_name}") == -1:
         tester.failure()
         raise Exception
 
