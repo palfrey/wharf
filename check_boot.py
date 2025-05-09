@@ -58,7 +58,7 @@ class Tester:
 
     def failure(self):
         self.driver.get_screenshot_as_file("screenshot.png")
-        print(self.url)
+        print(self.url())
         print(self.page_source())
         os.system("sudo docker logs wharf.web.1")
         os.system("sudo docker logs wharf.celery.1")
