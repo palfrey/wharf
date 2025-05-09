@@ -1,3 +1,4 @@
+from pathlib import Path
 from .celery import app
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import RSAKey
@@ -49,13 +50,16 @@ def run_ssh_command(self, command: str | list[str]):
     redis.set(key, "")
     client = SSHClient()
     client.set_missing_host_key_policy(AutoAddPolicy)
-    known_hosts = os.path.expanduser('~/.ssh/known_hosts')
-    try:
-        client.load_host_keys(known_hosts) # So that we also save back the new host
-    except FileNotFoundError:
-        if not os.path.exists(os.path.dirname(known_hosts)):
-            os.mkdir(os.path.dirname(known_hosts))
+    known_hosts = Path('~/.ssh/known_hosts').expanduser()
+    known_hosts_folder = known_hosts.parent
+    if not known_hosts_folder.exists():
+        known_hosts_folder.mkdir()
+
+    if known_hosts.exists():
+        client.load_host_keys(known_hosts.as_posix()) # So that we also save back the new host
+    else:
         open(known_hosts, "w").write("") # so connect doesn't barf when trying to save
+        
     if isinstance(command, list):
         commands = command
     else:

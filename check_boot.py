@@ -1,3 +1,5 @@
+from pathlib import Path
+import subprocess
 from typing import Callable, Literal
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -5,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.remote.webdriver import WebDriver
 import sys
 import os
@@ -15,15 +17,11 @@ import time
 
 class Tester:
     def __init__(self):
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--headless')
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--start-maximized')
-        chrome_options.add_argument("--allow-insecure-localhost")
-        chromium_browser = os.environ.get("CHROMIUM_BROWSER", None)
-        if chromium_browser != None:
-            chrome_options.binary_location = chromium_browser
-        self.driver = webdriver.Chrome(options=chrome_options, service=Service(executable_path=os.environ["CHROMEDRIVER_PATH"], service_args=['--verbose']))
+        firefox_options = webdriver.FirefoxOptions()
+        firefox_options.add_argument("-headless")
+        geckodriver_path = Path("/snap/bin/geckodriver")
+        assert geckodriver_path.exists(), geckodriver_path
+        self.driver = webdriver.Firefox(options=firefox_options, service=Service(executable_path=geckodriver_path.as_posix(), log_output=subprocess.STDOUT))
         self.driver.implicitly_wait(0)
         self.start = time.time()
 
@@ -55,8 +53,6 @@ class Tester:
 
     def failure(self):
         self.driver.get_screenshot_as_file("screenshot.png")
-        for entry in self.driver.get_log('browser'):
-            self.log("Browser: %s" % entry)
         print(self.driver.current_url)
         print(self.page_source())
         os.system("sudo docker logs wharf.web.1")
