@@ -17,6 +17,7 @@ import time
 
 class Tester:
     def __init__(self):
+        os.environ["MOZ_REMOTE_SETTINGS_DEVTOOLS"] = "1"
         firefox_options = webdriver.FirefoxOptions()
         firefox_options.add_argument("-headless")
         geckodriver_path = Path("/snap/bin/geckodriver")
