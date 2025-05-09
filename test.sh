@@ -4,11 +4,6 @@ set -eux -o pipefail
 
 export PYTHONUNBUFFERED=1
 
-if [ ! -f geckodriver ]; then
-    curl -OL https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz
-    tar -zxvf geckodriver-v0.36.0-linux64.tar.gz
-fi
-
 if [ -f /etc/nginx/sites-enabled/default ]; then
     sudo rm /etc/nginx/sites-enabled/default
     sudo systemctl restart nginx
