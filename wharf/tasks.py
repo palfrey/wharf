@@ -58,7 +58,8 @@ def run_ssh_command(self, command: str | list[str]):
     if known_hosts.exists():
         client.load_host_keys(known_hosts.as_posix()) # So that we also save back the new host
     else:
-        open(known_hosts, "w").write("") # so connect doesn't barf when trying to save
+        with known_hosts.open("w") as f:
+            f.write("") # so connect doesn't barf when trying to save
         
     if isinstance(command, list):
         commands = command
