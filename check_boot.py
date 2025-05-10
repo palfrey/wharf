@@ -62,6 +62,8 @@ class Tester:
         print(self.page_source())
         os.system("sudo docker logs wharf.web.1")
         os.system("sudo docker logs wharf.celery.1")
+        os.system("dokku nginx:show-config wharf")
+        os.system("dokku letsencrypt:ls")
 
     def get(self, url):
         self.log("Went to %s" % url)
