@@ -112,7 +112,7 @@ pytest-watcher==0.4.3
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via celery
-redis==5.2.1
+redis==6.0.0
     # via
     #   celery
     #   django-redis
