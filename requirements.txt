@@ -64,7 +64,7 @@ gitdb==4.0.12
     # via gitpython
 gitpython==3.1.44
     # via -r requirements.in
-h11==0.14.0
+h11==0.16.0
     # via wsproto
 humanize==4.12.2
     # via -r requirements.in
