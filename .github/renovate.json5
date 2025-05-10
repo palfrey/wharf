@@ -20,6 +20,12 @@
       enabled: false,
     },
     {
+      // Issues with Kombu and Redis 6
+      matchDepNames: ["redis"],
+      matchUpdateTypes: ["major"],
+      enabled: false,
+    },    
+    {
       matchUpdateTypes: ["patch", "minor"],
       groupName: "dependencies (non-major)",
       schedule: ["* 0-3 * * 6"],
