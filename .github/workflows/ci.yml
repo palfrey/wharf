@@ -18,7 +18,7 @@ jobs:
       - run: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
       - run: sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
       - run: apt-cache policy docker-ce
-      - run: sudo apt-get install -y docker-ce nginx firefox
+      - run: sudo apt-get install -y docker-ce nginx firefox hostsed
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
