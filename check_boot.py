@@ -1,3 +1,5 @@
+from pathlib import Path
+import subprocess
 from typing import Callable, Literal
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -5,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.remote.webdriver import WebDriver
 import sys
 import os
@@ -15,14 +17,13 @@ import time
 
 class Tester:
     def __init__(self):
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument('--headless')
-        chrome_options.add_argument('--no-sandbox')
-        chrome_options.add_argument('--start-maximized')
-        chromium_browser = os.environ.get("CHROMIUM_BROWSER", None)
-        if chromium_browser != None:
-            chrome_options.binary_location = chromium_browser
-        self.driver = webdriver.Chrome(options=chrome_options, service=Service(executable_path=os.environ["CHROMEDRIVER_PATH"], service_args=['--verbose']))
+        os.environ["MOZ_REMOTE_SETTINGS_DEVTOOLS"] = "1"
+        firefox_options = webdriver.FirefoxOptions()
+        firefox_options.add_argument("-headless")
+        firefox_options.accept_insecure_certs = True
+        geckodriver_path = Path("/snap/bin/geckodriver")
+        assert geckodriver_path.exists(), geckodriver_path
+        self.driver = webdriver.Firefox(options=firefox_options, service=Service(executable_path=geckodriver_path.as_posix(), log_output=subprocess.STDOUT))
         self.driver.implicitly_wait(0)
         self.start = time.time()
 
@@ -51,15 +52,18 @@ class Tester:
             if element is not None:
                 return element
         return False
+    
+    def url(self) -> str:
+        return self.driver.current_url
 
     def failure(self):
         self.driver.get_screenshot_as_file("screenshot.png")
-        for entry in self.driver.get_log('browser'):
-            self.log("Browser: %s" % entry)
-        print(self.driver.current_url)
+        print(self.url())
         print(self.page_source())
         os.system("sudo docker logs wharf.web.1")
         os.system("sudo docker logs wharf.celery.1")
+        os.system("dokku nginx:show-config wharf")
+        os.system("dokku letsencrypt:ls")
 
     def get(self, url):
         self.log("Went to %s" % url)
@@ -146,9 +150,7 @@ try:
                 return tester.wait_for_list([(By.ID, "app_page")], timeout=900)
 
         tester.wait_for_lambda(wait_for_no_github_text, timeout=900)
-        page_source = tester.page_source()
-        if page_source.find("github_text") != -1:
-            print(page_source)
+        if tester.page_source().find("github_text") != -1:
             tester.failure()
             raise Exception
         
@@ -156,13 +158,14 @@ try:
     for x in range(30):
         try:
             tester.log("Attempt %d" % x)
+            if tester.url().startswith("https:"):
+                tester.log("going to http page")
+                tester.get(tester.url().replace("https", "http"))
             tester.wait_for_list([(By.ID, "app_page")], timeout=30)
             break
         except TimeoutException:
             continue
-    page_source = tester.page_source()
-    if page_source.find(f"Wharf: {app_name}") == -1:
-        print(page_source)
+    if tester.page_source().find(f"Wharf: {app_name}") == -1:
         tester.failure()
         raise Exception
 

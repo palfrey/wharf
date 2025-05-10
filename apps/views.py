@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any, Sequence, cast
 from django.shortcuts import render, redirect
 from django.conf import settings
 from django.contrib import messages
@@ -20,6 +20,10 @@ import hashlib
 import timeout_decorator
 
 from redis import StrictRedis
+
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
 ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
@@ -44,6 +48,11 @@ def clear_cache(cmd):
     key = cmd_key(cmd)
     cache.delete(key)
 
+def redirect_reverse(view_name: str, kwargs: dict[str, Any] | None = None, args: Sequence[Any] | None = None):
+    new_url = reverse(view_name, kwargs=kwargs, args=args)
+    logger.warning(f"New url is {new_url}")
+    return redirect(new_url)
+
 def run_cmd_with_log(app_name, description, cmd, after):
     res = tasks.run_ssh_command.delay(cmd)
     if app_name == None: # global
@@ -55,7 +64,7 @@ def run_cmd_with_log(app_name, description, cmd, after):
             app=models.App.objects.get(name=app_name),
             description=description
         ).save()
-    return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': after}))
+    return redirect_reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': after})
 
 def get_log(res: AsyncResult):
     if res.state > state(PENDING):
@@ -76,7 +85,7 @@ def wait_for_command(request: HttpRequest, app_name, task_id, after):
     else:
         description = ""
     if res.state == state(SUCCESS):
-        return redirect(reverse(after, kwargs={'app_name': app_name, 'task_id': task_id}))
+        return redirect_reverse(after, kwargs={'app_name': app_name, 'task_id': task_id})
     log = ansi_escape.sub("", get_log(res))
     if res.state == state(FAILURE):
         log += str(res.traceback)
@@ -130,7 +139,7 @@ def index(request: HttpRequest):
 
 def refresh_all(request: HttpRequest):
     cache.clear()
-    return redirect(reverse('index'))
+    return redirect_reverse('index')
 
 def generic_config(app_name: str, data: str) -> dict[str, Any]:
     if "does not exist" in data:
@@ -166,7 +175,7 @@ def check_config_set(request: HttpRequest, task_id: str):
 def check_app_config_set(request: HttpRequest, app_name, task_id: str):
     check_config_set(request, task_id)
     clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
+    return redirect_reverse('app_info', args=[app_name])
 
 def global_config_set(request):
     form = forms.ConfigForm(request.POST)
@@ -178,7 +187,7 @@ def global_config_set(request):
 def check_global_config_set(request: HttpRequest, task_id: str):
     check_config_set(request, task_id)
     clear_cache("config --global")
-    return redirect(reverse('index'))
+    return redirect_reverse('index')
 
 def generic_list(app_name, data, name_field: str, field_names: list[str]):
     lines = data.split("\n")
@@ -298,7 +307,7 @@ def check_domain(request: HttpRequest, app_name, task_id: str):
     if data.find("Reloading nginx") != -1:
         clear_cache("domains:report %s" % app_name)
         messages.success(request, "Added domain name to %s" % app_name)
-        return redirect(reverse('app_info', args=[app_name]))
+        return redirect_reverse('app_info', args=[app_name])
     else:
         raise Exception(data)
 
@@ -342,7 +351,7 @@ def deploy(request: HttpRequest, app_name):
         clear_cache("config %s" % app_name)
         clear_cache("domains:report %s" % app_name)
         clear_cache("ps:report %s" % app_name)
-        return redirect(reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': "check_deploy"}))
+        return redirect_reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': "check_deploy"})
     elif request.POST['action'] == "rebuild":
         return run_cmd_with_log(app_name, "Rebuilding", "ps:rebuild %s" % app_name, "check_rebuild")
     else:
@@ -357,7 +366,7 @@ def create_redis(request: HttpRequest, app_name):
 def check_deploy(request: HttpRequest, app_name, task_id: str):
     clear_cache("config %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
+    return redirect_reverse('app_info', args=[app_name])
 
 def check_rebuild(request: HttpRequest, app_name, task_id: str):
     res = AsyncResult(task_id)
@@ -366,7 +375,7 @@ def check_rebuild(request: HttpRequest, app_name, task_id: str):
         raise Exception(data)
     messages.success(request, "%s rebuilt" % app_name)
     clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
+    return redirect_reverse('app_info', args=[app_name])
 
 def check_postgres(request: HttpRequest, app_name, task_id: str):
     res = AsyncResult(task_id)
@@ -376,7 +385,7 @@ def check_postgres(request: HttpRequest, app_name, task_id: str):
     messages.success(request, "Postgres added to %s" % app_name)
     clear_cache("postgres:list")
     clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
+    return redirect_reverse('app_info', args=[app_name])
 
 def check_redis(request: HttpRequest, app_name, task_id: str):
     res = AsyncResult(task_id)
@@ -386,7 +395,7 @@ def check_redis(request: HttpRequest, app_name, task_id: str):
     messages.success(request, "Redis added to %s" % app_name)
     clear_cache("redis:list")
     clear_cache("config %s" % app_name)
-    return redirect(reverse('app_info', args=[app_name]))
+    return redirect_reverse('app_info', args=[app_name])
 
 def create_app(app_name: str):
     models.App(name=app_name).save()
@@ -399,7 +408,7 @@ def check_app(request: HttpRequest, app_name: str, task_id: str):
         raise Exception(data)
     messages.success(request, "Created %s" % app_name)
     clear_cache("apps:list")
-    return redirect(reverse('app_info', args=[app_name]))
+    return redirect_reverse('app_info', args=[app_name])
 
 def setup_letsencrypt(request: HttpRequest, app_name: str):
     return run_cmd_with_log(app_name, "Enable Let's Encrypt", "letsencrypt %s" % app_name, "check_letsencrypt")
@@ -409,7 +418,7 @@ def check_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
     log = get_log(res)
     if log.find("Certificate retrieved successfully") !=-1:
         clear_cache("letsencrypt:ls")
-        return redirect(reverse('app_info', args=[app_name]))
+        return redirect_reverse('app_info', args=[app_name])
     else:
         return render(request, 'command_wait.html', {'app': app_name, 'task_id': task_id, 'log': log, 'state': res.state, 'running': res.state in [state(PENDING), state(STARTED)]})
 
