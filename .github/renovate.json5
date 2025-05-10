@@ -24,16 +24,18 @@
       matchDepNames: ["redis"],
       matchUpdateTypes: ["major"],
       enabled: false,
-    },    
+    },
     {
       matchUpdateTypes: ["patch", "minor"],
-      groupName: "dependencies (non-major)",
-      schedule: ["* 0-3 * * 6"],
+      enabled: false
     },
     {
       matchPackageNames: ["*"],
-      prConcurrentLimit: 3,
-      automerge: true,
+      automerge: true
     },
   ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true
 }
