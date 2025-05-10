@@ -21,6 +21,10 @@ import timeout_decorator
 
 from redis import StrictRedis
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
 ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
 
@@ -46,7 +50,7 @@ def clear_cache(cmd):
 
 def redirect_reverse(view_name: str, kwargs: dict[str, Any] | None = None, args: Sequence[Any] | None = None):
     new_url = reverse(view_name, kwargs=kwargs, args=args)
-    print(f"New url is {new_url}")
+    logger.warning(f"New url is {new_url}")
     return redirect(new_url)
 
 def run_cmd_with_log(app_name, description, cmd, after):
