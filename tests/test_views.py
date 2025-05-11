@@ -1,12 +1,14 @@
+from typing import Any, Callable
 from unittest.mock import MagicMock, patch
 
 from django.http import HttpRequest
 import pytest
-from apps.views import app_info, app_list, check_app
+from apps.views import app_info, app_list, check_app, letsencrypt
 from celery.result import AsyncResult
 from celery.states import state, SUCCESS
 from redis import StrictRedis
 from django.core.cache import cache
+
 class MockCelery:
     def __init__(self, res: str):
         self.res = res
@@ -77,16 +79,26 @@ wharf""",
 ("postgres:info missing",): " !     Postgres service missing does not exist",
 ("redis:info missing",): " !     Redis service missing does not exist",
 ("letsencrypt:ls",): "-----> App name  Certificate Expiry        Time before expiry        Time before renewal",
+("letsencrypt:list",): "-----> App name  Certificate Expiry        Time before expiry        Time before renewal",
 ("ps:report missing",): " !     App missing does not exist",
 ("logs missing --num 100",): " !     App missing does not exist",
-("domains:report missing",): " !     App missing does not exist"
+("domains:report missing",): " !     App missing does not exist",
+("plugin:list", ): """ letsencrypt          0.9.4 enabled    Automated installation of let's encrypt TLS certificates
+  logs                 0.35.18 enabled    dokku core logs plugin
+  network              0.35.18 enabled    dokku core network plugin"""
 }
 
-def mock_commands(*args):
-    if args in commands:
-        return MockCelery(commands[args])
-    print(args)
-    raise Exception(args)
+def custom_mock_commands(override_commands: dict[Any, str]) -> Callable:
+    def _internal(*args):
+        if args in override_commands:
+            return MockCelery(override_commands[args])        
+        if args in commands:
+            return MockCelery(commands[args])
+        print(args)
+        raise Exception(args)
+    return _internal
+
+mock_commands = custom_mock_commands({})
 
 @pytest.fixture
 def mock_request() -> HttpRequest:
@@ -95,6 +107,10 @@ def mock_request() -> HttpRequest:
     mr._messages = MagicMock()
     mr.method = MagicMock()
     return mr
+
+@pytest.fixture(autouse=True)
+def disable_cache(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr(cache, "set", lambda _key, _value, _timeout: None)
 
 @patch("wharf.tasks.run_ssh_command.delay")
 def test_app_list(patched_delay: MagicMock):
@@ -116,7 +132,6 @@ def test_check_app(patched_delay: MagicMock, mock_request: HttpRequest, monkeypa
 @patch("wharf.tasks.run_ssh_command.delay")
 def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch):
     patched_delay.side_effect = mock_commands
-    monkeypatch.setattr(cache, "set", lambda _key, _value, _timeout: None)
     resp = app_info(mock_request, "test_app")    
     assert resp.status_code == 200, resp
     content = resp.content.decode('utf-8')
@@ -133,7 +148,6 @@ def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest, monkeypat
 @patch("wharf.tasks.run_ssh_command.delay")
 def test_missing_app_info(patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch):
     patched_delay.side_effect = mock_commands
-    monkeypatch.setattr(cache, "set", lambda _key, _value, _timeout: None)
     resp = app_info(mock_request, "missing")
     assert resp.status_code == 200, resp
     content = resp.content.decode('utf-8')
@@ -143,3 +157,10 @@ def test_missing_app_info(patched_delay: MagicMock, mock_request: HttpRequest, m
     """<button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n</form>\n\n<h3>Process Info</h3>\n<ul>\n  \n</ul>\n<h3>Processes</h3>\n<ul>\n  \n</ul>\n<h3>Logs</h3>\n<pre>\n!     App missing does not exist\n</pre>"""]
     for expected_content in expected_contents:
         assert expected_content in content
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_newer_letsencrypt(patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch):
+    patched_delay.side_effect = custom_mock_commands({("plugin:list", ): "  letsencrypt          0.22.0 enabled    Automated installation of let's encrypt TLS certificates"
+})
+    assert letsencrypt("wharf") == None

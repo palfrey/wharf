@@ -12,6 +12,7 @@ gitpython
 humanize
 timeout-decorator
 selenium
+packaging
 
 django-jinja
 

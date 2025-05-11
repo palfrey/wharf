@@ -18,6 +18,7 @@ import json
 import hmac
 import hashlib
 import timeout_decorator
+from packaging.version import Version
 
 from redis import StrictRedis
 
@@ -47,6 +48,12 @@ def run_cmd_with_cache(cmd):
 def clear_cache(cmd):
     key = cmd_key(cmd)
     cache.delete(key)
+
+def plugin_versions() -> dict[str, Version]:
+    plugin_raw_list = run_cmd_with_cache("plugin:list")
+    plugin_pattern = re.compile(r"([a-z\-_0-9]+?)\s+([\d\.]+)")
+    plugin_groups = plugin_pattern.findall(plugin_raw_list)
+    return dict([(k, Version(v)) for (k,v) in plugin_groups])
 
 def redirect_reverse(view_name: str, kwargs: dict[str, Any] | None = None, args: Sequence[Any] | None = None):
     new_url = reverse(view_name, kwargs=kwargs, args=args)
@@ -254,8 +261,17 @@ def redis_info(app_name: str):
     cache_key = "redis:info %s" % app_name
     return db_info(cache_key)
 
+def letsencrypt_command():
+    version = plugin_versions().get("letsencrypt")
+    if version is None:
+        return None
+    if version <= Version("0.9.4"):
+        return "letsencrypt:ls"
+    else:
+        return "letsencrypt:list"
+
 def letsencrypt(app_name: str):
-    data = run_cmd_with_cache("letsencrypt:ls")
+    data = run_cmd_with_cache(letsencrypt_command())
     return generic_list(app_name, data, "App name", ["App name", "Certificate Expiry", "Time before expiry", "Time before renewal"])
 
 def process_info(app_name):
@@ -417,7 +433,7 @@ def check_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
     res = AsyncResult(task_id)
     log = get_log(res)
     if log.find("Certificate retrieved successfully") !=-1:
-        clear_cache("letsencrypt:ls")
+        clear_cache(letsencrypt_command())
         return redirect_reverse('app_info', args=[app_name])
     else:
         return render(request, 'command_wait.html', {'app': app_name, 'task_id': task_id, 'log': log, 'state': res.state, 'running': res.state in [state(PENDING), state(STARTED)]})
