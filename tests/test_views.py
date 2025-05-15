@@ -1,9 +1,11 @@
 from typing import Any, Callable
 from unittest.mock import MagicMock, patch
+import uuid
 
 from django.http import HttpRequest
 import pytest
-from apps.views import app_info, app_list, check_app, letsencrypt
+from apps import models
+from apps.views import app_info, app_list, check_app, create_app, letsencrypt
 from celery.result import AsyncResult
 from celery.states import state, SUCCESS
 from redis import StrictRedis
@@ -12,6 +14,7 @@ from django.core.cache import cache
 class MockCelery:
     def __init__(self, res: str):
         self.res = res
+        self.id = uuid.uuid4()
 
     def get(self):
         return self.res
@@ -85,7 +88,8 @@ wharf""",
 ("domains:report missing",): " !     App missing does not exist",
 ("plugin:list", ): """ letsencrypt          0.9.4 enabled    Automated installation of let's encrypt TLS certificates
   logs                 0.35.18 enabled    dokku core logs plugin
-  network              0.35.18 enabled    dokku core network plugin"""
+  network              0.35.18 enabled    dokku core network plugin""",
+("apps:create foo",): ""
 }
 
 def custom_mock_commands(override_commands: dict[Any, str]) -> Callable:
@@ -130,7 +134,7 @@ def test_check_app(patched_delay: MagicMock, mock_request: HttpRequest, monkeypa
 
 @pytest.mark.django_db
 @patch("wharf.tasks.run_ssh_command.delay")
-def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch):
+def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
     patched_delay.side_effect = mock_commands
     resp = app_info(mock_request, "test_app")    
     assert resp.status_code == 200, resp
@@ -146,7 +150,7 @@ def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest, monkeypat
 
 @pytest.mark.django_db
 @patch("wharf.tasks.run_ssh_command.delay")
-def test_missing_app_info(patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch):
+def test_missing_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
     patched_delay.side_effect = mock_commands
     resp = app_info(mock_request, "missing")
     assert resp.status_code == 200, resp
@@ -160,7 +164,22 @@ def test_missing_app_info(patched_delay: MagicMock, mock_request: HttpRequest, m
 
 @pytest.mark.django_db
 @patch("wharf.tasks.run_ssh_command.delay")
-def test_newer_letsencrypt(patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch):
+def test_newer_letsencrypt(patched_delay: MagicMock):
     patched_delay.side_effect = custom_mock_commands({("plugin:list", ): "  letsencrypt          0.22.0 enabled    Automated installation of let's encrypt TLS certificates"
 })
     assert letsencrypt("wharf") == None
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_create_app(patched_delay: MagicMock):
+    patched_delay.side_effect = mock_commands
+    res = create_app("foo")
+    assert res.status_code == 302, res
+    assert res.url.startswith("/apps/foo/wait/"), res
+
+@pytest.mark.django_db
+def test_create_duplicate_app():
+    models.App.objects.create(name="foo")
+    res = create_app("foo")
+    assert res.status_code == 400, res
+    assert res.content == b"You already have an app called 'foo'", res

@@ -1,2 +1,5 @@
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"
+filterwarnings = [
+    "ignore::django.core.cache.backends.base.CacheKeyWarning"
+]

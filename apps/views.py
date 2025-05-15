@@ -414,6 +414,8 @@ def check_redis(request: HttpRequest, app_name, task_id: str):
     return redirect_reverse('app_info', args=[app_name])
 
 def create_app(app_name: str):
+    if models.App.objects.filter(name=app_name).exists():
+        return HttpResponseBadRequest(f"You already have an app called '{app_name}'")
     models.App(name=app_name).save()
     return run_cmd_with_log(app_name, "Add app %s" % app_name, "apps:create %s" % app_name, "check_app")
 
