@@ -7,7 +7,7 @@ from django.http import HttpRequest
 from django.test import Client
 import pytest
 from apps import models
-from apps.views import app_info, app_list, check_app, create_app, letsencrypt
+from apps.views import app_info, app_list, check_app, create_app, global_config, letsencrypt
 from celery.result import AsyncResult
 from celery.states import state, SUCCESS
 from redis import StrictRedis
@@ -91,7 +91,10 @@ wharf""",
 ("plugin:list", ): """ letsencrypt          0.9.4 enabled    Automated installation of let's encrypt TLS certificates
   logs                 0.35.18 enabled    dokku core logs plugin
   network              0.35.18 enabled    dokku core network plugin""",
-("apps:create foo",): ""
+("apps:create foo",): "",
+("config:show --global",): """=====> global env vars
+CURL_CONNECT_TIMEOUT:  90
+CURL_TIMEOUT:          600"""
 }
 
 def custom_mock_commands(override_commands: dict[Any, str]) -> Callable:
@@ -194,3 +197,9 @@ def test_login_no_change(client: Client, settings: LazySettings):
     settings.ADMIN_PASSWORD = "testpassword"
     response = client.get('/', follow=True)
     assert "Initial login is admin/password" not in response.text
+
+
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_global_config(patched_delay: MagicMock):
+    patched_delay.side_effect = mock_commands
+    assert global_config() == {'CURL_CONNECT_TIMEOUT': '90', 'CURL_TIMEOUT': '600'}
