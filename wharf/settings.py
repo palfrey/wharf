@@ -24,9 +24,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.environ.get("SECRET_KEY", ')u-_udqved=rq9p3fc-6mv6xh7y%slo-5d=h1590(k19e+srxt')
 
-DEBUG = 'DYNO' not in os.environ # Debug off when deployed
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+if "CSRF_TRUSTED_ORIGIN" in os.environ:
+    CSRF_TRUSTED_ORIGINS = [os.environ["CSRF_TRUSTED_ORIGIN"]]
 
 
 # Application definition
