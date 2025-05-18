@@ -3,8 +3,10 @@
 
 <h1>Wharf: Login</h1>
 
+{% if not HAS_LOGIN_SET %}
 Initial login is admin/password, but this can be changed by setting ADMIN_LOGIN 
 and ADMIN_PASSWORD in the environment variables.
+{% endif %}
 
 {% if form.errors %}
 <p>Your username and password didn't match. Please try again.</p>

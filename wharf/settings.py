@@ -67,7 +67,7 @@ ROOT_URLCONF = 'wharf.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django_jinja.backend.Jinja2',
+        'BACKEND': 'django_jinja.jinja2.Jinja2',
         'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -76,6 +76,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                "wharf.context_processors.helpers"
             ],
             "match_extension": None,
             "app_dirname": "templates",
