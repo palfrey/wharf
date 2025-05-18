@@ -2,7 +2,9 @@ from typing import Any, Callable
 from unittest.mock import MagicMock, patch
 import uuid
 
+from django.conf import LazySettings
 from django.http import HttpRequest
+from django.test import Client
 import pytest
 from apps import models
 from apps.views import app_info, app_list, check_app, create_app, letsencrypt
@@ -183,3 +185,12 @@ def test_create_duplicate_app():
     res = create_app("foo")
     assert res.status_code == 400, res
     assert res.content == b"You already have an app called 'foo'", res
+
+def test_login_change(client: Client):
+    response = client.get('/', follow=True)
+    assert "Initial login is admin/password" in response.text
+
+def test_login_no_change(client: Client, settings: LazySettings):
+    settings.ADMIN_PASSWORD = "testpassword"
+    response = client.get('/', follow=True)
+    assert "Initial login is admin/password" not in response.text
