@@ -2,7 +2,7 @@ Wharf
 =====
 [![CI](https://github.com/palfrey/wharf/actions/workflows/ci.yml/badge.svg)](https://github.com/palfrey/wharf/actions)
 
-Wharf is an opinionated web frontend for [Dokku](http://dokku.viewdocs.io/dokku/). You can also use the command line version, but most features you'll need day-to-day are in the Web UI
+Wharf is an opinionated web frontend for [Dokku](https://dokku.com/docs/). You can also use the command line version, but most features you'll need day-to-day are in the Web UI
 
 Screenshots
 -----------
@@ -10,7 +10,7 @@ Screenshots
 
 Setup
 -----
-1. [Install Dokku](http://dokku.viewdocs.io/dokku/getting-started/installation)
+1. [Install Dokku](https://dokku.com/docs/getting-started/installation)
 2. Install the following plugins:
   * https://github.com/dokku/dokku-redis
   * https://github.com/dokku/dokku-postgres
@@ -24,14 +24,14 @@ Setup
 6. Add Redis (`dokku redis:create wharf && dokku redis:link wharf wharf`)
 7. Add Postgres (`dokku postgres:create wharf && dokku postgres:link wharf wharf`)
 8. Set `ADMIN_PASSWORD` to something secret (`dokku config:set wharf ADMIN_PASSWORD=somesecret`)
-9. Deploy this Git repo [as per the standard Dokku instructions](http://dokku.viewdocs.io/dokku/deployment/application-deployment/)
+9. Deploy this Git repo [as per the standard Dokku instructions](https://dokku.com/docs/deployment/application-deployment/)
 10. `dokku ps:scale wharf celery=1`
 
 Helpful hints
 -------------
 * If you're running SSH on a non-standard port, set `DOKKU_SSH_PORT` e.g. `dokku config:set wharf DOKKU_SSH_PORT=2222`
 * If Dokku is running somewhere else than the local machine, set `DOKKU_SSH_HOST` e.g. `dokku config:set wharf DOKKU_SSH_HOST=foo.example.com`
-* If there's a Dockerfile in your repository, it'll [try and deploy using that by default](http://dokku.viewdocs.io/dokku/deployment/methods/dockerfiles/). Set BUILDPACK_URL to override
+* If there's a Dockerfile in your repository, it'll [try and deploy using that by default](https://dokku.com/docs/deployment/methods/dockerfiles/). Set BUILDPACK_URL to override
 * BUILDPACK_URL should be an HTTPS one, not a SSH or heroku/something one
 * You should setup the global domain name when creating Dokku to start with and add a *.&lt;your dokku domain&gt; entry to give new apps more usable names.
 
