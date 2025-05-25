@@ -165,7 +165,7 @@ def app_config(app_name):
     return generic_config(app_name, data)
 
 def global_config():
-    data = run_cmd_with_cache("config --global")
+    data = run_cmd_with_cache("config:show --global")
     return generic_config("global", data)
 
 def app_config_set(app, key, value):
