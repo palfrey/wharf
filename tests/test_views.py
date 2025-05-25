@@ -24,11 +24,11 @@ class MockCelery:
 commands = {
     ("apps:list", ): """=====> My Apps
 wharf""",
-("config test_app",): """=====> test_app env vars
+("config:show test_app",): """=====> test_app env vars
 DOKKU_APP_RESTORE:  1
 DOKKU_APP_TYPE:     dockerfile
 DOKKU_PROXY_PORT:   80""",
-("config missing", ): " !     App missing does not exist",
+("config:show missing", ): " !     App missing does not exist",
 ("postgres:list",): """=====> Postgres services
 wharf""",
 ("postgres:info test_app",): """=====> test_app postgres service information

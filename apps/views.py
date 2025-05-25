@@ -161,7 +161,7 @@ def generic_config(app_name: str, data: str) -> dict[str, Any]:
     return config
 
 def app_config(app_name):
-    data = run_cmd_with_cache("config %s" % app_name)
+    data = run_cmd_with_cache("config:show %s" % app_name)
     return generic_config(app_name, data)
 
 def global_config():
