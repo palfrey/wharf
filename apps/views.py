@@ -161,7 +161,7 @@ def generic_config(app_name: str, data: str) -> dict[str, Any]:
     return config
 
 def app_config(app_name):
-    data = run_cmd_with_cache("config %s" % app_name)
+    data = run_cmd_with_cache("config:show %s" % app_name)
     return generic_config(app_name, data)
 
 def global_config():
@@ -181,7 +181,7 @@ def check_config_set(request: HttpRequest, task_id: str):
 
 def check_app_config_set(request: HttpRequest, app_name, task_id: str):
     check_config_set(request, task_id)
-    clear_cache("config %s" % app_name)
+    clear_cache("config:show %s" % app_name)
     return redirect_reverse('app_info', args=[app_name])
 
 def global_config_set(request):
@@ -364,7 +364,7 @@ def app_info(request: HttpRequest, app_name):
 def deploy(request: HttpRequest, app_name):
     if request.POST['action'] == "deploy":
         res = tasks.deploy.delay(app_name, request.POST['url'])
-        clear_cache("config %s" % app_name)
+        clear_cache("config:show %s" % app_name)
         clear_cache("domains:report %s" % app_name)
         clear_cache("ps:report %s" % app_name)
         return redirect_reverse('wait_for_command', kwargs={'app_name': app_name, 'task_id': res.id, 'after': "check_deploy"})
@@ -380,7 +380,7 @@ def create_redis(request: HttpRequest, app_name):
     return run_cmd_with_log(app_name, "Add Redis", ["redis:create %s" % app_name, "redis:link %s %s" % (app_name, app_name)], "check_redis")
 
 def check_deploy(request: HttpRequest, app_name, task_id: str):
-    clear_cache("config %s" % app_name)
+    clear_cache("config:show %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
     return redirect_reverse('app_info', args=[app_name])
 
@@ -390,7 +390,7 @@ def check_rebuild(request: HttpRequest, app_name, task_id: str):
     if data.find("Application deployed:") == -1:
         raise Exception(data)
     messages.success(request, "%s rebuilt" % app_name)
-    clear_cache("config %s" % app_name)
+    clear_cache("config:show %s" % app_name)
     return redirect_reverse('app_info', args=[app_name])
 
 def check_postgres(request: HttpRequest, app_name, task_id: str):
@@ -400,7 +400,7 @@ def check_postgres(request: HttpRequest, app_name, task_id: str):
         raise Exception(data)
     messages.success(request, "Postgres added to %s" % app_name)
     clear_cache("postgres:list")
-    clear_cache("config %s" % app_name)
+    clear_cache("config:show %s" % app_name)
     return redirect_reverse('app_info', args=[app_name])
 
 def check_redis(request: HttpRequest, app_name, task_id: str):
@@ -410,7 +410,7 @@ def check_redis(request: HttpRequest, app_name, task_id: str):
         raise Exception(data)
     messages.success(request, "Redis added to %s" % app_name)
     clear_cache("redis:list")
-    clear_cache("config %s" % app_name)
+    clear_cache("config:show %s" % app_name)
     return redirect_reverse('app_info', args=[app_name])
 
 def create_app(app_name: str):
@@ -464,7 +464,7 @@ def github_webhook(request: HttpRequest):
     app = apps.first()
     assert app is not None
     res = tasks.deploy.delay(app.name, clone_url)
-    clear_cache("config %s" % app.name)
+    clear_cache("config:show %s" % app.name)
     return HttpResponse("Running deploy. Deploy log is at %s" % request.build_absolute_uri(reverse('show_log', kwargs={'task_id': res.id})))
 
 @timeout_decorator.timeout(5, use_signals=False)
