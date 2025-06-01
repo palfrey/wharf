@@ -59,7 +59,7 @@ No tasks run yet
 </form>
 <h3>Postgres</h3>
 {% if postgres %}
-Status: {{ postgres['STATUS'] }}
+Status: {{ postgres['Status'] }}
 {% else %}
 <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
   {% csrf_token %}
@@ -68,7 +68,7 @@ Status: {{ postgres['STATUS'] }}
 {% endif %}
 <h3>Redis</h3>
 {% if redis %}
-Status: {{ redis['STATUS'] }}
+Status: {{ redis['Status'] }}
 {% else %}
 <form class="form-inline" action="{{ url('create_redis', app_name=app) }}" method="POST">
   {% csrf_token %}
