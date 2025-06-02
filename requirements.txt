@@ -40,7 +40,7 @@ click-repl==0.3.0
     # via celery
 cryptography==45.0.1
     # via paramiko
-dj-database-url==2.3.0
+dj-database-url==3.0.0
     # via -r requirements.in
 django==5.2.1
     # via
