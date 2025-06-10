@@ -118,7 +118,7 @@ redis==5.2.1
     # via
     #   celery
     #   django-redis
-requests==2.32.3
+requests==2.32.4
     # via -r requirements.in
 selenium==4.31.0
     # via -r requirements.in
