@@ -58,7 +58,7 @@ django-jinja==2.11.0
     #   django-jinja-bootstrap-form
 django-jinja-bootstrap-form==4.5.0
     # via -r requirements.in
-django-redis==5.4.0
+django-redis==6.0.0
     # via -r requirements.in
 gitdb==4.0.12
     # via gitpython
