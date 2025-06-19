@@ -146,7 +146,7 @@ typing-extensions==4.13.2
     #   selenium
 tzdata==2025.2
     # via kombu
-urllib3[socks]==2.4.0
+urllib3[socks]==2.5.0
     # via
     #   requests
     #   selenium
