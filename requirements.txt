@@ -8,7 +8,7 @@ attrs==25.3.0
     # via
     #   outcome
     #   trio
-bcrypt==4.3.0
+bcrypt==5.0.0
     # via paramiko
 billiard==4.2.1
     # via celery
@@ -20,7 +20,7 @@ certifi==2025.1.31
     # via
     #   requests
     #   selenium
-cffi==1.17.1
+cffi==2.0.0
     # via
     #   cryptography
     #   pynacl
@@ -38,11 +38,11 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==45.0.1
+cryptography==46.0.1
     # via paramiko
-dj-database-url==2.3.0
+dj-database-url==3.0.0
     # via -r requirements.in
-django==5.2.1
+django==5.2.7
     # via
     #   -r requirements.in
     #   dj-database-url
@@ -58,7 +58,7 @@ django-jinja==2.11.0
     #   django-jinja-bootstrap-form
 django-jinja-bootstrap-form==4.5.0
     # via -r requirements.in
-django-redis==5.4.0
+django-redis==6.0.0
     # via -r requirements.in
 gitdb==4.0.12
     # via gitpython
@@ -90,7 +90,7 @@ packaging==25.0
     # via
     #   -r requirements.in
     #   pytest
-paramiko==3.5.1
+paramiko==4.0.0
     # via -r requirements.in
 pluggy==1.5.0
     # via pytest
@@ -118,7 +118,7 @@ redis==5.2.1
     # via
     #   celery
     #   django-redis
-requests==2.32.3
+requests==2.32.4
     # via -r requirements.in
 selenium==4.31.0
     # via -r requirements.in
@@ -146,7 +146,7 @@ typing-extensions==4.13.2
     #   selenium
 tzdata==2025.2
     # via kombu
-urllib3[socks]==2.4.0
+urllib3[socks]==2.5.0
     # via
     #   requests
     #   selenium
