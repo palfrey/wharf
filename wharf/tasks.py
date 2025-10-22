@@ -1,4 +1,6 @@
 from pathlib import Path
+
+from celery import Task
 from .celery import app
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko import RSAKey
@@ -44,7 +46,7 @@ def get_public_key():
     return open("%s.pub" % keyfile).read()
 
 @app.task(bind=True)
-def run_ssh_command(self, command: str | list[str]):
+def run_ssh_command(self: Task, command: str | list[str]):
     print("Running command", command)
     key = task_key(self.request.id)
     redis.set(key, "")
@@ -118,7 +120,7 @@ def run_process(key, cmd, cwd=None):
         raise Exception
 
 @app.task(bind=True)
-def deploy(self, app_name, git_url):
+def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
     models.TaskLog(
         task_id=self.request.id,
         when=datetime.now(),
@@ -138,4 +140,4 @@ def deploy(self, app_name, git_url):
     redis.append(key, "== Pulling ==\n")
     run_process(key, ["git", "pull"], cwd=app_repo_path)
     redis.append(key, "== Pushing to Dokku ==\n")
-    run_process(key, ["git", "push", "-f", "dokku", "master"], cwd=app_repo_path)
+    run_process(key, ["git", "push", "-f", "dokku", git_branch], cwd=app_repo_path)
