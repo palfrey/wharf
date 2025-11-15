@@ -472,7 +472,7 @@ def app_info(request: HttpRequest, app_name):
             "app": app_name,
             "git_url": config.get("GITHUB_URL", None),
             "config": sorted(config.items()),
-            "task_logs": models.TaskLog.objects.filter(app=app).order_by("-when").all(),
+            "task_logs": models.TaskLog.objects.filter(app=app).order_by("-when")[0:10],
         },
     )
 

@@ -20,3 +20,4 @@ pre-commit
 pytest
 pytest-django
 pytest-watcher
+model-bakery

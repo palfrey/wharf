@@ -1,7 +1,7 @@
-import uuid
+import re
 from typing import Any, Callable
 from unittest.mock import MagicMock, Mock, patch
-
+import uuid
 import pytest
 from celery.result import AsyncResult
 from celery.states import SUCCESS, state
@@ -10,7 +10,6 @@ from django.core.cache import cache
 from django.http import HttpRequest
 from django.test import Client
 from redis import StrictRedis
-
 from apps import models
 from apps.views import (
     app_info,
@@ -23,6 +22,7 @@ from apps.views import (
     refresh_all,
 )
 from tests.recording_cache import RecordingCache
+from model_bakery import baker
 
 
 class MockCelery:
@@ -295,3 +295,15 @@ def test_refresh_one(mock_request: HttpRequest, recording_cache: RecordingCache)
             ),
         )
     ]
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_task_logs_limit(patched_delay: MagicMock, mock_request: HttpRequest):
+    patched_delay.side_effect = mock_commands
+    test_app = baker.make(models.App, name="test_app")
+    baker.make(models.TaskLog, app=test_app, _quantity=20)
+    resp = app_info(mock_request, "test_app")
+
+    log_count = re.findall(r"/logs/[^\"]+", resp.text)
+    assert len(log_count) == 10, resp.text
