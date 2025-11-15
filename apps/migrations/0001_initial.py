@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
                     models.CharField(max_length=256, primary_key=True, serialize=False),
                 ),
                 ("when", models.DateTimeField()),
-                ("success", models.NullBooleanField()),
+                ("success", models.BooleanField(null=True)),
                 ("description", models.CharField(max_length=256)),
                 (
                     "app",

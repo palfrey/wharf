@@ -5,6 +5,7 @@ from datetime import datetime
 from fcntl import F_GETFL, F_SETFL, fcntl
 from os import O_NONBLOCK, read
 from pathlib import Path
+from typing import cast
 
 from celery import Task
 from django.conf import settings
@@ -109,7 +110,7 @@ def run_ssh_command(self: Task, command: str | list[str]):
                 if channel.exit_status_ready():
                     break
                 time.sleep(0.1)
-    return redis.get(key).decode("utf-8")
+    return cast(bytes, redis.get(key)).decode("utf-8")
 
 
 def set_nb(pipe):
@@ -123,10 +124,12 @@ def run_process(key, cmd, cwd=None):
     set_nb(p.stderr)
     while True:
         try:
+            assert p.stdout is not None
             out = read(p.stdout.fileno(), 1024)
         except BlockingIOError:
             out = b""
         try:
+            assert p.stderr is not None
             err = read(p.stderr.fileno(), 1024)
         except BlockingIOError:
             err = b""
