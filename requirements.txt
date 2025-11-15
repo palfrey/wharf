@@ -74,6 +74,8 @@ idna==3.10
     #   trio
 iniconfig==2.1.0
     # via pytest
+invoke==2.2.1
+    # via paramiko
 jinja2==3.1.6
     # via
     #   -r requirements.in
@@ -100,6 +102,8 @@ psycopg2-binary==2.9.10
     # via -r requirements.in
 pycparser==2.22
     # via cffi
+pygments==2.19.2
+    # via pytest
 pynacl==1.5.0
     # via paramiko
 pysocks==1.7.1
