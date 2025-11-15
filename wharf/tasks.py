@@ -1,31 +1,37 @@
+import os.path
+import subprocess
+import time
+from datetime import datetime
+from fcntl import F_GETFL, F_SETFL, fcntl
+from os import O_NONBLOCK, read
 from pathlib import Path
 
 from celery import Task
-from .celery import app
-from paramiko.client import SSHClient, AutoAddPolicy
-from paramiko import RSAKey
 from django.conf import settings
-import time
-from redis import StrictRedis
-import subprocess
-import os.path
 from git import Repo
-from fcntl import fcntl, F_GETFL, F_SETFL
-from os import O_NONBLOCK, read
+from paramiko import RSAKey
+from paramiko.client import AutoAddPolicy, SSHClient
+from redis import StrictRedis
+
 import apps.models as models
-from datetime import datetime
+
+from .celery import app
 
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
+
 
 def handle_data(key, data):
     data = data.decode("utf-8")
     redis.append(key, data)
     print(data)
 
+
 def task_key(task_id):
     return "task:%s" % task_id
 
+
 keyfile = os.path.expanduser("~/.ssh/id_rsa")
+
 
 def generate_key():
     if not os.path.exists(keyfile):
@@ -35,15 +41,18 @@ def generate_key():
         prv = RSAKey.generate(bits=1024)
         prv.write_private_key_file(keyfile)
         pub = RSAKey(filename=keyfile)
-        with open("%s.pub" % keyfile, 'w') as f:
+        with open("%s.pub" % keyfile, "w") as f:
             f.write("%s %s" % (pub.get_name(), pub.get_base64()))
         print("Made new Wharf SSH key")
 
+
 generate_key()
+
 
 @app.task
 def get_public_key():
     return open("%s.pub" % keyfile).read()
+
 
 @app.task(bind=True)
 def run_ssh_command(self: Task, command: str | list[str]):
@@ -52,17 +61,19 @@ def run_ssh_command(self: Task, command: str | list[str]):
     redis.set(key, "")
     client = SSHClient()
     client.set_missing_host_key_policy(AutoAddPolicy)
-    known_hosts = Path('~/.ssh/known_hosts').expanduser()
+    known_hosts = Path("~/.ssh/known_hosts").expanduser()
     known_hosts_folder = known_hosts.parent
     if not known_hosts_folder.exists():
         known_hosts_folder.mkdir()
 
     if known_hosts.exists():
-        client.load_host_keys(known_hosts.as_posix()) # So that we also save back the new host
+        client.load_host_keys(
+            known_hosts.as_posix()
+        )  # So that we also save back the new host
     else:
         with known_hosts.open("w") as f:
-            f.write("") # so connect doesn't barf when trying to save
-        
+            f.write("")  # so connect doesn't barf when trying to save
+
     if isinstance(command, list):
         commands = command
     else:
@@ -72,7 +83,14 @@ def run_ssh_command(self: Task, command: str | list[str]):
             pkey = RSAKey.from_private_key_file(keyfile)
         else:
             pkey = None
-        client.connect(settings.DOKKU_HOST, port=settings.DOKKU_SSH_PORT, username="dokku", pkey=pkey, allow_agent=False, look_for_keys=False)
+        client.connect(
+            settings.DOKKU_HOST,
+            port=settings.DOKKU_SSH_PORT,
+            username="dokku",
+            pkey=pkey,
+            allow_agent=False,
+            look_for_keys=False,
+        )
         transport = client.get_transport()
         assert transport is not None
         channel = transport.open_session()
@@ -93,9 +111,11 @@ def run_ssh_command(self: Task, command: str | list[str]):
                 time.sleep(0.1)
     return redis.get(key).decode("utf-8")
 
+
 def set_nb(pipe):
     flags = fcntl(pipe, F_GETFL)
     fcntl(pipe, F_SETFL, flags | O_NONBLOCK)
+
 
 def run_process(key, cmd, cwd=None):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
@@ -112,12 +132,13 @@ def run_process(key, cmd, cwd=None):
             err = b""
         handle_data(key, out)
         handle_data(key, err)
-        if out == b'' and err == b'':
-            if p.poll() != None:
+        if out == b"" and err == b"":
+            if p.poll() is not None:
                 break
             time.sleep(0.1)
-    if p.poll()!=0:
+    if p.poll() != 0:
         raise Exception
+
 
 @app.task(bind=True)
 def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
@@ -125,7 +146,7 @@ def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
         task_id=self.request.id,
         when=datetime.now(),
         app=models.App.objects.get(name=app_name),
-        description="Deploying %s" % app_name
+        description="Deploying %s" % app_name,
     ).save()
     key = task_key(self.request.id)
     app_repo_path = os.path.abspath(os.path.join("repos", app_name))
@@ -134,9 +155,13 @@ def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
         run_process(key, ["git", "clone", git_url, app_repo_path])
     repo = Repo(app_repo_path)
     try:
-        repo.remotes['dokku']
+        repo.remotes["dokku"]
     except IndexError:
-        repo.create_remote('dokku', "ssh://dokku@%s:%s/%s" % (settings.DOKKU_HOST, settings.DOKKU_SSH_PORT, app_name))
+        repo.create_remote(
+            "dokku",
+            "ssh://dokku@%s:%s/%s"
+            % (settings.DOKKU_HOST, settings.DOKKU_SSH_PORT, app_name),
+        )
     redis.append(key, "== Pulling ==\n")
     run_process(key, ["git", "pull"], cwd=app_repo_path)
     redis.append(key, "== Pushing to Dokku ==\n")

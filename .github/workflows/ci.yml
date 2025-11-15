@@ -1,3 +1,4 @@
+---
 name: CI
 on:
   push:
@@ -7,43 +8,43 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 0 1 * *'
+  - cron: 0 0 1 * *
 jobs:
   Build:
     runs-on: ubuntu-24.04
     steps:
-      - run: |
-          sudo systemctl stop apache2
-          sudo apt-get remove -y apache2
-      - run: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-      - run: sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-      - run: apt-cache policy docker-ce
-      - run: sudo apt-get install -y docker-ce nginx firefox hostsed
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: 3.12
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          install: true
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0 # All of history
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-        
-      - uses: asdf-vm/actions/install@v4
-      - name: Install dependencies
-        run: make sync
-      - run: docker build .
-      - run: firefox --version
-      - run: which firefox
-      - run: |
-          source .venv/bin/activate
-          ./test.sh
+    - run: |
+        sudo systemctl stop apache2
+        sudo apt-get remove -y apache2
+    - run: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    - run: sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    - run: apt-cache policy docker-ce
+    - run: sudo apt-get install -y docker-ce nginx firefox hostsed
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: 3.12
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        install: true
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0   # All of history
+    - name: Cache pip
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-        
+    - uses: asdf-vm/actions/install@v4
+    - name: Install dependencies
+      run: make sync
+    - run: docker build .
+    - run: firefox --version
+    - run: which firefox
+    - run: |
+        source .venv/bin/activate
+        ./test.sh

@@ -16,6 +16,7 @@ packaging
 
 django-jinja
 
+pre-commit
 pytest
 pytest-django
 pytest-watcher
