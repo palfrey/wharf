@@ -1,10 +1,12 @@
+from re import compile
+
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
-from django.contrib import messages
-from re import compile
 from django.http import HttpResponseRedirect
 from django.utils.http import url_has_allowed_host_and_scheme
+
 
 class SettingsBackend:
     """
@@ -19,7 +21,7 @@ class SettingsBackend:
     """
 
     def authenticate(self, request, username=None, password=None):
-        login_valid = (settings.ADMIN_LOGIN == username)
+        login_valid = settings.ADMIN_LOGIN == username
         if settings.ADMIN_PASSWORD.startswith("pbkdf2_sha256"):
             pwd_valid = check_password(password, settings.ADMIN_PASSWORD)
         else:
@@ -43,10 +45,12 @@ class SettingsBackend:
         except User.DoesNotExist:
             return None
 
+
 # Based on https://gist.github.com/agusmakmun/b71ac536124e0535a8b076989f8cfcd3
-EXEMPT_URLS = [compile(settings.LOGIN_URL.lstrip('/'))]
-if hasattr(settings, 'LOGIN_EXEMPT_URLS'):
+EXEMPT_URLS = [compile(settings.LOGIN_URL.lstrip("/"))]
+if hasattr(settings, "LOGIN_EXEMPT_URLS"):
     EXEMPT_URLS += [compile(expr) for expr in settings.LOGIN_EXEMPT_URLS]
+
 
 class LoginRequiredMiddleware:
     """
@@ -68,14 +72,20 @@ class LoginRequiredMiddleware:
 
     def __call__(self, request):
         if not request.user.is_authenticated:
-            path = request.path_info.lstrip('/')
+            path = request.path_info.lstrip("/")
             if not any(m.match(path) for m in EXEMPT_URLS):
                 redirect_to = settings.LOGIN_URL
                 # Add 'next' GET variable to support redirection after login
-                if len(path) > 0 and url_has_allowed_host_and_scheme(url=request.path_info, allowed_hosts=None):
-                    redirect_to = "%s?next=%s" %(settings.LOGIN_URL, request.path_info)
+                if len(path) > 0 and url_has_allowed_host_and_scheme(
+                    url=request.path_info, allowed_hosts=None
+                ):
+                    redirect_to = "%s?next=%s" % (settings.LOGIN_URL, request.path_info)
                 return HttpResponseRedirect(redirect_to)
         elif not settings.ADMIN_PASSWORD.startswith("pbkdf2_sha256"):
             better_password = make_password(settings.ADMIN_PASSWORD)
-            messages.warning(request, "ADMIN_PASSWORD is in plain text. Set it to %s instead" % better_password)
+            messages.warning(
+                request,
+                "ADMIN_PASSWORD is in plain text. Set it to %s instead"
+                % better_password,
+            )
         return self.get_response(request)

@@ -1,10 +1,12 @@
+import types
+import unittest
+
 import django
+
+import wharf.auth
+
 django.setup()
 
-from django.test import TestCase
-import unittest
-import wharf.auth
-import types
 
 class AuthTests(unittest.TestCase):
     def test_login_required_middleware(self):

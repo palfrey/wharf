@@ -1,0 +1,38 @@
+---
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+  - id: trailing-whitespace
+    exclude_types: [yaml, diff]
+  - id: end-of-file-fixer
+    exclude_types: [diff]
+  - id: check-yaml
+  - id: check-added-large-files
+
+- repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+  rev: 0.2.3
+  hooks:
+  - id: yamlfmt
+    args: [--mapping, '2', --offset, '0', --sequence, '2']
+    exclude: pnpm-lock.yaml
+
+- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  rev: v2.14.0
+  hooks:
+  - id: pretty-format-toml
+    args: [--autofix]
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.14.5
+  hooks:
+  - id: ruff-check
+  - id: ruff-format
+
+# - repo: local
+#   hooks:
+#   - id: uv
+#     name: uv
+#     language: system
+#     entry: uv lock --check
+#     pass_filenames: false
