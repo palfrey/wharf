@@ -280,7 +280,9 @@ def test_refresh_all(mock_request: HttpRequest, recording_cache: RecordingCache)
 
 @pytest.mark.django_db
 @patch("wharf.tasks.run_ssh_command.delay")
-def test_refresh_one(patched_delay: MagicMock, mock_request: HttpRequest, recording_cache: RecordingCache):
+def test_refresh_one(
+    patched_delay: MagicMock, mock_request: HttpRequest, recording_cache: RecordingCache
+):
     patched_delay.side_effect = mock_commands
     resp = refresh(mock_request, "foo")
     assert resp.status_code == 302, resp
@@ -296,10 +298,10 @@ def test_refresh_one(patched_delay: MagicMock, mock_request: HttpRequest, record
                     "cmd:redis:info foo",
                     "cmd:ps:report foo",
                     "cmd:domains:report foo",
-                    "cmd:letsencrypt:ls"
+                    "cmd:letsencrypt:ls",
                 ],
             ),
-        )
+        ),
     ]
 
 
