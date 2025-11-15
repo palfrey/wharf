@@ -9,3 +9,6 @@ requirements.txt: requirements.in .venv/bin/python
 
 watch-test: sync
 	.venv/bin/ptw --now --runner .venv/bin/pytest . -vvv
+
+pre-commit: sync
+	.venv/bin/pre-commit run -a

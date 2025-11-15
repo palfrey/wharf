@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - main
+    - main
   pull_request:
     branches:
-      - main
+    - main
   schedule:
   - cron: 0 0 1 * *
 jobs:
@@ -48,3 +48,25 @@ jobs:
     - run: |
         source .venv/bin/activate
         ./test.sh
+
+  pre-commit:
+    runs-on: ubuntu-24.04
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: 3.12
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0   # All of history
+    - name: Cache pip
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-        
+    - uses: asdf-vm/actions/install@v4
+    - name: Install dependencies
+      run: make sync
+    - run: make pre-commit
