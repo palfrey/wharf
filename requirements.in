@@ -19,3 +19,4 @@ django-jinja
 pytest
 pytest-django
 pytest-watcher
+model-bakery
