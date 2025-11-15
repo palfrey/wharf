@@ -279,23 +279,29 @@ def test_refresh_all(mock_request: HttpRequest, recording_cache: RecordingCache)
 
 
 @pytest.mark.django_db
-def test_refresh_one(mock_request: HttpRequest, recording_cache: RecordingCache):
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_refresh_one(
+    patched_delay: MagicMock, mock_request: HttpRequest, recording_cache: RecordingCache
+):
+    patched_delay.side_effect = mock_commands
     resp = refresh(mock_request, "foo")
     assert resp.status_code == 302, resp
     assert resp.url == "/apps/foo", resp
     assert recording_cache.actions == [
+        ("get", ("cmd:plugin:list",)),
         (
             "delete_many",
             (
                 [
-                    "config:show foo",
-                    "postgres:info foo",
-                    "redis:info foo",
-                    "ps:report foo",
-                    "domains:report foo",
+                    "cmd:config:show foo",
+                    "cmd:postgres:info foo",
+                    "cmd:redis:info foo",
+                    "cmd:ps:report foo",
+                    "cmd:domains:report foo",
+                    "cmd:letsencrypt:ls",
                 ],
             ),
-        )
+        ),
     ]
 
 
