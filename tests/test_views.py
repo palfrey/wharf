@@ -1,5 +1,5 @@
 from typing import Any, Callable, cast
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 import uuid
 
 from django.conf import LazySettings
@@ -123,6 +123,11 @@ def mock_request() -> HttpRequest:
 def disable_cache(monkeypatch: pytest.MonkeyPatch, recording_cache: RecordingCache):
     monkeypatch.setattr(cache, "set", lambda _key, _value, _timeout: None)
 
+@pytest.fixture(autouse=True)
+def patch_csrf_token(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setattr('django.middleware.csrf.get_token', Mock(return_value='predictabletoken'))
+    yield
+
 @patch("wharf.tasks.run_ssh_command.delay")
 def test_app_list(patched_delay: MagicMock):
     patched_delay.side_effect = mock_commands
@@ -147,7 +152,7 @@ def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
     assert resp.status_code == 200, resp
     content = resp.content.decode('utf-8')
 
-    expected_contents = ["""<h1 id="app_page" >Wharf: test_app</h1>\n<a href="/">Return to apps index</a><br />\n\n<h3>Actions</h3>\n\nCan\'t deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)\n\n<h2>Task logs</h2>\n\nNo tasks run yet\n\n<h2>Domains</h2>\n\n<ul>\n  \n    <li>\n      <a href="http://test_app.vagrant">test_app.vagrant</a>\n      <form class="d-inline" action="/apps/test_app/remove_domain" method="POST">""",
+    expected_contents = ["""<h1 id="app_page">Wharf: test_app</h1>\n<a href="/">Return to apps index</a><br />\n\n<h3>Actions</h3>\n<form class="form-inline" action="/apps/test_app/refresh" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary" name="action" value="refresh" id="refresh_app">Refresh app</button>\n</form>\n\nCan\'t deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)\n\n<h2>Task logs</h2>\n\nNo tasks run yet\n\n<h2>Domains</h2>\n\n<ul>\n  \n    <li>\n      <a href="http://test_app.vagrant">test_app.vagrant</a>\n      <form class="d-inline" action="/apps/test_app/remove_domain" method="POST">""",
 """<input type="hidden" name="name" value="test_app.vagrant" />\n        <button type="submit" class="btn btn-primary">Delete \'test_app.vagrant\' domain</button>\n      </form>\n    </li>\n  \n</ul>\n\n<h3>New domain</h3>\n<form action="/apps/test_app/add_domain" method="POST">""",
 """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" />\n</form>\n<h2>Config</h2>\n<ul class=config>\n  \n    <li>DOKKU_APP_RESTORE = 1</li>\n  \n    <li>DOKKU_APP_TYPE = dockerfile</li>\n  \n    <li>DOKKU_PROXY_PORT = 80</li>\n  \n</ul>\n<h3>New item</h3>\n<form action="/apps/test_app" method="POST">""",
   """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\nStatus: running\n\n<h3>Redis</h3>\n\nStatus: running\n\n<h3>Let\'s Encrypt</h3>\n\n<form class="form-inline" action="/apps/test_app/setup_letsencrypt" method="POST">""",
@@ -162,7 +167,7 @@ def test_missing_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
     resp = app_info(mock_request, "missing")
     assert resp.status_code == 200, resp
     content = resp.content.decode('utf-8')
-    expected_contents = ["""<h1 id="app_page" >Wharf: missing</h1>\n<a href="/">Return to apps index</a><br />\n\n<h3>Actions</h3>\n\nCan\'t deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)\n\n<h2>Task logs</h2>\n\nNo tasks run yet\n\n<h2>Domains</h2>\n\n<ul>\n  \n</ul>\n\n<h3>New domain</h3>\n<form action="/apps/missing/add_domain" method="POST">""", """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" />\n</form>\n<h2>Config</h2>\n<ul class=config>\n  \n</ul>\n<h3>New item</h3>\n<form action="/apps/missing" method="POST">""",
+    expected_contents = ["""<h1 id="app_page">Wharf: missing</h1>\n<a href="/">Return to apps index</a><br />\n\n<h3>Actions</h3>\n<form class="form-inline" action="/apps/missing/refresh" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary" name="action" value="refresh" id="refresh_app">Refresh app</button>\n</form>\n\nCan\'t deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)\n\n<h2>Task logs</h2>\n\nNo tasks run yet\n\n<h2>Domains</h2>\n\n<ul>\n  \n</ul>\n\n<h3>New domain</h3>\n<form action="/apps/missing/add_domain" method="POST">""", """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" />\n</form>\n<h2>Config</h2>\n<ul class=config>\n  \n</ul>\n<h3>New item</h3>\n<form action="/apps/missing" method="POST">""",
     """<label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\n<form class="form-inline" action="/apps/missing/create_postgres" method="POST">""",
     """<h3>Redis</h3>\n\n<form class="form-inline" action="/apps/missing/create_redis" method="POST">""", """<button type="submit" class="btn btn-primary">Create redis db</button>\n</form>\n\n<h3>Let\'s Encrypt</h3>\n\n<form class="form-inline" action="/apps/missing/setup_letsencrypt" method="POST">""",
     """<button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n</form>\n\n<h3>Process Info</h3>\n<ul>\n  \n</ul>\n<h3>Processes</h3>\n<ul>\n  \n</ul>\n<h3>Logs</h3>\n<pre>\n!     App missing does not exist\n</pre>"""]
