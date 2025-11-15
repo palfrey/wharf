@@ -368,7 +368,8 @@ def app_info(request: HttpRequest, app_name):
 
 def deploy(request: HttpRequest, app_name):
     if request.POST['action'] == "deploy":
-        res = tasks.deploy.delay(app_name, request.POST['url'])
+        config = app_config(app_name)
+        res = tasks.deploy.delay(app_name, request.POST['url'], config.get("GIT_BRANCH", "master"))
         clear_cache("config:show %s" % app_name)
         clear_cache("domains:report %s" % app_name)
         clear_cache("ps:report %s" % app_name)
@@ -468,7 +469,8 @@ def github_webhook(request: HttpRequest):
         return HttpResponseBadRequest("Can't find an entry for clone URL %s" % clone_url)
     app = apps.first()
     assert app is not None
-    res = tasks.deploy.delay(app.name, clone_url)
+    config = app_config(app.name)
+    res = tasks.deploy.delay(app.name, clone_url, config.get("GIT_BRANCH", "master"))
     clear_cache("config:show %s" % app.name)
     return HttpResponse("Running deploy. Deploy log is at %s" % request.build_absolute_uri(reverse('show_log', kwargs={'task_id': res.id})))
 

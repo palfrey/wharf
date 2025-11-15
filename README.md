@@ -34,6 +34,7 @@ Helpful hints
 * If there's a Dockerfile in your repository, it'll [try and deploy using that by default](https://dokku.com/docs/deployment/methods/dockerfiles/). Set BUILDPACK_URL to override
 * BUILDPACK_URL should be an HTTPS one, not a SSH or heroku/something one
 * You should setup the global domain name when creating Dokku to start with and add a *.&lt;your dokku domain&gt; entry to give new apps more usable names.
+* Set `GIT_BRANCH` in the variables to deploy from non-master
 
 Enabling Github auto-deploy webhooks
 ------------------------------------

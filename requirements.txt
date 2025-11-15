@@ -42,7 +42,7 @@ cryptography==46.0.1
     # via paramiko
 dj-database-url==3.0.0
     # via -r requirements.in
-django==5.2.7
+django==5.2.8
     # via
     #   -r requirements.in
     #   dj-database-url
@@ -104,7 +104,7 @@ pynacl==1.5.0
     # via paramiko
 pysocks==1.7.1
     # via urllib3
-pytest==8.3.5
+pytest==9.0.0
     # via
     #   -r requirements.in
     #   pytest-django
