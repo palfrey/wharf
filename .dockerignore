@@ -1,5 +1,2 @@
-ENV/
-db.sqlite3
-.vscode
-__pycache__
-.vagrant/
+repos/*
+.venv/*

@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, cast
 from unittest.mock import MagicMock, patch
 import uuid
 
@@ -7,11 +7,13 @@ from django.http import HttpRequest
 from django.test import Client
 import pytest
 from apps import models
-from apps.views import app_info, app_list, check_app, create_app, global_config, letsencrypt
+from apps.views import app_info, app_list, check_app, create_app, global_config, letsencrypt, refresh, refresh_all
 from celery.result import AsyncResult
 from celery.states import state, SUCCESS
 from redis import StrictRedis
 from django.core.cache import cache
+
+from tests.recording_cache import RecordingCache, recording_cache
 
 class MockCelery:
     def __init__(self, res: str):
@@ -118,7 +120,7 @@ def mock_request() -> HttpRequest:
     return mr
 
 @pytest.fixture(autouse=True)
-def disable_cache(monkeypatch: pytest.MonkeyPatch):
+def disable_cache(monkeypatch: pytest.MonkeyPatch, recording_cache: RecordingCache):
     monkeypatch.setattr(cache, "set", lambda _key, _value, _timeout: None)
 
 @patch("wharf.tasks.run_ssh_command.delay")
@@ -198,8 +200,21 @@ def test_login_no_change(client: Client, settings: LazySettings):
     response = client.get('/', follow=True)
     assert "Initial login is admin/password" not in response.text
 
-
 @patch("wharf.tasks.run_ssh_command.delay")
 def test_global_config(patched_delay: MagicMock):
     patched_delay.side_effect = mock_commands
     assert global_config() == {'CURL_CONNECT_TIMEOUT': '90', 'CURL_TIMEOUT': '600'}
+
+@pytest.mark.django_db
+def test_refresh_all(mock_request: HttpRequest, recording_cache: RecordingCache):
+    resp = refresh_all(mock_request)    
+    assert resp.status_code == 302, resp
+    assert resp.url == "/", resp
+    assert recording_cache.actions == ["clear"]
+
+@pytest.mark.django_db
+def test_refresh_one(mock_request: HttpRequest, recording_cache: RecordingCache):
+    resp = refresh(mock_request, "foo")    
+    assert resp.status_code == 302, resp
+    assert resp.url == "/apps/foo", resp
+    assert recording_cache.actions == [('delete_many', (['config:show foo', 'postgres:info foo', 'redis:info foo', 'ps:report foo', 'domains:report foo'],))]
