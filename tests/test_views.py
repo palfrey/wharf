@@ -1,4 +1,5 @@
-from typing import Any, Callable, cast
+import re
+from typing import Any, Callable
 from unittest.mock import MagicMock, Mock, patch
 import uuid
 
@@ -12,8 +13,8 @@ from celery.result import AsyncResult
 from celery.states import state, SUCCESS
 from redis import StrictRedis
 from django.core.cache import cache
-
 from tests.recording_cache import RecordingCache, recording_cache
+from model_bakery import baker
 
 class MockCelery:
     def __init__(self, res: str):
@@ -223,3 +224,15 @@ def test_refresh_one(mock_request: HttpRequest, recording_cache: RecordingCache)
     assert resp.status_code == 302, resp
     assert resp.url == "/apps/foo", resp
     assert recording_cache.actions == [('delete_many', (['config:show foo', 'postgres:info foo', 'redis:info foo', 'ps:report foo', 'domains:report foo'],))]
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_task_logs_limit(patched_delay: MagicMock, mock_request: HttpRequest):
+    patched_delay.side_effect = mock_commands
+    test_app = baker.make(models.App, name="test_app")
+    baker.make(models.TaskLog, app=test_app, _quantity=20)
+    resp = app_info(mock_request, "test_app")
+
+    log_count = re.findall(r"/logs/[^\"]+", resp.text)
+    assert len(log_count) == 10, resp.text
