@@ -38,7 +38,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-        
-      - uses: asdf-vm/actions/install@156187456fbe441e7badfe93ec1fa4dda646b27e
+      - uses: asdf-vm/actions/install@v4
       - name: Install dependencies
         run: make sync
       - run: docker build .
