@@ -26,6 +26,7 @@ urlpatterns = [
     path('apps/<app_name>/add_domain', views.add_domain, name='add_domain'),
     path('apps/<app_name>/check_domain/<task_id>', views.check_domain, name='check_domain'),
     path('apps/<app_name>/remove_domain', views.remove_domain, name='remove_domain'),
+    path('apps/<app_name>/refresh', views.refresh, name='refresh'),
     path('logs/<task_id>', views.show_log, name='show_log'),
     path('webhook', views.github_webhook),
     path('favicon.ico',

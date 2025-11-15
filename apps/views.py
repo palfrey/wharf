@@ -148,6 +148,11 @@ def refresh_all(request: HttpRequest):
     cache.clear()
     return redirect_reverse('index')
 
+def refresh(request: HttpRequest, app_name: str):
+    key_patterns = ["config:show %s", "postgres:info %s", "redis:info %s", "ps:report %s", "domains:report %s"]
+    cache.delete_many([k % app_name for k in key_patterns])
+    return redirect_reverse('app_info', args=[app_name])
+
 def generic_config(app_name: str, data: str) -> dict[str, Any]:
     if "does not exist" in data:
         return {}

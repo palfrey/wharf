@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 {% block body %}
-<h1 id="app_page" >Wharf: {{ app }}</h1>
+<h1 id="app_page">Wharf: {{ app }}</h1>
 <a href="{{ url('index') }}">Return to apps index</a><br />
 
 <h3>Actions</h3>
+<form class="form-inline" action="{{ url('refresh', app_name=app) }}" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary" name="action" value="refresh" id="refresh_app">Refresh app</button>
+</form>
 {% if git_url == None %}
 Can't deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)
 {% else %}
