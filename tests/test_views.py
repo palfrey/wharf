@@ -1,7 +1,8 @@
 import re
+import uuid
 from typing import Any, Callable
 from unittest.mock import MagicMock, Mock, patch
-import uuid
+
 import pytest
 from celery.result import AsyncResult
 from celery.states import SUCCESS, state
@@ -9,7 +10,9 @@ from django.conf import LazySettings
 from django.core.cache import cache
 from django.http import HttpRequest
 from django.test import Client
+from model_bakery import baker
 from redis import StrictRedis
+
 from apps import models
 from apps.views import (
     app_info,
@@ -22,7 +25,6 @@ from apps.views import (
     refresh_all,
 )
 from tests.recording_cache import RecordingCache
-from model_bakery import baker
 
 
 class MockCelery:

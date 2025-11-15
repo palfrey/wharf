@@ -1,7 +1,8 @@
-import django
-
 import types
 import unittest
+
+import django
+
 import wharf.auth
 
 django.setup()
