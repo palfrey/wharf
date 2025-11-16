@@ -511,6 +511,18 @@ def create_postgres(request: HttpRequest, app_name):
     )
 
 
+def remove_postgres(request: HttpRequest, app_name):
+    return run_cmd_with_log(
+        app_name,
+        "Remove Postgres",
+        [
+            "postgres:unlink %s %s" % (app_name, app_name),
+            "postgres:destroy %s --force" % app_name,
+        ],
+        "check_remove_postgres",
+    )
+
+
 def create_redis(request: HttpRequest, app_name):
     return run_cmd_with_log(
         app_name,
@@ -542,7 +554,18 @@ def check_postgres(request: HttpRequest, app_name, task_id: str):
     if data.find("Postgres container created") == -1:
         raise Exception(data)
     messages.success(request, "Postgres added to %s" % app_name)
-    clear_cache("postgres:list")
+    clear_cache("postgres:info %s" % app_name)
+    clear_cache("config:show %s" % app_name)
+    return redirect_reverse("app_info", args=[app_name])
+
+
+def check_remove_postgres(request: HttpRequest, app_name, task_id: str):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Postgres container deleted: %s" % app_name) == -1:
+        raise Exception(data)
+    messages.success(request, "Postgres removed from %s" % app_name)
+    clear_cache("postgres:info %s" % app_name)
     clear_cache("config:show %s" % app_name)
     return redirect_reverse("app_info", args=[app_name])
 
@@ -553,7 +576,7 @@ def check_redis(request: HttpRequest, app_name, task_id: str):
     if data.find("Redis container created") == -1:
         raise Exception(data)
     messages.success(request, "Redis added to %s" % app_name)
-    clear_cache("redis:list")
+    clear_cache("redis:info %s" % app_name)
     clear_cache("config:show %s" % app_name)
     return redirect_reverse("app_info", args=[app_name])
 
