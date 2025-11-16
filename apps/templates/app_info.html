@@ -4,20 +4,22 @@
 <a href="{{ url('index') }}">Return to apps index</a><br />
 
 <h3>Actions</h3>
-<form class="form-inline" action="{{ url('refresh', app_name=app) }}" method="POST">
-  {% csrf_token %}
-  <button type="submit" class="btn btn-primary" name="action" value="refresh" id="refresh_app">Refresh app</button>
-</form>
-{% if git_url == None %}
-Can't deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)
-{% else %}
-<form class="form-inline" action="{{ url('deploy', app_name=app) }}" method="POST">
-  {% csrf_token %}
-  <input type="hidden" name="url" value="{{ git_url }}" />
-  <button type="submit" class="btn btn-primary" name="action" value="deploy" id="deploy_app">Deploy app</button>&nbsp;&nbsp;
-  <button type="submit" class="btn btn-warning" name="action" value="rebuild" id="rebuild_app">Rebuild app</button>
-</form>
-{% endif %}
+<div class="form-inline">
+  <form action="{{ url('refresh', app_name=app) }}" method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary" name="action" value="refresh" id="refresh_app">Refresh app</button>
+  </form>
+  {% if git_url == None %}
+  Can't deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)
+  {% else %}
+  <form action="{{ url('deploy', app_name=app) }}" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="url" value="{{ git_url }}" />
+    &nbsp;&nbsp;<button type="submit" class="btn btn-primary" name="action" value="deploy" id="deploy_app">Deploy app</button>&nbsp;&nbsp;
+    <button type="submit" class="btn btn-warning" name="action" value="rebuild" id="rebuild_app">Rebuild app</button>
+  </form>
+  {% endif %}
+</div>
 <h2>Task logs</h2>
 {% if task_logs %}
 <ul>
