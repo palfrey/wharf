@@ -39,11 +39,11 @@ def run_cmd(cmd):
     return res.get().strip()
 
 
-def cmd_key(cmd):
+def cmd_key(cmd: str):
     return "cmd:%s" % cmd
 
 
-def run_cmd_with_cache(cmd):
+def run_cmd_with_cache(cmd: str):
     key = cmd_key(cmd)
     existing = cache.get(key)
     if existing:
@@ -53,7 +53,7 @@ def run_cmd_with_cache(cmd):
     return res
 
 
-def clear_cache(cmd):
+def clear_cache(cmd: str):
     key = cmd_key(cmd)
     cache.delete(key)
 
@@ -207,7 +207,11 @@ def refresh(request: HttpRequest, app_name: str):
         "ps:report %s",
         "domains:report %s",
     ]
-    cache.delete_many([k % app_name for k in key_patterns])
+    keys = [cmd_key(k % app_name) for k in key_patterns]
+    lc = letsencrypt_command()
+    if lc is not None:
+        keys.append(cmd_key(lc))
+    cache.delete_many(keys)
     return redirect_reverse("app_info", args=[app_name])
 
 
