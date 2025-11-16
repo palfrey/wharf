@@ -46,6 +46,14 @@ urlpatterns = [
         views.check_postgres,
         name="check_postgres",
     ),
+    path(
+        "apps/<app_name>/remove_postgres", views.remove_postgres, name="remove_postgres"
+    ),
+    path(
+        "apps/<app_name>/check_remove_postgres/<task_id>",
+        views.check_remove_postgres,
+        name="check_remove_postgres",
+    ),
     path("apps/<app_name>/create_redis", views.create_redis, name="create_redis"),
     path(
         "apps/<app_name>/check_redis/<task_id>", views.check_redis, name="check_redis"

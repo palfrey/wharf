@@ -18,11 +18,15 @@ from apps.views import (
     app_info,
     app_list,
     check_app,
+    check_postgres,
+    check_remove_postgres,
     create_app,
+    create_postgres,
     global_config,
     letsencrypt,
     refresh,
     refresh_all,
+    remove_postgres,
 )
 from tests.recording_cache import RecordingCache
 
@@ -118,11 +122,26 @@ wharf""",
     ("config:show --global",): """=====> global env vars
 CURL_CONNECT_TIMEOUT:  90
 CURL_TIMEOUT:          600""",
+    ("postgres:create foo",): """Waiting for container to be ready
+       Creating container database
+       Securing connection to database
+=====> Postgres container created: foo""",
+    ("postgres:link foo foo",): """-----> Setting config vars
+       DATABASE_URL:  postgres://postgres:2a871f1589b4519719428602980939bb@dokku-postgres-foo:5432/foo""",
+    ("postgres:unlink foo foo",): "-----> Unsetting DATABASE_URL",
+    ("postgres:destroy foo --force",): """=====> Pausing container
+       Container paused
+       Removing container
+       Removing data
+=====> Postgres container deleted: foo""",
 }
 
 
 def custom_mock_commands(override_commands: dict[Any, str]) -> Callable:
     def _internal(*args):
+        if type(args[0]) is list:
+            all_celerys = [_internal(x) for x in args[0]]
+            return MockCelery("\n".join([c.res for c in all_celerys]))
         if args in override_commands:
             return MockCelery(override_commands[args])
         if args in commands:
@@ -167,15 +186,22 @@ def test_app_list(patched_delay: MagicMock):
     assert app_list() == ["wharf"]
 
 
-@patch("wharf.tasks.run_ssh_command.delay")
-def test_check_app(
-    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
-):
+def finished_log(monkeypatch: pytest.MonkeyPatch, contents: str):
     monkeypatch.setattr(AsyncResult, "state", state(SUCCESS))
     monkeypatch.setattr(
         StrictRedis,
         "get",
-        lambda _self, _key: b"""Creating test_app...
+        lambda _self, _key: contents.encode("utf-8"),
+    )
+
+
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_check_app(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    finished_log(
+        monkeypatch,
+        """Creating test_app...
 -----> Creating new app virtual host file...""",
     )
 
@@ -197,7 +223,7 @@ def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
         """<h1 id="app_page">Wharf: test_app</h1>\n<a href="/">Return to apps index</a><br />\n\n<h3>Actions</h3>\n<form class="form-inline" action="/apps/test_app/refresh" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary" name="action" value="refresh" id="refresh_app">Refresh app</button>\n</form>\n\nCan\'t deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)\n\n<h2>Task logs</h2>\n\nNo tasks run yet\n\n<h2>Domains</h2>\n\n<ul>\n  \n    <li>\n      <a href="http://test_app.vagrant">test_app.vagrant</a>\n      <form class="d-inline" action="/apps/test_app/remove_domain" method="POST">""",
         """<input type="hidden" name="name" value="test_app.vagrant" />\n        <button type="submit" class="btn btn-primary">Delete \'test_app.vagrant\' domain</button>\n      </form>\n    </li>\n  \n</ul>\n\n<h3>New domain</h3>\n<form action="/apps/test_app/add_domain" method="POST">""",
         """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" />\n</form>\n<h2>Config</h2>\n<ul class=config>\n  \n    <li>DOKKU_APP_RESTORE = 1</li>\n  \n    <li>DOKKU_APP_TYPE = dockerfile</li>\n  \n    <li>DOKKU_PROXY_PORT = 80</li>\n  \n</ul>\n<h3>New item</h3>\n<form action="/apps/test_app" method="POST">""",
-        """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\nStatus: running\n\n<h3>Redis</h3>\n\nStatus: running\n\n<h3>Let\'s Encrypt</h3>\n\n<form class="form-inline" action="/apps/test_app/setup_letsencrypt" method="POST">""",
+        """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\nStatus: running\n<form class="form-inline" action="/apps/test_app/remove_postgres" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary">Remove postgres db</button>\n</form>\n\n<h3>Redis</h3>\n\nStatus: running\n\n<h3>Let\'s Encrypt</h3>\n\n<form class="form-inline" action="/apps/test_app/setup_letsencrypt" method="POST">""",
         """<button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n</form>\n\n<h3>Process Info</h3>\n<ul>\n  \n  <li>Deployed: true</li>\n  \n  <li>Processes: 2</li>\n  \n  <li>Ps can scale: true</li>\n  \n  <li>Ps computed procfile path: Procfile</li>\n  \n  <li>Ps global procfile path: Procfile</li>\n  \n  <li>Ps procfile path: </li>\n  \n  <li>Ps restart policy: on-failure:10</li>\n  \n  <li>Restore: true</li>\n  \n  <li>Running: true</li>\n  \n</ul>\n<h3>Processes</h3>\n<ul>\n  \n  <li>celery 1: running</li>\n  \n  <li>web 1: running</li>\n  \n</ul>\n<h3>Logs</h3>\n<pre>\n2025-04-25T23:07:53.894820268Z app[celery.1]: System check identified some issues:\n2025-04-25T23:07:53.895026545Z app[celery.1]:\n2025-04-25T23:07:53.895030874Z app[celery.1]: WARNINGS:\n</pre>""",
     ]
     for expected_content in expected_contents:
@@ -315,3 +341,34 @@ def test_task_logs_limit(patched_delay: MagicMock, mock_request: HttpRequest):
 
     log_count = re.findall(r"/logs/[^\"]+", resp.text)
     assert len(log_count) == 10, resp.text
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_create_postgres(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    patched_delay.side_effect = mock_commands
+    models.App.objects.get_or_create(name="foo")
+    res = create_postgres(mock_request, "foo")
+    assert res.status_code == 302, res
+    assert res.url.startswith("/apps/foo/wait/"), res
+
+    finished_log(monkeypatch, commands[("postgres:create foo",)])
+    check_postgres(mock_request, "foo", "1234")
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_remove_postgres(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    patched_delay.side_effect = mock_commands
+    models.App.objects.get_or_create(name="foo")
+    res = remove_postgres(mock_request, "foo")
+    assert res.status_code == 302, res
+    assert res.url.startswith("/apps/foo/wait/"), res
+
+    finished_log(monkeypatch, commands[("postgres:destroy foo --force",)])
+
+    check_remove_postgres(mock_request, "foo", "1234")

@@ -64,6 +64,10 @@ No tasks run yet
 <h3>Postgres</h3>
 {% if postgres %}
 Status: {{ postgres['Status'] }}
+<form class="form-inline" action="{{ url('remove_postgres', app_name=app) }}" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary">Remove postgres db</button>
+</form>
 {% else %}
 <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
   {% csrf_token %}
