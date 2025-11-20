@@ -18,7 +18,7 @@ fi
 echo dokku dokku/skip_key_file boolean true | sudo debconf-set-selections
 sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y dokku
 sudo dokku plugin:install-dependencies --core
-(dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/palfrey/dokku-redis.git --committish stripped-down-default-config redis
+(dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git --committish 1.41.0 redis
 (dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git --committish 1.43.0 postgres
 (dokku plugin:list | grep letsencrypt) || sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git --committish 0.22.0 letsencrypt
 dokku plugin:list
