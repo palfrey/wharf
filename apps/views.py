@@ -363,7 +363,9 @@ def letsencrypt_command():
 
 
 def letsencrypt(app_name: str):
-    data = run_cmd_with_cache(letsencrypt_command())
+    cmd = letsencrypt_command()
+    assert cmd is not None
+    data = run_cmd_with_cache(cmd)
     return generic_list(
         app_name,
         data,
@@ -379,11 +381,13 @@ def process_info(app_name):
     lines = data.split("\n")
     if lines[0].find("exit status") != -1:
         lines = lines[1:]
+    if lines[0].find("No such object") != -1:
+        lines = lines[1:]
     if (
         lines[0].find("%s process information" % app_name) == -1
         and lines[0].find("%s ps information" % app_name) == -1
     ):  # Different versions
-        raise Exception(data)
+        raise Exception(lines)
     results = {}
     processes = {}
     process_re = re.compile(r"Status\s+(\S+ \d+):\s+(\S+) \(CID: [a-z0-9]+\)")
@@ -613,7 +617,9 @@ def check_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
     res = AsyncResult(task_id)
     log = get_log(res)
     if log.find("Certificate retrieved successfully") != -1:
-        clear_cache(letsencrypt_command())
+        cmd = letsencrypt_command()
+        assert cmd is not None
+        clear_cache(cmd)
         return redirect_reverse("app_info", args=[app_name])
     else:
         return render(
