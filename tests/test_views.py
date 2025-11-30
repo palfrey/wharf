@@ -24,6 +24,7 @@ from apps.views import (
     create_postgres,
     global_config,
     letsencrypt,
+    process_info,
     refresh,
     refresh_all,
     remove_postgres,
@@ -134,6 +135,20 @@ CURL_TIMEOUT:          600""",
        Removing container
        Removing data
 =====> Postgres container deleted: foo""",
+    (
+        "ps:report non-running-app",
+    ): """No such object: cdbd631f11431826fb7ccfd257921e6b0ac1e6fc7986948e44e0d49609e11123
+=====> non-running-app ps information
+        Deployed:                      true
+        Processes:                     1
+        Ps can scale:                  true
+        Ps computed procfile path:     Procfile
+        Ps global procfile path:       Procfile
+        Ps procfile path:
+        Ps restart policy:             on-failure:10
+        Restore:                       true
+        Running:                       false
+        Status web 1:                  missing (CID: cdbd631f114)""",
 }
 
 
@@ -372,3 +387,22 @@ def test_remove_postgres(
     finished_log(monkeypatch, commands[("postgres:destroy foo --force",)])
 
     check_remove_postgres(mock_request, "foo", "1234")
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_non_running_app(patched_delay: MagicMock):
+    patched_delay.side_effect = mock_commands
+    res = process_info("non-running-app")
+    assert res == {
+        "Deployed": "true",
+        "Processes": "1",
+        "Ps can scale": "true",
+        "Ps computed procfile path": "Procfile",
+        "Ps global procfile path": "Procfile",
+        "Ps procfile path": "",
+        "Ps restart policy": "on-failure:10",
+        "Restore": "true",
+        "Running": "false",
+        "processes": {"web 1": "missing"},
+    }
