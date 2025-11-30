@@ -50,3 +50,16 @@ def test_deploy(
     subprocess.check_call(["git", "init"], cwd=test_app_path)
 
     tasks.deploy("test_app", "git://foo", branch)  # pyright: ignore[reportCallIssue]
+
+
+def test_handle_data_non_utf8(monkeypatch: pytest.MonkeyPatch):
+    redis_keys = []
+
+    def store_value(_self, key, value):
+        nonlocal redis_keys
+        redis_keys.append((key, value))
+
+    monkeypatch.setattr(StrictRedis, "append", store_value)
+    tasks.handle_data("abc", "æ".encode("cp1252"))
+
+    assert redis_keys == [("abc", "\ufffd")]

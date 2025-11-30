@@ -21,8 +21,8 @@ from .celery import app
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
 
 
-def handle_data(key, data):
-    data = data.decode("utf-8")
+def handle_data(key, raw_data: bytes):
+    data = raw_data.decode("utf-8", "replace")
     redis.append(key, data)
     print(data)
 
