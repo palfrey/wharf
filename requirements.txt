@@ -2,7 +2,7 @@
 #    uv pip compile requirements.in -o requirements.txt --python-version 3.12 --no-strip-extras
 amqp==5.3.1
     # via kombu
-asgiref==3.8.1
+asgiref==3.11.0
     # via django
 attrs==25.3.0
     # via
@@ -46,7 +46,7 @@ distlib==0.4.0
     # via virtualenv
 dj-database-url==3.0.0
     # via -r requirements.in
-django==5.2.9
+django==6.0
     # via
     #   -r requirements.in
     #   dj-database-url
