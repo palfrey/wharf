@@ -2,7 +2,7 @@
 #    uv pip compile requirements.in -o requirements.txt --python-version 3.12 --no-strip-extras
 amqp==5.3.1
     # via kombu
-asgiref==3.8.1
+asgiref==3.11.0
     # via django
 attrs==25.3.0
     # via
