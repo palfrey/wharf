@@ -59,8 +59,19 @@ def get_public_key():
 daemon_socket = "/var/run/dokku-daemon/dokku-daemon.sock"
 
 
+def command_exists(name: str) -> bool:
+    for segment in os.environ.get("PATH", "").split(":"):
+        if Path(segment).joinpath(name).exists():
+            return True
+    return False
+
+
 def has_daemon():
-    return os.path.exists(daemon_socket) and os.access(daemon_socket, os.W_OK)
+    return (
+        os.path.exists(daemon_socket)
+        and os.access(daemon_socket, os.W_OK)
+        and command_exists("nc")
+    )
 
 
 # From https://github.com/dokku/dokku-daemon?tab=readme-ov-file#usage-within-a-dokku-app
