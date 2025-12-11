@@ -24,6 +24,9 @@ sudo dokku plugin:install-dependencies --core
 if [ ! -f /usr/bin/socat ]; then
     sudo apt-get install socat
 fi
+if [ ! -f /usr/bin/nc ]; then
+    sudo apt-get install netcat-traditional
+fi
 if [ ! -f /usr/bin/dokku-daemon ]; then
     git clone https://github.com/dokku/dokku-daemon
     (cd dokku-daemon && sudo make install && sudo systemctl start dokku-daemon)
