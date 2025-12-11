@@ -17,10 +17,14 @@ Setup
   * https://github.com/dokku/dokku-letsencrypt
 3. Setup the Let's Encrypt plugin to auto-renew (`dokku letsencrypt:cron-job --add`)
 4. Create the app (`dokku apps:create wharf`)
-5. Add SSH key storage:
-  * `mkdir /var/lib/dokku/data/storage/wharf-ssh/`
-  * `chown dokku:dokku /var/lib/dokku/data/storage/wharf-ssh/`
-  * `dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/root/.ssh`
+5. Let Wharf talk to Dokku either by:
+    * Add SSH key storage:
+        1. `mkdir /var/lib/dokku/data/storage/wharf-ssh/`
+        2. `chown dokku:dokku /var/lib/dokku/data/storage/wharf-ssh/`
+        3. `dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/root/.ssh`
+    * Or add dokku-daemon
+        1. Install as per instructions at https://github.com/dokku/dokku-daemon
+        2. `dokku storage:mount wharf /var/run/dokku-daemon/dokku-daemon.sock:/var/run/dokku-daemon/dokku-daemon.sock`
 6. Add Redis (`dokku redis:create wharf && dokku redis:link wharf wharf`)
 7. Add Postgres (`dokku postgres:create wharf && dokku postgres:link wharf wharf`)
 8. Set `ADMIN_PASSWORD` to something secret (`dokku config:set wharf ADMIN_PASSWORD=somesecret`)
