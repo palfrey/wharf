@@ -6,7 +6,7 @@ from datetime import datetime
 from fcntl import F_GETFL, F_SETFL, fcntl
 from os import O_NONBLOCK, read
 from pathlib import Path
-from typing import cast
+from typing import Optional, cast
 
 from celery import Task
 from django.conf import settings
@@ -59,25 +59,26 @@ def get_public_key():
 daemon_socket = "/var/run/dokku-daemon/dokku-daemon.sock"
 
 
-def command_exists(name: str) -> bool:
+def find_command(name: str) -> Optional[Path]:
     for segment in os.environ.get("PATH", "").split(":"):
-        if Path(segment).joinpath(name).exists():
-            return True
-    return False
+        fullpath = Path(segment).joinpath(name)
+        if fullpath.exists():
+            return fullpath
+    return None
 
 
 def has_daemon():
     return (
         os.path.exists(daemon_socket)
         and os.access(daemon_socket, os.W_OK)
-        and command_exists("nc")
+        and find_command("nc") is not None
     )
 
 
 # From https://github.com/dokku/dokku-daemon?tab=readme-ov-file#usage-within-a-dokku-app
 def run_with_daemon(key: str, command: str, timeout=60) -> bool:
     subprocess_command = [
-        "nc",
+        find_command("nc"),
         "-q",
         "2",  # time to wait after eof
         "-w",
@@ -86,7 +87,9 @@ def run_with_daemon(key: str, command: str, timeout=60) -> bool:
         daemon_socket,  # socket to talk to
     ]
 
-    ps = subprocess.Popen(["echo", command], stdout=subprocess.PIPE)
+    echo_path = find_command("echo")
+    assert echo_path is not None
+    ps = subprocess.Popen([echo_path, command], stdout=subprocess.PIPE)
 
     with subprocess.Popen(
         subprocess_command,
