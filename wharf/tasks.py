@@ -1,3 +1,4 @@
+import json
 import os.path
 import signal
 import subprocess
@@ -80,7 +81,7 @@ def run_with_daemon(key: str, command: str, timeout=60) -> bool:
     subprocess_command = [
         find_command("nc.openbsd"),
         "-q",
-        "2",  # time to wait after eof
+        "-1",  # wait forever after eof on stdin (otherwise we get no output)
         "-w",
         "2",  # timeout
         "-U",
@@ -99,14 +100,21 @@ def run_with_daemon(key: str, command: str, timeout=60) -> bool:
     ) as process:
         try:
             output = process.communicate(timeout=timeout)[0]
-            handle_data(key, output)
+            print(f"output: '{output}'")
         except subprocess.TimeoutExpired:
             os.killpg(process.pid, signal.SIGINT)  # send signal to the process group
             output = process.communicate()[0]
-            handle_data(key, output)
+            print(f"timeout output: '{output}'")
+
     ps.wait(timeout)
 
-    return ps.returncode == 0
+    json_data = output.decode("utf-8", "replace")
+    print(f"json_data: '{json_data}'")
+    data = json.loads(json_data)["output"]
+    redis.append(key, data)
+    print(data)
+
+    return process.returncode == 0
 
 
 @app.task(bind=True)
