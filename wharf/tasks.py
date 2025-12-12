@@ -71,14 +71,14 @@ def has_daemon():
     return (
         os.path.exists(daemon_socket)
         and os.access(daemon_socket, os.W_OK)
-        and find_command("nc") is not None
+        and find_command("nc.openbsd") is not None
     )
 
 
 # From https://github.com/dokku/dokku-daemon?tab=readme-ov-file#usage-within-a-dokku-app
 def run_with_daemon(key: str, command: str, timeout=60) -> bool:
     subprocess_command = [
-        find_command("nc"),
+        find_command("nc.openbsd"),
         "-q",
         "2",  # time to wait after eof
         "-w",
