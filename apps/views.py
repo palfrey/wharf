@@ -171,12 +171,14 @@ def index(request: HttpRequest):
         public_key = tasks.get_public_key.delay().get()
 
     try:
-        raw_keys = run_cmd_with_cache("ssh-keys:list --format json")
+        cmd = "ssh-keys:list --format json"
+        raw_keys = run_cmd_with_cache(cmd)
         keys = json.loads(raw_keys)
         for key in keys:
             if key["public-key"] == public_key:
                 break
         else:
+            clear_cache(cmd)
             return render(request, "setup_key.html", {"key": public_key})
     except Exception as e:
         if e.__class__.__name__ in [
