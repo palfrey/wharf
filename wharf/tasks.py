@@ -178,6 +178,18 @@ def run_process(key, cmd, cwd=None):
         raise Exception
 
 
+def trust_dokku_host():
+    ssh_config_path = os.path.expanduser("~/.ssh/config")
+    if not os.path.exists(ssh_config_path):
+        ssh_config_dir = os.path.dirname(ssh_config_path)
+        if not os.path.exists(ssh_config_dir):
+            os.mkdir(ssh_config_dir)
+        with open(ssh_config_path, "w") as f:
+            f.write(f""""Host {settings.DOKKU_HOST}
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null""")
+
+
 @app.task(bind=True)
 def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
     models.TaskLog(
@@ -200,6 +212,7 @@ def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
             "ssh://dokku@%s:%s/%s"
             % (settings.DOKKU_HOST, settings.DOKKU_SSH_PORT, app_name),
         )
+        trust_dokku_host()
     redis.append(key, "== Pulling ==\n")
     run_process(key, ["git", "pull"], cwd=app_repo_path)
     redis.append(key, "== Pushing to Dokku ==\n")
