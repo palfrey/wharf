@@ -7,7 +7,7 @@ from datetime import datetime
 from fcntl import F_GETFL, F_SETFL, fcntl
 from os import O_NONBLOCK, read
 from pathlib import Path
-from typing import Optional, cast
+from typing import cast
 
 from celery import Task
 from django.conf import settings
@@ -60,20 +60,8 @@ def get_public_key():
 daemon_socket = "/var/run/dokku-daemon/dokku-daemon.sock"
 
 
-def find_command(name: str) -> Optional[Path]:
-    for segment in os.environ.get("PATH", "").split(":"):
-        fullpath = Path(segment).joinpath(name)
-        if fullpath.exists():
-            return fullpath
-    return None
-
-
 def has_daemon():
-    return (
-        os.path.exists(daemon_socket)
-        and os.access(daemon_socket, os.W_OK)
-        and find_command("nc.openbsd") is not None
-    )
+    return os.path.exists(daemon_socket) and os.access(daemon_socket, os.W_OK)
 
 
 # From https://github.com/dokku/dokku-daemon?tab=readme-ov-file#usage-within-a-dokku-app
