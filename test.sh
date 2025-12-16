@@ -21,12 +21,18 @@ if [ ! -f /usr/bin/dokku ]; then
 fi
 sudo dokku plugin:install-dependencies --core
 
-if [ ! -f /usr/bin/socat ]; then
-    sudo apt-get install socat
-fi
 if [ ! -f /usr/bin/dokku-daemon ]; then
-    git clone https://github.com/dokku/dokku-daemon
-    (cd dokku-daemon && sudo make install && sudo systemctl start dokku-daemon)
+    if [ ! -d dokku-daemon-rs ]; then
+        git clone https://github.com/palfrey/dokku-daemon-rs
+    fi
+    curl -O https://github.com/palfrey/dokku-daemon-rs/releases/download/v0.1.0/dokku-daemon-rs-linux-amd64
+    chmod +x dokku-daemon-rs-linux-amd64
+    sudo mv dokku-daemon-rs-linux-amd64 /usr/bin/dokku-daemon
+    (cd dokku-daemon-rs &&
+        sudo cp -f conf/dokku-daemon.service /etc/systemd/system/dokku-daemon.service &&
+        sudo mkdir -p /var/run/dokku-daemon &&
+        sudo systemctl daemon-reload
+    )
 fi
 (dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git --committish 1.41.0 redis
 (dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git --committish 1.43.0 postgres
