@@ -168,7 +168,7 @@ try:
     tester.click(By.ID, "deploy_app")
     for x in range(30):
         try:
-            tester.log("Attempt %d" % x)
+            tester.log("Attempt %d %s" % (x, tester.url()))
             if tester.url().startswith("https:"):
                 tester.log("going to http page")
                 tester.get(tester.url().replace("https", "http"))
