@@ -81,7 +81,12 @@ def run_with_daemon(key: str, command: str, timeout=60) -> bool:
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     client.connect(daemon_socket)
     client.sendall(command.encode())
-    output = client.recv(1024)
+    output = b""
+    while True:
+        new_output = client.recv(1024)
+        output += new_output
+        if len(new_output) == 0:
+            break
     json_data = output.decode("utf-8", "replace")
     client.close()
     print(f"json_data: '{json_data}'")
