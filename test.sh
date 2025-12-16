@@ -25,7 +25,7 @@ if [ ! -f /usr/bin/dokku-daemon ]; then
     if [ ! -d dokku-daemon-rs ]; then
         git clone https://github.com/palfrey/dokku-daemon-rs
     fi
-    curl -O https://github.com/palfrey/dokku-daemon-rs/releases/download/v0.1.0/dokku-daemon-rs-linux-amd64
+    curl -OL https://github.com/palfrey/dokku-daemon-rs/releases/download/v0.1.0/dokku-daemon-rs-linux-amd64
     chmod +x dokku-daemon-rs-linux-amd64
     sudo mv dokku-daemon-rs-linux-amd64 /usr/bin/dokku-daemon
     (cd dokku-daemon-rs &&
