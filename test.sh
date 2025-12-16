@@ -31,7 +31,8 @@ if [ ! -f /usr/bin/dokku-daemon ]; then
     (cd dokku-daemon-rs &&
         sudo cp -f conf/dokku-daemon.service /etc/systemd/system/dokku-daemon.service &&
         sudo mkdir -p /var/run/dokku-daemon &&
-        sudo systemctl daemon-reload
+        sudo systemctl daemon-reload &&
+        sudo systemctl start dokku-daemon
     )
 fi
 (dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git --committish 1.41.0 redis
