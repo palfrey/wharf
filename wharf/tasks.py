@@ -1,6 +1,6 @@
 import json
 import os.path
-import signal
+import socket
 import subprocess
 import time
 from datetime import datetime
@@ -78,43 +78,17 @@ def has_daemon():
 
 # From https://github.com/dokku/dokku-daemon?tab=readme-ov-file#usage-within-a-dokku-app
 def run_with_daemon(key: str, command: str, timeout=60) -> bool:
-    subprocess_command = [
-        find_command("nc.openbsd"),
-        "-q",
-        "-1",  # wait forever after eof on stdin (otherwise we get no output)
-        "-w",
-        "2",  # timeout
-        "-U",
-        daemon_socket,  # socket to talk to
-    ]
-
-    echo_path = find_command("echo")
-    assert echo_path is not None
-    ps = subprocess.Popen([echo_path, command], stdout=subprocess.PIPE)
-
-    with subprocess.Popen(
-        subprocess_command,
-        stdin=ps.stdout,
-        stdout=subprocess.PIPE,
-        preexec_fn=os.setsid,
-    ) as process:
-        try:
-            output = process.communicate(timeout=timeout)[0]
-            print(f"output: '{output}'")
-        except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGINT)  # send signal to the process group
-            output = process.communicate()[0]
-            print(f"timeout output: '{output}'")
-
-    ps.wait(timeout)
-
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    client.connect(daemon_socket)
+    client.sendall(command.encode())
+    output = client.recv(1024)
     json_data = output.decode("utf-8", "replace")
+    client.close()
     print(f"json_data: '{json_data}'")
     data = json.loads(json_data)["output"]
     redis.append(key, data)
     print(data)
-
-    return process.returncode == 0
+    return True
 
 
 @app.task(bind=True)
