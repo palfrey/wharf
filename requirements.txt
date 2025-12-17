@@ -65,7 +65,7 @@ django-jinja-bootstrap-form==4.5.0
     # via -r requirements.in
 django-redis==6.0.0
     # via -r requirements.in
-filelock==3.20.0
+filelock==3.20.1
     # via virtualenv
 gitdb==4.0.12
     # via gitpython
