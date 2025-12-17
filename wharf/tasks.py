@@ -1,4 +1,6 @@
+import json
 import os.path
+import socket
 import subprocess
 import time
 from datetime import datetime
@@ -27,7 +29,7 @@ def handle_data(key, raw_data: bytes):
     print(data)
 
 
-def task_key(task_id):
+def task_key(task_id: object) -> str:
     return "task:%s" % task_id
 
 
@@ -55,61 +57,94 @@ def get_public_key():
     return open("%s.pub" % keyfile).read()
 
 
+daemon_socket = "/var/run/dokku-daemon/dokku-daemon.sock"
+
+
+def has_daemon():
+    return os.path.exists(daemon_socket) and os.access(daemon_socket, os.W_OK)
+
+
+# From https://github.com/dokku/dokku-daemon?tab=readme-ov-file#usage-within-a-dokku-app
+def run_with_daemon(key: str, command: str, timeout=60) -> bool:
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    client.connect(daemon_socket)
+    client.sendall(command.encode())
+    output = b""
+    while True:
+        new_output = client.recv(1024)
+        output += new_output
+        if len(new_output) == 0:
+            break
+    json_data = output.decode("utf-8", "replace")
+    client.close()
+    print(f"json_data: '{json_data}'")
+    data = json.loads(json_data)["output"]
+    redis.append(key, data)
+    print(data)
+    return True
+
+
 @app.task(bind=True)
 def run_ssh_command(self: Task, command: str | list[str]):
     print("Running command", command)
     key = task_key(self.request.id)
     redis.set(key, "")
-    client = SSHClient()
-    client.set_missing_host_key_policy(AutoAddPolicy)
-    known_hosts = Path("~/.ssh/known_hosts").expanduser()
-    known_hosts_folder = known_hosts.parent
-    if not known_hosts_folder.exists():
-        known_hosts_folder.mkdir()
+    if not has_daemon():
+        client = SSHClient()
+        client.set_missing_host_key_policy(AutoAddPolicy)
+        known_hosts = Path("~/.ssh/known_hosts").expanduser()
+        known_hosts_folder = known_hosts.parent
+        if not known_hosts_folder.exists():
+            known_hosts_folder.mkdir()
 
-    if known_hosts.exists():
-        client.load_host_keys(
-            known_hosts.as_posix()
-        )  # So that we also save back the new host
+        if known_hosts.exists():
+            client.load_host_keys(
+                known_hosts.as_posix()
+            )  # So that we also save back the new host
+        else:
+            with known_hosts.open("w") as f:
+                f.write("")  # so connect doesn't barf when trying to save
     else:
-        with known_hosts.open("w") as f:
-            f.write("")  # so connect doesn't barf when trying to save
+        client = None
 
     if isinstance(command, list):
         commands = command
     else:
         commands = [command]
     for c in commands:
-        if os.path.exists(keyfile):
-            pkey = RSAKey.from_private_key_file(keyfile)
+        if client is None:
+            run_with_daemon(key, c)
         else:
-            pkey = None
-        client.connect(
-            settings.DOKKU_HOST,
-            port=settings.DOKKU_SSH_PORT,
-            username="dokku",
-            pkey=pkey,
-            allow_agent=False,
-            look_for_keys=False,
-        )
-        transport = client.get_transport()
-        assert transport is not None
-        channel = transport.open_session()
-        channel.exec_command(c)
-        while True:
-            anything = False
-            while channel.recv_ready():
-                data = channel.recv(1024)
-                handle_data(key, data)
-                anything = True
-            while channel.recv_stderr_ready():
-                data = channel.recv_stderr(1024)
-                handle_data(key, data)
-                anything = True
-            if not anything:
-                if channel.exit_status_ready():
-                    break
-                time.sleep(0.1)
+            if os.path.exists(keyfile):
+                pkey = RSAKey.from_private_key_file(keyfile)
+            else:
+                pkey = None
+            client.connect(
+                settings.DOKKU_HOST,
+                port=settings.DOKKU_SSH_PORT,
+                username="dokku",
+                pkey=pkey,
+                allow_agent=False,
+                look_for_keys=False,
+            )
+            transport = client.get_transport()
+            assert transport is not None
+            channel = transport.open_session()
+            channel.exec_command(c)
+            while True:
+                anything = False
+                while channel.recv_ready():
+                    data = channel.recv(1024)
+                    handle_data(key, data)
+                    anything = True
+                while channel.recv_stderr_ready():
+                    data = channel.recv_stderr(1024)
+                    handle_data(key, data)
+                    anything = True
+                if not anything:
+                    if channel.exit_status_ready():
+                        break
+                    time.sleep(0.1)
     return cast(bytes, redis.get(key)).decode("utf-8")
 
 
@@ -143,6 +178,18 @@ def run_process(key, cmd, cwd=None):
         raise Exception
 
 
+def trust_dokku_host():
+    ssh_config_path = os.path.expanduser("~/.ssh/config")
+    if not os.path.exists(ssh_config_path):
+        ssh_config_dir = os.path.dirname(ssh_config_path)
+        if not os.path.exists(ssh_config_dir):
+            os.mkdir(ssh_config_dir)
+        with open(ssh_config_path, "w") as f:
+            f.write(f""""Host {settings.DOKKU_HOST}
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null""")
+
+
 @app.task(bind=True)
 def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
     models.TaskLog(
@@ -165,6 +212,7 @@ def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
             "ssh://dokku@%s:%s/%s"
             % (settings.DOKKU_HOST, settings.DOKKU_SSH_PORT, app_name),
         )
+        trust_dokku_host()
     redis.append(key, "== Pulling ==\n")
     run_process(key, ["git", "pull"], cwd=app_repo_path)
     redis.append(key, "== Pushing to Dokku ==\n")

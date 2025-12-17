@@ -16,8 +16,25 @@ if [ ! -f /etc/apt/sources.list.d/dokku.list ]; then
     sudo apt-get update
 fi
 echo dokku dokku/skip_key_file boolean true | sudo debconf-set-selections
-sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y dokku
+if [ ! -f /usr/bin/dokku ]; then
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y dokku
+fi
 sudo dokku plugin:install-dependencies --core
+
+if [ ! -f /usr/bin/dokku-daemon ]; then
+    if [ ! -d dokku-daemon-rs ]; then
+        git clone https://github.com/palfrey/dokku-daemon-rs
+    fi
+    curl -OL https://github.com/palfrey/dokku-daemon-rs/releases/download/v0.1.0/dokku-daemon-rs-linux-amd64
+    chmod +x dokku-daemon-rs-linux-amd64
+    sudo mv dokku-daemon-rs-linux-amd64 /usr/bin/dokku-daemon
+    (cd dokku-daemon-rs &&
+        sudo cp -f conf/dokku-daemon.service /etc/systemd/system/dokku-daemon.service &&
+        sudo mkdir -p /var/run/dokku-daemon &&
+        sudo systemctl daemon-reload &&
+        sudo systemctl start dokku-daemon
+    )
+fi
 (dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git --committish 1.41.0 redis
 (dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git --committish 1.43.0 postgres
 (dokku plugin:list | grep letsencrypt) || sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git --committish 0.22.0 letsencrypt
@@ -39,6 +56,7 @@ if [ ! -d $KEY_DIR ]; then
     mkdir -p $KEY_DIR
 fi
 sudo chown dokku:dokku $KEY_DIR
+(dokku storage:list wharf | grep dokku-daemon) || dokku storage:mount wharf /var/run/dokku-daemon/dokku-daemon.sock:/var/run/dokku-daemon/dokku-daemon.sock
 (dokku storage:list wharf | grep ssh) || dokku storage:mount wharf $KEY_DIR:/root/.ssh
 GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -v" git push dokku HEAD:refs/heads/main
 export WHARF_HOSTNAME=wharf.$(hostname --long)

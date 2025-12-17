@@ -12,20 +12,23 @@ Setup
 -----
 1. [Install Dokku](https://dokku.com/docs/getting-started/installation)
 2. Install the following plugins:
-  * https://github.com/dokku/dokku-redis
-  * https://github.com/dokku/dokku-postgres
-  * https://github.com/dokku/dokku-letsencrypt
+   * https://github.com/dokku/dokku-redis
+   * https://github.com/dokku/dokku-postgres
+   * https://github.com/dokku/dokku-letsencrypt
 3. Setup the Let's Encrypt plugin to auto-renew (`dokku letsencrypt:cron-job --add`)
 4. Create the app (`dokku apps:create wharf`)
 5. Add SSH key storage:
-  * `mkdir /var/lib/dokku/data/storage/wharf-ssh/`
-  * `chown dokku:dokku /var/lib/dokku/data/storage/wharf-ssh/`
-  * `dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/root/.ssh`
-6. Add Redis (`dokku redis:create wharf && dokku redis:link wharf wharf`)
-7. Add Postgres (`dokku postgres:create wharf && dokku postgres:link wharf wharf`)
-8. Set `ADMIN_PASSWORD` to something secret (`dokku config:set wharf ADMIN_PASSWORD=somesecret`)
-9. Deploy this Git repo [as per the standard Dokku instructions](https://dokku.com/docs/deployment/application-deployment/)
-10. `dokku ps:scale wharf celery=1`
+   1. `mkdir /var/lib/dokku/data/storage/wharf-ssh/`
+   2. `chown dokku:dokku /var/lib/dokku/data/storage/wharf-ssh/`
+   3. `dokku storage:mount wharf /var/lib/dokku/data/storage/wharf-ssh/:/root/.ssh`
+6. Optionally, add dokku-daemon. We still need SSH keys for pushing to Dokku, but this should speed up other Wharf commands:
+    1. Install as per instructions at https://github.com/palfrey/dokku-daemon-rs (note the original version should in theory work, but [it's JSON support is buggy](https://github.com/dokku/dokku-daemon/issues/31))
+    2. `dokku storage:mount wharf /var/run/dokku-daemon/dokku-daemon.sock:/var/run/dokku-daemon/dokku-daemon.sock`
+7. Add Redis (`dokku redis:create wharf && dokku redis:link wharf wharf`)
+8. Add Postgres (`dokku postgres:create wharf && dokku postgres:link wharf wharf`)
+9. Set `ADMIN_PASSWORD` to something secret (`dokku config:set wharf ADMIN_PASSWORD=somesecret`)
+10. Deploy this Git repo [as per the standard Dokku instructions](https://dokku.com/docs/deployment/application-deployment/)
+11. `dokku ps:scale wharf celery=1`
 
 Helpful hints
 -------------
@@ -34,7 +37,7 @@ Helpful hints
 * If there's a Dockerfile in your repository, it'll [try and deploy using that by default](https://dokku.com/docs/deployment/methods/dockerfiles/). Set BUILDPACK_URL to override
 * BUILDPACK_URL should be an HTTPS one, not a SSH or heroku/something one
 * You should setup the global domain name when creating Dokku to start with and add a *.&lt;your dokku domain&gt; entry to give new apps more usable names.
-* Set `GIT_BRANCH` in the variables to deploy from non-master
+* Set `GIT_BRANCH` in the variables to deploy from non-`master`
 
 Enabling Github auto-deploy webhooks
 ------------------------------------
