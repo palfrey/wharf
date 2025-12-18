@@ -68,21 +68,25 @@ No tasks run yet
 Status: {{ postgres['Status'] }}
 <form class="form-inline" action="{{ url('remove_postgres', app_name=app) }}" method="POST">
   {% csrf_token %}
-  <button type="submit" class="btn btn-primary">Remove postgres db</button>
+  <button type="submit" class="btn btn-primary">Remove Postgres db</button>
 </form>
 {% else %}
 <form class="form-inline" action="{{ url('create_postgres', app_name=app) }}" method="POST">
   {% csrf_token %}
-  <button type="submit" class="btn btn-primary">Create postgres db</button>
+  <button type="submit" class="btn btn-primary">Create Postgres db</button>
 </form>
 {% endif %}
 <h3>Redis</h3>
 {% if redis %}
 Status: {{ redis['Status'] }}
+<form class="form-inline" action="{{ url('remove_redis', app_name=app) }}" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary">Remove Redis db</button>
+</form>
 {% else %}
 <form class="form-inline" action="{{ url('create_redis', app_name=app) }}" method="POST">
   {% csrf_token %}
-  <button type="submit" class="btn btn-primary">Create redis db</button>
+  <button type="submit" class="btn btn-primary">Create Redis db</button>
 </form>
 {% endif %}
 <h3>Let's Encrypt</h3>
@@ -92,6 +96,10 @@ Status: {{ redis['Status'] }}
   <li>{{k}}: {{v}}</li>
   {% endfor %}
 </ul>
+<form class="form-inline" action="{{ url('remove_letsencrypt', app_name=app) }}" method="POST">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-primary">Remove Letsencrypt</button>
+</form>
 {% else %}
 <form class="form-inline" action="{{ url('setup_letsencrypt', app_name=app) }}" method="POST">
   {% csrf_token %}

@@ -8,7 +8,7 @@ from celery.result import AsyncResult
 from celery.states import SUCCESS, state
 from django.conf import LazySettings
 from django.core.cache import cache
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.test import Client
 from model_bakery import baker
 from redis import StrictRedis
@@ -19,15 +19,19 @@ from apps.views import (
     app_list,
     check_app,
     check_postgres,
+    check_redis,
     check_remove_postgres,
+    check_remove_redis,
     create_app,
     create_postgres,
+    create_redis,
     global_config,
     letsencrypt,
     process_info,
     refresh,
     refresh_all,
     remove_postgres,
+    remove_redis,
 )
 from tests.recording_cache import RecordingCache
 
@@ -149,6 +153,32 @@ CURL_TIMEOUT:          600""",
         Restore:                       true
         Running:                       false
         Status web 1:                  missing (CID: cdbd631f114)""",
+    ("redis:create foo",): """       Waiting for container to be ready
+=====> Redis container created: foo
+=====> foo redis service information
+       Config dir:          /var/lib/dokku/services/redis/foo/config
+       Config options:
+       Data dir:            /var/lib/dokku/services/redis/foo/data
+       Dsn:                 redis://:584fb7aa7ca03acda2bc8c81c056ac81e0ec59d10efec8137cfcf893854f5570@dokku-redis-foo:6379
+       Exposed ports:       -
+       Id:                  37f96e39797e4a731d750a19ae0e3255fb84fede13d1e704ae61d18ac037e4ad
+       Internal ip:         172.17.0.4
+       Initial network:
+       Links:               -
+       Post create network:
+       Post start network:
+       Service root:        /var/lib/dokku/services/redis/foo
+       Status:              running
+       Version:             redis:8.4.0""",
+    ("redis:link foo foo",): """----> Setting config vars
+       REDIS_URL:  redis://:584fb7aa7ca03acda2bc8c81c056ac81e0ec59d10efec8137cfcf893854f5570@dokku-redis-foo:6379""",
+    ("redis:unlink foo foo",): """-----> Unsetting REDIS_URL""",
+    ("redis:destroy foo --force",): """=====> Deleting foo
+=====> Pausing container
+       Container paused
+       Removing container
+       Removing data
+=====> Redis container deleted: foo""",
 }
 
 
@@ -238,7 +268,7 @@ def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
         """<h1 id="app_page">Wharf: test_app</h1>\n<a href="/">Return to apps index</a><br />\n\n<h3>Actions</h3>\n<div class="form-inline">\n  <form action="/apps/test_app/refresh" method="POST">\n    <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n    <button type="submit" class="btn btn-primary" name="action" value="refresh" id="refresh_app">Refresh app</button>\n  </form>\n  \n  Can\'t deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)\n  \n</div>\n<h2>Task logs</h2>\n\nNo tasks run yet\n\n<h2>Domains</h2>\n\n<ul>\n  \n    <li>\n      <a href="http://test_app.vagrant">test_app.vagrant</a>\n      <form class="d-inline" action="/apps/test_app/remove_domain" method="POST">""",
         """<input type="hidden" name="name" value="test_app.vagrant" />\n        <button type="submit" class="btn btn-primary">Delete \'test_app.vagrant\' domain</button>\n      </form>\n    </li>\n  \n</ul>\n\n<h3>New domain</h3>\n<form action="/apps/test_app/add_domain" method="POST">""",
         """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" />\n</form>\n<h2>Config</h2>\n<ul class=config>\n  \n    <li>DOKKU_APP_RESTORE = 1</li>\n  \n    <li>DOKKU_APP_TYPE = dockerfile</li>\n  \n    <li>DOKKU_PROXY_PORT = 80</li>\n  \n</ul>\n<h3>New item</h3>\n<form action="/apps/test_app" method="POST">""",
-        """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\nStatus: running\n<form class="form-inline" action="/apps/test_app/remove_postgres" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary">Remove postgres db</button>\n</form>\n\n<h3>Redis</h3>\n\nStatus: running\n\n<h3>Let\'s Encrypt</h3>\n\n<form class="form-inline" action="/apps/test_app/setup_letsencrypt" method="POST">""",
+        """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\nStatus: running\n<form class="form-inline" action="/apps/test_app/remove_postgres" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary">Remove Postgres db</button>\n</form>\n\n<h3>Redis</h3>\n\nStatus: running\n<form class="form-inline" action="/apps/test_app/remove_redis" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary">Remove Redis db</button>\n</form>\n\n<h3>Let\'s Encrypt</h3>\n\n<form class="form-inline" action="/apps/test_app/setup_letsencrypt" method="POST">""",
         """<button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n</form>\n\n<h3>Process Info</h3>\n<ul>\n  \n  <li>Deployed: true</li>\n  \n  <li>Processes: 2</li>\n  \n  <li>Ps can scale: true</li>\n  \n  <li>Ps computed procfile path: Procfile</li>\n  \n  <li>Ps global procfile path: Procfile</li>\n  \n  <li>Ps procfile path: </li>\n  \n  <li>Ps restart policy: on-failure:10</li>\n  \n  <li>Restore: true</li>\n  \n  <li>Running: true</li>\n  \n</ul>\n<h3>Processes</h3>\n<ul>\n  \n  <li>celery 1: running</li>\n  \n  <li>web 1: running</li>\n  \n</ul>\n<h3>Logs</h3>\n<pre>\n2025-04-25T23:07:53.894820268Z app[celery.1]: System check identified some issues:\n2025-04-25T23:07:53.895026545Z app[celery.1]:\n2025-04-25T23:07:53.895030874Z app[celery.1]: WARNINGS:\n</pre>""",
     ]
     for expected_content in expected_contents:
@@ -257,7 +287,7 @@ def test_missing_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
         """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" />\n</form>\n<h2>Config</h2>\n<ul class=config>\n  \n</ul>\n<h3>New item</h3>\n<form action="/apps/missing" method="POST">""",
         """<label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\n<form class="form-inline" action="/apps/missing/create_postgres" method="POST">""",
         """<h3>Redis</h3>\n\n<form class="form-inline" action="/apps/missing/create_redis" method="POST">""",
-        """<button type="submit" class="btn btn-primary">Create redis db</button>\n</form>\n\n<h3>Let\'s Encrypt</h3>\n\n<form class="form-inline" action="/apps/missing/setup_letsencrypt" method="POST">""",
+        """<button type="submit" class="btn btn-primary">Create Redis db</button>\n</form>\n\n<h3>Let\'s Encrypt</h3>\n\n<form class="form-inline" action="/apps/missing/setup_letsencrypt" method="POST">""",
         """<button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n</form>\n\n<h3>Process Info</h3>\n<ul>\n  \n</ul>\n<h3>Processes</h3>\n<ul>\n  \n</ul>\n<h3>Logs</h3>\n<pre>\n!     App missing does not exist\n</pre>""",
     ]
     for expected_content in expected_contents:
@@ -283,6 +313,7 @@ def test_create_app(patched_delay: MagicMock):
     patched_delay.side_effect = mock_commands
     res = create_app("foo")
     assert res.status_code == 302, res
+    assert isinstance(res, HttpResponseRedirect)
     assert res.url.startswith("/apps/foo/wait/"), res
 
 
@@ -354,6 +385,7 @@ def test_task_logs_limit(patched_delay: MagicMock, mock_request: HttpRequest):
     baker.make(models.TaskLog, app=test_app, _quantity=20)
     resp = app_info(mock_request, "test_app")
 
+    assert isinstance(resp, HttpResponse)
     log_count = re.findall(r"/logs/[^\"]+", resp.text)
     assert len(log_count) == 10, resp.text
 
@@ -387,6 +419,37 @@ def test_remove_postgres(
     finished_log(monkeypatch, commands[("postgres:destroy foo --force",)])
 
     check_remove_postgres(mock_request, "foo", "1234")
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_create_redis(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    patched_delay.side_effect = mock_commands
+    models.App.objects.get_or_create(name="foo")
+    res = create_redis(mock_request, "foo")
+    assert res.status_code == 302, res
+    assert res.url.startswith("/apps/foo/wait/"), res
+
+    finished_log(monkeypatch, commands[("redis:create foo",)])
+    check_redis(mock_request, "foo", "1234")
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_remove_redis(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    patched_delay.side_effect = mock_commands
+    models.App.objects.get_or_create(name="foo")
+    res = remove_redis(mock_request, "foo")
+    assert res.status_code == 302, res
+    assert res.url.startswith("/apps/foo/wait/"), res
+
+    finished_log(monkeypatch, commands[("redis:destroy foo --force",)])
+
+    check_remove_redis(mock_request, "foo", "1234")
 
 
 @pytest.mark.django_db

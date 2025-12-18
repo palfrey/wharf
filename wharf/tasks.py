@@ -3,7 +3,7 @@ import os.path
 import socket
 import subprocess
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from fcntl import F_GETFL, F_SETFL, fcntl
 from os import O_NONBLOCK, read
 from pathlib import Path
@@ -194,7 +194,7 @@ def trust_dokku_host():
 def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
     models.TaskLog(
         task_id=self.request.id,
-        when=datetime.now(),
+        when=datetime.now(tz=UTC),
         app=models.App.objects.get(name=app_name),
         description="Deploying %s" % app_name,
     ).save()
