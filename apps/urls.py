@@ -58,6 +58,12 @@ urlpatterns = [
     path(
         "apps/<app_name>/check_redis/<task_id>", views.check_redis, name="check_redis"
     ),
+    path("apps/<app_name>/remove_redis", views.remove_redis, name="remove_redis"),
+    path(
+        "apps/<app_name>/check_remove_redis/<task_id>",
+        views.check_remove_redis,
+        name="check_remove_redis",
+    ),
     path(
         "apps/<app_name>/setup_letsencrypt",
         views.setup_letsencrypt,
@@ -67,6 +73,16 @@ urlpatterns = [
         "apps/<app_name>/check_letsencrypt/<task_id>",
         views.check_letsencrypt,
         name="check_letsencrypt",
+    ),
+    path(
+        "apps/<app_name>/remove_letsencrypt",
+        views.remove_letsencrypt,
+        name="remove_letsencrypt",
+    ),
+    path(
+        "apps/<app_name>/check_remove_letsencrypt/<task_id>",
+        views.check_remove_letsencrypt,
+        name="check_remove_letsencrypt",
     ),
     path("apps/<app_name>/add_domain", views.add_domain, name="add_domain"),
     path(

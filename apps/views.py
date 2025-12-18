@@ -2,7 +2,7 @@ import hashlib
 import hmac
 import json
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from logging import getLogger
 from typing import Any, Sequence, cast
 
@@ -82,7 +82,7 @@ def run_cmd_with_log(app_name, description, cmd, after):
     else:
         models.TaskLog(
             task_id=res.id,
-            when=datetime.now(),
+            when=datetime.now(tz=UTC),
             app=models.App.objects.get(name=app_name),
             description=description,
         ).save()
@@ -445,7 +445,7 @@ def add_domain(request: HttpRequest, app_name: str):
     if form.is_valid():
         commands = ["domains:add %s %s" % (app_name, form.cleaned_data["name"])]
         if letsencrypt(app_name) is not None:
-            commands.append("letsencrypt %s" % app_name)
+            commands.append("letsencrypt:enable %s" % app_name)
         return run_cmd_with_log(
             app_name,
             "Add domain %s" % form.cleaned_data["name"],
@@ -562,6 +562,18 @@ def create_redis(request: HttpRequest, app_name):
     )
 
 
+def remove_redis(request: HttpRequest, app_name):
+    return run_cmd_with_log(
+        app_name,
+        "Remove Redis",
+        [
+            "redis:unlink %s %s" % (app_name, app_name),
+            "redis:destroy %s --force" % app_name,
+        ],
+        "check_remove_redis",
+    )
+
+
 def check_deploy(request: HttpRequest, app_name, task_id: str):
     clear_cache("config:show %s" % app_name)
     messages.success(request, "%s redeployed" % app_name)
@@ -611,6 +623,17 @@ def check_redis(request: HttpRequest, app_name, task_id: str):
     return redirect_reverse("app_info", args=[app_name])
 
 
+def check_remove_redis(request: HttpRequest, app_name, task_id: str):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Redis container deleted: %s" % app_name) == -1:
+        raise Exception(data)
+    messages.success(request, "Redis removed from %s" % app_name)
+    clear_cache("redis:info %s" % app_name)
+    clear_cache("config:show %s" % app_name)
+    return redirect_reverse("app_info", args=[app_name])
+
+
 def create_app(app_name: str):
     if models.App.objects.filter(name=app_name).exists():
         return HttpResponseBadRequest(f"You already have an app called '{app_name}'")
@@ -634,12 +657,45 @@ def setup_letsencrypt(request: HttpRequest, app_name: str):
     return run_cmd_with_log(
         app_name,
         "Enable Let's Encrypt",
-        "letsencrypt %s" % app_name,
+        "letsencrypt:enable %s" % app_name,
         "check_letsencrypt",
     )
 
 
+def remove_letsencrypt(request: HttpRequest, app_name):
+    return run_cmd_with_log(
+        app_name,
+        "Remove Letsencrypt",
+        [
+            "letsencrypt:destroy %s --force" % app_name,
+        ],
+        "check_remove_letsencrypt",
+    )
+
+
 def check_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
+    res = AsyncResult(task_id)
+    log = get_log(res)
+    if log.find("Certificate retrieved successfully") != -1:
+        cmd = letsencrypt_command()
+        assert cmd is not None
+        clear_cache(cmd)
+        return redirect_reverse("app_info", args=[app_name])
+    else:
+        return render(
+            request,
+            "command_wait.html",
+            {
+                "app": app_name,
+                "task_id": task_id,
+                "log": log,
+                "state": res.state,
+                "running": res.state in [state(PENDING), state(STARTED)],
+            },
+        )
+
+
+def check_remove_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
     res = AsyncResult(task_id)
     log = get_log(res)
     if log.find("Certificate retrieved successfully") != -1:
