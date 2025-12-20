@@ -170,24 +170,10 @@ def index(request: HttpRequest):
     if public_key == "":
         public_key = tasks.get_public_key.delay().get()
 
-    try:
-        cmd = "ssh-keys:list --format json"
-        raw_keys = run_cmd_with_cache(cmd)
-        keys = json.loads(raw_keys)
-        for key in keys:
-            if key["public-key"] == public_key:
-                break
-        else:
-            clear_cache(cmd)
+    if not cache.get(tasks.SSH_WORKS_KEY):
+        ssh_works = tasks.check_ssh.delay().get()
+        if not ssh_works:
             return render(request, "setup_key.html", {"key": public_key})
-    except Exception as e:
-        if e.__class__.__name__ in [
-            "AuthenticationException",
-            "NoValidConnectionsError",
-        ]:  # Can't use class directly as Celery mangles things
-            return render(request, "setup_key.html", {"key": public_key})
-        else:
-            raise
 
     try:
         apps = app_list()
