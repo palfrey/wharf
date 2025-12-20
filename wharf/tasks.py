@@ -228,16 +228,18 @@ def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
 
 @app.task(bind=True)
 def check_ssh(self: Task) -> bool:
+    trust_dokku_host()
     try:
+        redis.set(SSH_WORKS_KEY, "")
         run_process(
             SSH_WORKS_KEY,
             [
                 "ssh",
-                f"dokku@{settings.DOKKU_HOST}",
-                "-P",
+                "-p",
                 str(settings.DOKKU_SSH_PORT),
                 "-o",
                 "PasswordAuthentication=no",
+                f"dokku@{settings.DOKKU_HOST}",
                 "version",
             ],
         )

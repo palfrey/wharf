@@ -170,7 +170,7 @@ def index(request: HttpRequest):
     if public_key == "":
         public_key = tasks.get_public_key.delay().get()
 
-    if not cache.get(tasks.SSH_WORKS_KEY):
+    if redis.get(tasks.SSH_WORKS_KEY) is None:
         ssh_works = tasks.check_ssh.delay().get()
         if not ssh_works:
             return render(request, "setup_key.html", {"key": public_key})
