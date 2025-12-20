@@ -12,3 +12,7 @@ class CreateAppForm(forms.Form):
 
 class CreateDomainForm(forms.Form):
     name = forms.CharField(label="Domain name", max_length=100)
+
+
+class SetupLetsEncrypt(forms.Form):
+    email = forms.EmailField(label="Email", max_length=100)

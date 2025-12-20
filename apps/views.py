@@ -486,6 +486,7 @@ def app_info(request: HttpRequest, app_name):
             "logs": ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
             "domains": domains_list(app_name),
             "domain_form": forms.CreateDomainForm(),
+            "letsencrypt_form": forms.SetupLetsEncrypt(),
             "form": form,
             "app": app_name,
             "git_url": config.get("GITHUB_URL", None),
@@ -638,12 +639,20 @@ def check_app(request: HttpRequest, app_name: str, task_id: str):
 
 
 def setup_letsencrypt(request: HttpRequest, app_name: str):
-    return run_cmd_with_log(
-        app_name,
-        "Enable Let's Encrypt",
-        "letsencrypt:enable %s" % app_name,
-        "check_letsencrypt",
-    )
+    form = forms.SetupLetsEncrypt(request.POST)
+    if form.is_valid():
+        commands = [
+            f"letsencrypt:set {app_name} email %s" % form.cleaned_data["email"],
+            f"letsencrypt:enable {app_name}",
+        ]
+        return run_cmd_with_log(
+            app_name,
+            "Enable Let's Encrypt",
+            commands,
+            "check_letsencrypt",
+        )
+    else:
+        raise Exception
 
 
 def remove_letsencrypt(request: HttpRequest, app_name):
@@ -651,7 +660,7 @@ def remove_letsencrypt(request: HttpRequest, app_name):
         app_name,
         "Remove Letsencrypt",
         [
-            "letsencrypt:destroy %s --force" % app_name,
+            f"letsencrypt:destroy {app_name} --force",
         ],
         "check_remove_letsencrypt",
     )
