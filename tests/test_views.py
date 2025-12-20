@@ -1,6 +1,6 @@
 import re
 import uuid
-from typing import Any, Callable
+from typing import Any, Callable, cast
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -18,8 +18,10 @@ from apps.views import (
     app_info,
     app_list,
     check_app,
+    check_letsencrypt,
     check_postgres,
     check_redis,
+    check_remove_letsencrypt,
     check_remove_postgres,
     check_remove_redis,
     create_app,
@@ -31,8 +33,10 @@ from apps.views import (
     process_info,
     refresh,
     refresh_all,
+    remove_letsencrypt,
     remove_postgres,
     remove_redis,
+    setup_letsencrypt,
 )
 from tests.recording_cache import RecordingCache
 
@@ -180,6 +184,61 @@ CURL_TIMEOUT:          600""",
        Removing container
        Removing data
 =====> Redis container deleted: foo""",
+    (
+        "letsencrypt:set test_app email foo@bar.com",
+    ): "=====> Setting email to foo@bar.com",
+    ("letsencrypt:enable test_app",): """=====> Enabling letsencrypt for test_app
+-----> Enabling ACME proxy for test_app...
+-----> Getting letsencrypt certificate for test_app via HTTP-01
+        - Domain 'test_app.vagrant'
+2025/12/20 21:38:20 No key found for account foo@bar.com. Generating a P256 key.
+2025/12/20 21:38:20 Saved key to /certs/accounts/acme-v02.api.letsencrypt.org/foo@bar.com/keys/foo@bar.com.key
+2025/12/20 21:38:20 [INFO] acme: Registering account for foo@bar.com
+2025/12/20 21:38:20 [INFO] [test_app.vagrant] acme: Obtaining bundled SAN certificate
+       !!!! HEADS UP !!!!
+
+       Your account credentials have been saved in your Let's Encrypt
+       configuration directory at "/certs/accounts".
+
+       You should make a secure backup of this folder now. This
+       configuration directory will also contain certificates and
+       private keys obtained from Let's Encrypt so making regular
+       backups of this folder is ideal.
+2025/12/20 21:38:21 [INFO] [test_app.vagrant] AuthURL: https://acme-v02.api.letsencrypt.org/acme/authz/12345/6789
+2025/12/20 21:38:21 [INFO] [test_app.vagrant] acme: Could not find solver for: tls-alpn-01
+2025/12/20 21:38:21 [INFO] [test_app.vagrant] acme: use http-01 solver
+2025/12/20 21:38:21 [INFO] [test_app.vagrant] acme: Trying to solve HTTP-01
+2025/12/20 21:38:29 [INFO] [test_app.vagrant] The server validated our request
+2025/12/20 21:38:29 [INFO] [test_app.vagrant] acme: Validations succeeded; requesting certificates
+2025/12/20 21:38:29 [INFO] [test_app.vagrant] Server responded with a certificate.
+-----> Certificate retrieved successfully.
+-----> Installing let's encrypt certificates
+-----> Unsetting DOKKU_PROXY_PORT
+-----> Setting config vars
+       DOKKU_PROXY_PORT_MAP:  http:80:5000
+-----> Setting config vars
+       DOKKU_PROXY_PORT_MAP:  http:80:5000 https:443:5000
+-----> Configuring test_app.vagrant...(using built-in template)
+-----> Creating https nginx.conf
+       Enabling HSTS
+       Reloading nginx
+-----> Ensuring network configuration is in sync for test_app
+-----> Configuring test_app.vagrant...(using built-in template)
+-----> Creating https nginx.conf
+       Enabling HSTS
+       Reloading nginx
+-----> Disabling ACME proxy for test_app...
+-----> Done""",
+    ("letsencrypt:disable test_app --force",): """-----> Disabling letsencrypt for app
+       Removing letsencrypt files for test_app
+       Removing SSL endpoint from test_app
+-----> Unsetting DOKKU_PROXY_SSL_PORT
+-----> Setting config vars
+       DOKKU_PROXY_PORT_MAP:  http:80:5000
+-----> Configuring test_app.vagrant...(using built-in template)
+-----> Creating http nginx.conf
+       Reloading nginx
+-----> Done""",
 }
 
 
@@ -530,3 +589,49 @@ def test_index_no_ssh_check(
         content.find('<h1 id="initial-setup-header">Wharf: Initial setup</h1>') != -1
     ), content
     assert content.find('<code id="ssh-key">\ndemo-key\n</code>') != -1, content
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_setup_letsencrypt(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    models.App.objects.create(name="test_app")
+    cast(MagicMock, mock_request).POST = {"email": "foo@bar.com"}
+    patched_delay.side_effect = mock_commands
+    res = setup_letsencrypt(mock_request, "test_app")
+    assert res.status_code == 302, res
+    assert isinstance(res, HttpResponseRedirect)
+    assert res.url.startswith("/apps/test_app/wait/"), res
+
+    finished_log(
+        monkeypatch,
+        commands[("letsencrypt:set test_app email foo@bar.com",)]
+        + commands[("letsencrypt:enable test_app",)],
+    )
+
+    check_res = check_letsencrypt(mock_request, "test_app", "1234")
+    assert check_res.status_code == 302, check_res
+    assert isinstance(check_res, HttpResponseRedirect)
+    assert check_res.url == "/apps/test_app", check_res
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_remove_letsencrypt(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    models.App.objects.create(name="test_app")
+    cast(MagicMock, mock_request).POST = {"email": "foo@bar.com"}
+    patched_delay.side_effect = mock_commands
+    res = remove_letsencrypt(mock_request, "test_app")
+    assert res.status_code == 302, res
+    assert isinstance(res, HttpResponseRedirect)
+    assert res.url.startswith("/apps/test_app/wait/"), res
+
+    finished_log(monkeypatch, commands[("letsencrypt:disable test_app --force",)])
+
+    check_res = check_remove_letsencrypt(mock_request, "test_app", "1234")
+    assert check_res.status_code == 302, check_res
+    assert isinstance(check_res, HttpResponseRedirect)
+    assert check_res.url == "/apps/test_app", check_res

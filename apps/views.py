@@ -652,7 +652,7 @@ def setup_letsencrypt(request: HttpRequest, app_name: str):
             "check_letsencrypt",
         )
     else:
-        raise Exception
+        raise Exception(form.errors)
 
 
 def remove_letsencrypt(request: HttpRequest, app_name):
@@ -660,7 +660,7 @@ def remove_letsencrypt(request: HttpRequest, app_name):
         app_name,
         "Remove Letsencrypt",
         [
-            f"letsencrypt:destroy {app_name} --force",
+            f"letsencrypt:disable {app_name} --force",
         ],
         "check_remove_letsencrypt",
     )
@@ -668,6 +668,10 @@ def remove_letsencrypt(request: HttpRequest, app_name):
 
 def check_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
     res = AsyncResult(task_id)
+    app = models.App.objects.get(name=app_name)
+    task, _created = models.TaskLog.objects.get_or_create(
+        task_id=task_id, defaults={"app": app, "when": datetime.now()}
+    )
     log = get_log(res)
     if log.find("Certificate retrieved successfully") != -1:
         cmd = letsencrypt_command()
@@ -684,14 +688,19 @@ def check_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
                 "log": log,
                 "state": res.state,
                 "running": res.state in [state(PENDING), state(STARTED)],
+                "description": task.description,
             },
         )
 
 
 def check_remove_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
     res = AsyncResult(task_id)
+    app = models.App.objects.get(name=app_name)
+    task, _created = models.TaskLog.objects.get_or_create(
+        task_id=task_id, defaults={"app": app, "when": datetime.now()}
+    )
     log = get_log(res)
-    if log.find("Certificate retrieved successfully") != -1:
+    if log.find(f"Removing letsencrypt files for {app_name}") != -1:
         cmd = letsencrypt_command()
         assert cmd is not None
         clear_cache(cmd)
@@ -706,6 +715,7 @@ def check_remove_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
                 "log": log,
                 "state": res.state,
                 "running": res.state in [state(PENDING), state(STARTED)],
+                "description": task.description,
             },
         )
 
