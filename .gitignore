@@ -9,5 +9,5 @@ __pycache__/
 *.log
 screenshot.png
 keys
-ssh-key
+*key
 src/

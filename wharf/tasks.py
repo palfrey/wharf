@@ -23,6 +23,9 @@ from .celery import app
 redis = StrictRedis.from_url(settings.CELERY_BROKER_URL)
 
 
+SSH_WORKS_KEY = "ssh-check"
+
+
 def handle_data(key, raw_data: bytes):
     data = raw_data.decode("utf-8", "replace")
     redis.append(key, data)
@@ -153,6 +156,10 @@ def set_nb(pipe):
     fcntl(pipe, F_SETFL, flags | O_NONBLOCK)
 
 
+class FailedCommand(Exception):
+    pass
+
+
 def run_process(key, cmd, cwd=None):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
     set_nb(p.stdout)
@@ -175,7 +182,7 @@ def run_process(key, cmd, cwd=None):
                 break
             time.sleep(0.1)
     if p.poll() != 0:
-        raise Exception
+        raise FailedCommand
 
 
 def trust_dokku_host():
@@ -217,3 +224,25 @@ def deploy(self: Task, app_name: str, git_url: str, git_branch: str):
     run_process(key, ["git", "pull"], cwd=app_repo_path)
     redis.append(key, "== Pushing to Dokku ==\n")
     run_process(key, ["git", "push", "-f", "dokku", git_branch], cwd=app_repo_path)
+
+
+@app.task(bind=True)
+def check_ssh(self: Task) -> bool:
+    trust_dokku_host()
+    try:
+        redis.set(SSH_WORKS_KEY, "")
+        run_process(
+            SSH_WORKS_KEY,
+            [
+                "ssh",
+                "-p",
+                str(settings.DOKKU_SSH_PORT),
+                "-o",
+                "PasswordAuthentication=no",
+                f"dokku@{settings.DOKKU_HOST}",
+                "version",
+            ],
+        )
+        return True
+    except FailedCommand:
+        return False

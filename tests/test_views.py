@@ -26,6 +26,7 @@ from apps.views import (
     create_postgres,
     create_redis,
     global_config,
+    index,
     letsencrypt,
     process_info,
     refresh,
@@ -37,7 +38,7 @@ from tests.recording_cache import RecordingCache
 
 
 class MockCelery:
-    def __init__(self, res: str):
+    def __init__(self, res: object):
         self.res = res
         self.id = uuid.uuid4()
 
@@ -469,3 +470,65 @@ def test_non_running_app(patched_delay: MagicMock):
         "Running": "false",
         "processes": {"web 1": "missing"},
     }
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+@patch("wharf.tasks.get_public_key.delay")
+def test_index(
+    patched_public_key: MagicMock,
+    patched_delay: MagicMock,
+    mock_request: HttpRequest,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    patched_delay.side_effect = mock_commands
+    patched_public_key.return_value = MockCelery("demo-key")
+
+    def redis_keys(self, key):
+        if key == "ssh-check":
+            return "ok version"
+        raise Exception(key)
+
+    monkeypatch.setattr(
+        StrictRedis,
+        "get",
+        redis_keys,
+    )
+    resp = index(mock_request)
+    assert resp.status_code == 200, resp
+    content = resp.content.decode("utf-8")
+    assert content.find('<h1 id="list_apps">Wharf</h1>') != -1, content
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+@patch("wharf.tasks.get_public_key.delay")
+@patch("wharf.tasks.check_ssh.delay")
+def test_index_no_ssh_check(
+    patched_check_ssh: MagicMock,
+    patched_public_key: MagicMock,
+    patched_delay: MagicMock,
+    mock_request: HttpRequest,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    patched_delay.side_effect = mock_commands
+    patched_check_ssh.return_value = MockCelery(False)
+    patched_public_key.return_value = MockCelery("demo-key")
+
+    def redis_keys(self, key):
+        if key == "ssh-check":
+            return None
+        raise Exception(key)
+
+    monkeypatch.setattr(
+        StrictRedis,
+        "get",
+        redis_keys,
+    )
+    resp = index(mock_request)
+    assert resp.status_code == 200, resp
+    content = resp.content.decode("utf-8")
+    assert (
+        content.find('<h1 id="initial-setup-header">Wharf: Initial setup</h1>') != -1
+    ), content
+    assert content.find('<code id="ssh-key">\ndemo-key\n</code>') != -1, content
