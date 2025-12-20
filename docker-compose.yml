@@ -2,15 +2,13 @@
 services:
   web:
     build: .
-    command: ./wait-for-it.sh postgres:5432 --strict --timeout=0 -- ./wait-for-it.sh redis:6379 --strict --timeout=0 -- bash -c "PORT=8000 bash dokku-boot.sh"
+    command: ./wait-for-it.sh localhost:5432 --strict --timeout=0 -- ./wait-for-it.sh localhost:6379 --strict --timeout=0 -- bash -c "PORT=8000 bash dokku-boot.sh"
     volumes:
     - .:/app
-    ports:
-    - 8000:8000
     environment:
-    - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
-    - BROKER_URL=redis://redis:6379/0
-    - CACHE_URL=redis://redis:6379/1
+    - DATABASE_URL=postgres://postgres:example@localhost:5432/wharf
+    - BROKER_URL=redis://localhost:6379/0
+    - CACHE_URL=redis://localhost:6379/1
     - DOKKU_SSH_HOST=${DOKKU_SSH_HOST:-127.0.0.1}
     - DOKKU_SSH_PORT=${DOKKU_SSH_PORT:-22}
     - GITHUB_SECRET=${GITHUB_SECRET:-password}
@@ -18,25 +16,31 @@ services:
     depends_on:
     - postgres
     - redis
+    network_mode: host
+
   celery:
     build: .
-    command: ./wait-for-it.sh postgres:5432 --strict --timeout=0 -- ./wait-for-it.sh redis:6379 --strict --timeout=0 -- bash -c "python manage.py celery"
+    command: ./wait-for-it.sh localhost:5432 --strict --timeout=0 -- ./wait-for-it.sh localhost:6379 --strict --timeout=0 -- bash -c "python manage.py celery"
     volumes:
     - .:/app
     environment:
-    - DATABASE_URL=postgres://postgres:example@postgres:5432/wharf
-    - BROKER_URL=redis://redis:6379/0
-    - CACHE_URL=redis://redis:6379/1
+    - DATABASE_URL=postgres://postgres:example@localhost:5432/wharf
+    - BROKER_URL=redis://localhost:6379/0
+    - CACHE_URL=redis://localhost:6379/1
     - DOKKU_SSH_HOST=${DOKKU_SSH_HOST:-127.0.0.1}
     - DOKKU_SSH_PORT=${DOKKU_SSH_PORT:-22}
     depends_on:
     - postgres
     - redis
+    network_mode: host
 
   postgres:
     image: postgres:14-alpine
     environment:
       POSTGRES_DB: wharf
       POSTGRES_PASSWORD: example
+    network_mode: host
+
   redis:
     image: redis:4-alpine
+    network_mode: host
