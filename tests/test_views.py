@@ -1,6 +1,6 @@
 import re
 import uuid
-from typing import Any, Callable
+from typing import Any, Callable, cast
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -18,8 +18,10 @@ from apps.views import (
     app_info,
     app_list,
     check_app,
+    check_letsencrypt,
     check_postgres,
     check_redis,
+    check_remove_letsencrypt,
     check_remove_postgres,
     check_remove_redis,
     create_app,
@@ -31,8 +33,10 @@ from apps.views import (
     process_info,
     refresh,
     refresh_all,
+    remove_letsencrypt,
     remove_postgres,
     remove_redis,
+    setup_letsencrypt,
 )
 from tests.recording_cache import RecordingCache
 
@@ -180,6 +184,61 @@ CURL_TIMEOUT:          600""",
        Removing container
        Removing data
 =====> Redis container deleted: foo""",
+    (
+        "letsencrypt:set test_app email foo@bar.com",
+    ): "=====> Setting email to foo@bar.com",
+    ("letsencrypt:enable test_app",): """=====> Enabling letsencrypt for test_app
+-----> Enabling ACME proxy for test_app...
+-----> Getting letsencrypt certificate for test_app via HTTP-01
+        - Domain 'test_app.vagrant'
+2025/12/20 21:38:20 No key found for account foo@bar.com. Generating a P256 key.
+2025/12/20 21:38:20 Saved key to /certs/accounts/acme-v02.api.letsencrypt.org/foo@bar.com/keys/foo@bar.com.key
+2025/12/20 21:38:20 [INFO] acme: Registering account for foo@bar.com
+2025/12/20 21:38:20 [INFO] [test_app.vagrant] acme: Obtaining bundled SAN certificate
+       !!!! HEADS UP !!!!
+
+       Your account credentials have been saved in your Let's Encrypt
+       configuration directory at "/certs/accounts".
+
+       You should make a secure backup of this folder now. This
+       configuration directory will also contain certificates and
+       private keys obtained from Let's Encrypt so making regular
+       backups of this folder is ideal.
+2025/12/20 21:38:21 [INFO] [test_app.vagrant] AuthURL: https://acme-v02.api.letsencrypt.org/acme/authz/12345/6789
+2025/12/20 21:38:21 [INFO] [test_app.vagrant] acme: Could not find solver for: tls-alpn-01
+2025/12/20 21:38:21 [INFO] [test_app.vagrant] acme: use http-01 solver
+2025/12/20 21:38:21 [INFO] [test_app.vagrant] acme: Trying to solve HTTP-01
+2025/12/20 21:38:29 [INFO] [test_app.vagrant] The server validated our request
+2025/12/20 21:38:29 [INFO] [test_app.vagrant] acme: Validations succeeded; requesting certificates
+2025/12/20 21:38:29 [INFO] [test_app.vagrant] Server responded with a certificate.
+-----> Certificate retrieved successfully.
+-----> Installing let's encrypt certificates
+-----> Unsetting DOKKU_PROXY_PORT
+-----> Setting config vars
+       DOKKU_PROXY_PORT_MAP:  http:80:5000
+-----> Setting config vars
+       DOKKU_PROXY_PORT_MAP:  http:80:5000 https:443:5000
+-----> Configuring test_app.vagrant...(using built-in template)
+-----> Creating https nginx.conf
+       Enabling HSTS
+       Reloading nginx
+-----> Ensuring network configuration is in sync for test_app
+-----> Configuring test_app.vagrant...(using built-in template)
+-----> Creating https nginx.conf
+       Enabling HSTS
+       Reloading nginx
+-----> Disabling ACME proxy for test_app...
+-----> Done""",
+    ("letsencrypt:disable test_app --force",): """-----> Disabling letsencrypt for app
+       Removing letsencrypt files for test_app
+       Removing SSL endpoint from test_app
+-----> Unsetting DOKKU_PROXY_SSL_PORT
+-----> Setting config vars
+       DOKKU_PROXY_PORT_MAP:  http:80:5000
+-----> Configuring test_app.vagrant...(using built-in template)
+-----> Creating http nginx.conf
+       Reloading nginx
+-----> Done""",
 }
 
 
@@ -269,8 +328,7 @@ def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
         """<h1 id="app_page">Wharf: test_app</h1>\n<a href="/">Return to apps index</a><br />\n\n<h3>Actions</h3>\n<div class="form-inline">\n  <form action="/apps/test_app/refresh" method="POST">\n    <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n    <button type="submit" class="btn btn-primary" name="action" value="refresh" id="refresh_app">Refresh app</button>\n  </form>\n  \n  Can\'t deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)\n  \n</div>\n<h2>Task logs</h2>\n\nNo tasks run yet\n\n<h2>Domains</h2>\n\n<ul>\n  \n    <li>\n      <a href="http://test_app.vagrant">test_app.vagrant</a>\n      <form class="d-inline" action="/apps/test_app/remove_domain" method="POST">""",
         """<input type="hidden" name="name" value="test_app.vagrant" />\n        <button type="submit" class="btn btn-primary">Delete \'test_app.vagrant\' domain</button>\n      </form>\n    </li>\n  \n</ul>\n\n<h3>New domain</h3>\n<form action="/apps/test_app/add_domain" method="POST">""",
         """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" />\n</form>\n<h2>Config</h2>\n<ul class=config>\n  \n    <li>DOKKU_APP_RESTORE = 1</li>\n  \n    <li>DOKKU_APP_TYPE = dockerfile</li>\n  \n    <li>DOKKU_PROXY_PORT = 80</li>\n  \n</ul>\n<h3>New item</h3>\n<form action="/apps/test_app" method="POST">""",
-        """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\nStatus: running\n<form class="form-inline" action="/apps/test_app/remove_postgres" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary">Remove Postgres db</button>\n</form>\n\n<h3>Redis</h3>\n\nStatus: running\n<form class="form-inline" action="/apps/test_app/remove_redis" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary">Remove Redis db</button>\n</form>\n\n<h3>Let\'s Encrypt</h3>\n\n<form class="form-inline" action="/apps/test_app/setup_letsencrypt" method="POST">""",
-        """<button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n</form>\n\n<h3>Process Info</h3>\n<ul>\n  \n  <li>Deployed: true</li>\n  \n  <li>Processes: 2</li>\n  \n  <li>Ps can scale: true</li>\n  \n  <li>Ps computed procfile path: Procfile</li>\n  \n  <li>Ps global procfile path: Procfile</li>\n  \n  <li>Ps procfile path: </li>\n  \n  <li>Ps restart policy: on-failure:10</li>\n  \n  <li>Restore: true</li>\n  \n  <li>Running: true</li>\n  \n</ul>\n<h3>Processes</h3>\n<ul>\n  \n  <li>celery 1: running</li>\n  \n  <li>web 1: running</li>\n  \n</ul>\n<h3>Logs</h3>\n<pre>\n2025-04-25T23:07:53.894820268Z app[celery.1]: System check identified some issues:\n2025-04-25T23:07:53.895026545Z app[celery.1]:\n2025-04-25T23:07:53.895030874Z app[celery.1]: WARNINGS:\n</pre>""",
+        """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\nStatus: running\n<form class="form-inline" action="/apps/test_app/remove_postgres" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary">Remove Postgres db</button>\n</form>\n\n<h3>Redis</h3>\n\nStatus: running\n<form class="form-inline" action="/apps/test_app/remove_redis" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary">Remove Redis db</button>\n</form>\n\n<h3>Let\'s Encrypt</h3>\n\n<form action="/apps/test_app/setup_letsencrypt" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  \n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_email">Email</label>\n  \n\n  <div class="">\n    <input type="email" name="email" maxlength="100" class=" form-control" required id="id_email">\n    \n    \n  </div>\n  \n</div>\n\n  <button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n</form>\n\n<h3>Process Info</h3>\n<ul>\n  \n  <li>Deployed: true</li>\n  \n  <li>Processes: 2</li>\n  \n  <li>Ps can scale: true</li>\n  \n  <li>Ps computed procfile path: Procfile</li>\n  \n  <li>Ps global procfile path: Procfile</li>\n  \n  <li>Ps procfile path: </li>\n  \n  <li>Ps restart policy: on-failure:10</li>\n  \n  <li>Restore: true</li>\n  \n  <li>Running: true</li>\n  \n</ul>\n<h3>Processes</h3>\n<ul>\n  \n  <li>celery 1: running</li>\n  \n  <li>web 1: running</li>\n  \n</ul>\n<h3>Logs</h3>\n<pre>\n2025-04-25T23:07:53.894820268Z app[celery.1]: System check identified some issues:\n2025-04-25T23:07:53.895026545Z app[celery.1]:\n2025-04-25T23:07:53.895030874Z app[celery.1]: WARNINGS:\n</pre>""",
     ]
     for expected_content in expected_contents:
         assert expected_content in content
@@ -288,8 +346,7 @@ def test_missing_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
         """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" />\n</form>\n<h2>Config</h2>\n<ul class=config>\n  \n</ul>\n<h3>New item</h3>\n<form action="/apps/missing" method="POST">""",
         """<label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\n<form class="form-inline" action="/apps/missing/create_postgres" method="POST">""",
         """<h3>Redis</h3>\n\n<form class="form-inline" action="/apps/missing/create_redis" method="POST">""",
-        """<button type="submit" class="btn btn-primary">Create Redis db</button>\n</form>\n\n<h3>Let\'s Encrypt</h3>\n\n<form class="form-inline" action="/apps/missing/setup_letsencrypt" method="POST">""",
-        """<button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n</form>\n\n<h3>Process Info</h3>\n<ul>\n  \n</ul>\n<h3>Processes</h3>\n<ul>\n  \n</ul>\n<h3>Logs</h3>\n<pre>\n!     App missing does not exist\n</pre>""",
+        """<button type="submit" class="btn btn-primary">Create Redis db</button>\n</form>\n\n<h3>Let\'s Encrypt</h3>\n\n<form action="/apps/missing/setup_letsencrypt" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  \n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_email">Email</label>\n  \n\n  <div class="">\n    <input type="email" name="email" maxlength="100" class=" form-control" required id="id_email">\n    \n    \n  </div>\n  \n</div>\n\n  <button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n</form>\n\n<h3>Process Info</h3>\n<ul>\n  \n</ul>\n<h3>Processes</h3>\n<ul>\n  \n</ul>\n<h3>Logs</h3>\n<pre>\n!     App missing does not exist\n</pre>""",
     ]
     for expected_content in expected_contents:
         assert expected_content in content
@@ -532,3 +589,49 @@ def test_index_no_ssh_check(
         content.find('<h1 id="initial-setup-header">Wharf: Initial setup</h1>') != -1
     ), content
     assert content.find('<code id="ssh-key">\ndemo-key\n</code>') != -1, content
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_setup_letsencrypt(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    models.App.objects.create(name="test_app")
+    cast(MagicMock, mock_request).POST = {"email": "foo@bar.com"}
+    patched_delay.side_effect = mock_commands
+    res = setup_letsencrypt(mock_request, "test_app")
+    assert res.status_code == 302, res
+    assert isinstance(res, HttpResponseRedirect)
+    assert res.url.startswith("/apps/test_app/wait/"), res
+
+    finished_log(
+        monkeypatch,
+        commands[("letsencrypt:set test_app email foo@bar.com",)]
+        + commands[("letsencrypt:enable test_app",)],
+    )
+
+    check_res = check_letsencrypt(mock_request, "test_app", "1234")
+    assert check_res.status_code == 302, check_res
+    assert isinstance(check_res, HttpResponseRedirect)
+    assert check_res.url == "/apps/test_app", check_res
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_remove_letsencrypt(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    models.App.objects.create(name="test_app")
+    cast(MagicMock, mock_request).POST = {"email": "foo@bar.com"}
+    patched_delay.side_effect = mock_commands
+    res = remove_letsencrypt(mock_request, "test_app")
+    assert res.status_code == 302, res
+    assert isinstance(res, HttpResponseRedirect)
+    assert res.url.startswith("/apps/test_app/wait/"), res
+
+    finished_log(monkeypatch, commands[("letsencrypt:disable test_app --force",)])
+
+    check_res = check_remove_letsencrypt(mock_request, "test_app", "1234")
+    assert check_res.status_code == 302, check_res
+    assert isinstance(check_res, HttpResponseRedirect)
+    assert check_res.url == "/apps/test_app", check_res

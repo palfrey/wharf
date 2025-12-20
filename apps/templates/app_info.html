@@ -101,8 +101,9 @@ Status: {{ redis['Status'] }}
   <button type="submit" class="btn btn-primary">Remove Letsencrypt</button>
 </form>
 {% else %}
-<form class="form-inline" action="{{ url('setup_letsencrypt', app_name=app) }}" method="POST">
+<form action="{{ url('setup_letsencrypt', app_name=app) }}" method="POST">
   {% csrf_token %}
+  {{ letsencrypt_form | bootstrap }}
   <button type="submit" class="btn btn-primary">Setup Let's Encrypt</button>
 </form>
 {% endif %}

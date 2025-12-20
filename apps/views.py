@@ -486,6 +486,7 @@ def app_info(request: HttpRequest, app_name):
             "logs": ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
             "domains": domains_list(app_name),
             "domain_form": forms.CreateDomainForm(),
+            "letsencrypt_form": forms.SetupLetsEncrypt(),
             "form": form,
             "app": app_name,
             "git_url": config.get("GITHUB_URL", None),
@@ -638,12 +639,20 @@ def check_app(request: HttpRequest, app_name: str, task_id: str):
 
 
 def setup_letsencrypt(request: HttpRequest, app_name: str):
-    return run_cmd_with_log(
-        app_name,
-        "Enable Let's Encrypt",
-        "letsencrypt:enable %s" % app_name,
-        "check_letsencrypt",
-    )
+    form = forms.SetupLetsEncrypt(request.POST)
+    if form.is_valid():
+        commands = [
+            f"letsencrypt:set {app_name} email %s" % form.cleaned_data["email"],
+            f"letsencrypt:enable {app_name}",
+        ]
+        return run_cmd_with_log(
+            app_name,
+            "Enable Let's Encrypt",
+            commands,
+            "check_letsencrypt",
+        )
+    else:
+        raise Exception(form.errors)
 
 
 def remove_letsencrypt(request: HttpRequest, app_name):
@@ -651,7 +660,7 @@ def remove_letsencrypt(request: HttpRequest, app_name):
         app_name,
         "Remove Letsencrypt",
         [
-            "letsencrypt:destroy %s --force" % app_name,
+            f"letsencrypt:disable {app_name} --force",
         ],
         "check_remove_letsencrypt",
     )
@@ -659,6 +668,10 @@ def remove_letsencrypt(request: HttpRequest, app_name):
 
 def check_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
     res = AsyncResult(task_id)
+    app = models.App.objects.get(name=app_name)
+    task, _created = models.TaskLog.objects.get_or_create(
+        task_id=task_id, defaults={"app": app, "when": datetime.now()}
+    )
     log = get_log(res)
     if log.find("Certificate retrieved successfully") != -1:
         cmd = letsencrypt_command()
@@ -675,14 +688,19 @@ def check_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
                 "log": log,
                 "state": res.state,
                 "running": res.state in [state(PENDING), state(STARTED)],
+                "description": task.description,
             },
         )
 
 
 def check_remove_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
     res = AsyncResult(task_id)
+    app = models.App.objects.get(name=app_name)
+    task, _created = models.TaskLog.objects.get_or_create(
+        task_id=task_id, defaults={"app": app, "when": datetime.now()}
+    )
     log = get_log(res)
-    if log.find("Certificate retrieved successfully") != -1:
+    if log.find(f"Removing letsencrypt files for {app_name}") != -1:
         cmd = letsencrypt_command()
         assert cmd is not None
         clear_cache(cmd)
@@ -697,6 +715,7 @@ def check_remove_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
                 "log": log,
                 "state": res.state,
                 "running": res.state in [state(PENDING), state(STARTED)],
+                "description": task.description,
             },
         )
 
