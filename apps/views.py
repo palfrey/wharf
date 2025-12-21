@@ -108,7 +108,7 @@ def wait_for_command(request: HttpRequest, app_name, task_id, after):
     if app_name != "_":
         app = models.App.objects.get(name=app_name)
         task, created = models.TaskLog.objects.get_or_create(
-            task_id=task_id, defaults={"app": app, "when": datetime.now()}
+            task_id=task_id, defaults={"app": app, "when": datetime.now(tz=UTC)}
         )
         description = task.description
     else:
@@ -670,7 +670,7 @@ def check_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
     res = AsyncResult(task_id)
     app = models.App.objects.get(name=app_name)
     task, _created = models.TaskLog.objects.get_or_create(
-        task_id=task_id, defaults={"app": app, "when": datetime.now()}
+        task_id=task_id, defaults={"app": app, "when": datetime.now(tz=UTC)}
     )
     log = get_log(res)
     if log.find("Certificate retrieved successfully") != -1:
@@ -697,7 +697,7 @@ def check_remove_letsencrypt(request: HttpRequest, app_name: str, task_id: str):
     res = AsyncResult(task_id)
     app = models.App.objects.get(name=app_name)
     task, _created = models.TaskLog.objects.get_or_create(
-        task_id=task_id, defaults={"app": app, "when": datetime.now()}
+        task_id=task_id, defaults={"app": app, "when": datetime.now(tz=UTC)}
     )
     log = get_log(res)
     if log.find(f"Removing letsencrypt files for {app_name}") != -1:

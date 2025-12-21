@@ -1,10 +1,12 @@
 from re import compile
+from typing import cast
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect
+from django.contrib.messages.storage.base import Message
+from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.http import url_has_allowed_host_and_scheme
 
 
@@ -70,7 +72,7 @@ class LoginRequiredMiddleware:
         self.get_response = get_response
         # One-time configuration and initialization
 
-    def __call__(self, request):
+    def __call__(self, request: HttpRequest):
         if not request.user.is_authenticated:
             path = request.path_info.lstrip("/")
             if not any(m.match(path) for m in EXEMPT_URLS):
@@ -82,10 +84,16 @@ class LoginRequiredMiddleware:
                     redirect_to = "%s?next=%s" % (settings.LOGIN_URL, request.path_info)
                 return HttpResponseRedirect(redirect_to)
         elif not settings.ADMIN_PASSWORD.startswith("pbkdf2_sha256"):
-            better_password = make_password(settings.ADMIN_PASSWORD)
-            messages.warning(
-                request,
-                "ADMIN_PASSWORD is in plain text. Set it to %s instead"
-                % better_password,
-            )
+            for message in messages.get_messages(request):
+                if cast(Message, message).message.startswith(
+                    "ADMIN_PASSWORD is in plain text"
+                ):
+                    break
+            else:
+                better_password = make_password(settings.ADMIN_PASSWORD)
+                messages.warning(
+                    request,
+                    "ADMIN_PASSWORD is in plain text. Set it to %s instead"
+                    % better_password,
+                )
         return self.get_response(request)
