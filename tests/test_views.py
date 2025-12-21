@@ -15,9 +15,11 @@ from redis import StrictRedis
 
 from apps import models
 from apps.views import (
+    app_config_delete,
     app_info,
     app_list,
     check_app,
+    check_app_config_delete,
     check_letsencrypt,
     check_postgres,
     check_redis,
@@ -239,6 +241,7 @@ CURL_TIMEOUT:          600""",
 -----> Creating http nginx.conf
        Reloading nginx
 -----> Done""",
+    ("config:unset test_app FOO_KEY",): """-----> Unsetting FOO_KEY""",
 }
 
 
@@ -327,7 +330,7 @@ def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
     expected_contents = [
         """<h1 id="app_page">Wharf: test_app</h1>\n<a href="/">Return to apps index</a><br />\n\n<h3>Actions</h3>\n<div class="form-inline">\n  <form action="/apps/test_app/refresh" method="POST">\n    <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n    <button type="submit" class="btn btn-primary" name="action" value="refresh" id="refresh_app">Refresh app</button>\n  </form>\n  \n  Can\'t deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)\n  \n</div>\n<h2>Task logs</h2>\n\nNo tasks run yet\n\n<h2>Domains</h2>\n\n<ul>\n  \n    <li>\n      <a href="http://test_app.vagrant">test_app.vagrant</a>\n      <form class="d-inline" action="/apps/test_app/remove_domain" method="POST">""",
         """<input type="hidden" name="name" value="test_app.vagrant" />\n        <button type="submit" class="btn btn-primary">Delete \'test_app.vagrant\' domain</button>\n      </form>\n    </li>\n  \n</ul>\n\n<h3>New domain</h3>\n<form action="/apps/test_app/add_domain" method="POST">""",
-        """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" />\n</form>\n<h2>Config</h2>\n<ul class=config>\n  \n    <li>DOKKU_APP_RESTORE = 1</li>\n  \n    <li>DOKKU_APP_TYPE = dockerfile</li>\n  \n    <li>DOKKU_PROXY_PORT = 80</li>\n  \n</ul>\n<h3>New item</h3>\n<form action="/apps/test_app" method="POST">""",
+        """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" />\n</form>\n<h2>Config</h2>\n<ul class=config>\n  \n    <li>\n      \n        <form class="form-inline" action="/apps/test_app/app_config_delete" method="POST">\n          DOKKU_APP_RESTORE = 1&nbsp;\n          <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n          <input type="hidden" name="key" value="DOKKU_APP_RESTORE" />\n          <button type="submit" class="btn btn-primary btn-sm">Delete</button>\n        </form>\n      \n    </li>\n  \n    <li>\n      \n        <form class="form-inline" action="/apps/test_app/app_config_delete" method="POST">\n          DOKKU_APP_TYPE = dockerfile&nbsp;\n          <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n          <input type="hidden" name="key" value="DOKKU_APP_TYPE" />\n          <button type="submit" class="btn btn-primary btn-sm">Delete</button>\n        </form>\n      \n    </li>\n  \n    <li>\n      \n        <form class="form-inline" action="/apps/test_app/app_config_delete" method="POST">\n          DOKKU_PROXY_PORT = 80&nbsp;\n          <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n          <input type="hidden" name="key" value="DOKKU_PROXY_PORT" />\n          <button type="submit" class="btn btn-primary btn-sm">Delete</button>\n        </form>\n      \n    </li>\n  \n</ul>\n<h3>New item</h3>\n<form action="/apps/test_app" method="POST">""",
         """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n  <input class="form-control" type="submit" value="Submit" id="config_add" />\n</form>\n<h3>Postgres</h3>\n\nStatus: running\n<form class="form-inline" action="/apps/test_app/remove_postgres" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary">Remove Postgres db</button>\n</form>\n\n<h3>Redis</h3>\n\nStatus: running\n<form class="form-inline" action="/apps/test_app/remove_redis" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  <button type="submit" class="btn btn-primary">Remove Redis db</button>\n</form>\n\n<h3>Let\'s Encrypt</h3>\n\n<form action="/apps/test_app/setup_letsencrypt" method="POST">\n  <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n  \n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_email">Email</label>\n  \n\n  <div class="">\n    <input type="email" name="email" maxlength="100" class=" form-control" required id="id_email">\n    \n    \n  </div>\n  \n</div>\n\n  <button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n</form>\n\n<h3>Process Info</h3>\n<ul>\n  \n  <li>Deployed: true</li>\n  \n  <li>Processes: 2</li>\n  \n  <li>Ps can scale: true</li>\n  \n  <li>Ps computed procfile path: Procfile</li>\n  \n  <li>Ps global procfile path: Procfile</li>\n  \n  <li>Ps procfile path: </li>\n  \n  <li>Ps restart policy: on-failure:10</li>\n  \n  <li>Restore: true</li>\n  \n  <li>Running: true</li>\n  \n</ul>\n<h3>Processes</h3>\n<ul>\n  \n  <li>celery 1: running</li>\n  \n  <li>web 1: running</li>\n  \n</ul>\n<h3>Logs</h3>\n<pre>\n2025-04-25T23:07:53.894820268Z app[celery.1]: System check identified some issues:\n2025-04-25T23:07:53.895026545Z app[celery.1]:\n2025-04-25T23:07:53.895030874Z app[celery.1]: WARNINGS:\n</pre>""",
     ]
     for expected_content in expected_contents:
@@ -632,6 +635,27 @@ def test_remove_letsencrypt(
     finished_log(monkeypatch, commands[("letsencrypt:disable test_app --force",)])
 
     check_res = check_remove_letsencrypt(mock_request, "test_app", "1234")
+    assert check_res.status_code == 302, check_res
+    assert isinstance(check_res, HttpResponseRedirect)
+    assert check_res.url == "/apps/test_app", check_res
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_app_config_delete(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    models.App.objects.create(name="test_app")
+    cast(MagicMock, mock_request).POST = {"key": "FOO_KEY"}
+    patched_delay.side_effect = mock_commands
+    res = app_config_delete(mock_request, "test_app")
+    assert res.status_code == 302, res
+    assert isinstance(res, HttpResponseRedirect)
+    assert res.url.startswith("/apps/test_app/wait/"), res
+
+    finished_log(monkeypatch, commands[("config:unset test_app FOO_KEY",)])
+
+    check_res = check_app_config_delete(mock_request, "test_app", "1234")
     assert check_res.status_code == 302, check_res
     assert isinstance(check_res, HttpResponseRedirect)
     assert check_res.url == "/apps/test_app", check_res

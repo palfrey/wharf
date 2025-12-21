@@ -27,6 +27,16 @@ urlpatterns = [
         views.check_app_config_set,
         name="check_app_config_set",
     ),
+    path(
+        "apps/<app_name>/app_config_delete",
+        views.app_config_delete,
+        name="app_config_delete",
+    ),
+    path(
+        "apps/<app_name>/check_app_config_delete/<task_id>",
+        views.check_app_config_delete,
+        name="check_app_config_delete",
+    ),
     path("apps/<app_name>/deploy", views.deploy, name="deploy"),
     path(
         "apps/<app_name>/check_deploy/<task_id>",
