@@ -30,10 +30,16 @@ repos:
     args: [--fix]
   - id: ruff-format
 
-# - repo: local
-#   hooks:
-#   - id: uv
-#     name: uv
-#     language: system
-#     entry: uv lock --check
-#     pass_filenames: false
+- repo: local
+  hooks:
+  - id: uv
+    name: uv
+    language: system
+    entry: uv lock --check
+    pass_filenames: false
+
+- repo: https://github.com/djlint/djLint
+  rev: v1.36.4
+  hooks:
+  - id: djlint-reformat-django
+  - id: djlint-django
