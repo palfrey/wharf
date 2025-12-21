@@ -4,6 +4,9 @@ name = "wharf"
 requires-python = ">=3.12"
 version = "0.1.0"
 
+[tool.djlint]
+ignore = "H030,H031"  # meta tags ignores
+
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"
 filterwarnings = [
