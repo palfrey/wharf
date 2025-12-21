@@ -272,6 +272,27 @@ def check_app_config_set(request: HttpRequest, app_name, task_id: str):
     return redirect_reverse("app_info", args=[app_name])
 
 
+def app_config_delete(request, app):
+    key = request.POST["key"]
+    return run_cmd_with_log(
+        app,
+        "Removing %s" % key,
+        "config:unset %s %s" % (app, key),
+        "check_app_config_delete",
+    )
+
+
+def check_app_config_delete(request: HttpRequest, app_name, task_id: str):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    lines = data.split("\n")
+    if "Unsetting" not in lines[0]:
+        raise Exception(data)
+    messages.success(request, "Config updated")
+    clear_cache("config:show %s" % app_name)
+    return redirect_reverse("app_info", args=[app_name])
+
+
 def global_config_set(request):
     form = forms.ConfigForm(request.POST)
     if form.is_valid():
