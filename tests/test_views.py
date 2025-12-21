@@ -15,9 +15,11 @@ from redis import StrictRedis
 
 from apps import models
 from apps.views import (
+    app_config_delete,
     app_info,
     app_list,
     check_app,
+    check_app_config_delete,
     check_letsencrypt,
     check_postgres,
     check_redis,
@@ -239,6 +241,7 @@ CURL_TIMEOUT:          600""",
 -----> Creating http nginx.conf
        Reloading nginx
 -----> Done""",
+    ("config:unset test_app FOO_KEY",): """-----> Unsetting FOO_KEY""",
 }
 
 
@@ -632,6 +635,27 @@ def test_remove_letsencrypt(
     finished_log(monkeypatch, commands[("letsencrypt:disable test_app --force",)])
 
     check_res = check_remove_letsencrypt(mock_request, "test_app", "1234")
+    assert check_res.status_code == 302, check_res
+    assert isinstance(check_res, HttpResponseRedirect)
+    assert check_res.url == "/apps/test_app", check_res
+
+
+@pytest.mark.django_db
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_app_config_delete(
+    patched_delay: MagicMock, mock_request: HttpRequest, monkeypatch: pytest.MonkeyPatch
+):
+    models.App.objects.create(name="test_app")
+    cast(MagicMock, mock_request).POST = {"key": "FOO_KEY"}
+    patched_delay.side_effect = mock_commands
+    res = app_config_delete(mock_request, "test_app")
+    assert res.status_code == 302, res
+    assert isinstance(res, HttpResponseRedirect)
+    assert res.url.startswith("/apps/test_app/wait/"), res
+
+    finished_log(monkeypatch, commands[("config:unset test_app FOO_KEY",)])
+
+    check_res = check_app_config_delete(mock_request, "test_app", "1234")
     assert check_res.status_code == 302, check_res
     assert isinstance(check_res, HttpResponseRedirect)
     assert check_res.url == "/apps/test_app", check_res
