@@ -21,25 +21,30 @@
     <a href="/">Return to apps index</a>
     <br />
     
-    <ul class="nav nav-tabs">
+    <ul id="nav-active-logs" class="nav nav-tabs">
         <li class="nav-item">
-            <a class="nav-link active"
+            <a id="link-logs"
+               class="nav-link active"
                href="/apps/test_app/logs">Logs</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link "
+            <a id="link-databases"
+               class="nav-link "
                href="/apps/test_app/databases">Databases</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link "
+            <a id="link-config"
+               class="nav-link "
                href="/apps/test_app/config">Config</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link "
+            <a id="link-domains"
+               class="nav-link "
                href="/apps/test_app/domains">Domains</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link "
+            <a id="link-actions"
+               class="nav-link "
                href="/apps/test_app/actions">Actions</a>
         </li>
     </ul>
