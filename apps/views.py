@@ -592,6 +592,10 @@ def actions(request: HttpRequest, app_name: str):
 
 
 def app_info(request: HttpRequest, app_name: str):
+    try:
+        app_config(app_name)
+    except NoSuchAppException:
+        return HttpResponseNotFound(content=f"App {app_name} not found")
     return redirect_reverse("logs", args=[app_name])
 
 

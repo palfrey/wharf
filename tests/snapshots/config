@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport"
+              content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <title>Wharf</title>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="stylesheet"
+              href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+              integrity="xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
+              crossorigin="anonymous" />
+    </head>
+    <body class="bg-light">
+        <div class="container">
+            
+                
+            
+            
+    <h1 id="app_page">Wharf: test_app</h1>
+    <a href="/">Return to apps index</a>
+    <br />
+    
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link "
+               href="/apps/test_app/logs">Logs</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link "
+               href="/apps/test_app/databases">Databases</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active"
+               href="/apps/test_app/config">Config</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link "
+               href="/apps/test_app/domains">Domains</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link "
+               href="/apps/test_app/actions">Actions</a>
+        </li>
+    </ul>
+
+    <h2>Config</h2>
+    <ul class="config">
+        
+            <li>
+                
+                    <form class="form-inline"
+                          action="/apps/test_app/app_config_delete"
+                          method="post">
+                        DOKKU_APP_RESTORE = 1&nbsp;
+                        <input type='hidden' name='csrfmiddlewaretoken' value='predictabletoken' />
+                        <input type="hidden" name="key" value="DOKKU_APP_RESTORE" />
+                        <button type="submit" class="btn btn-primary btn-sm">Delete</button>
+                    </form>
+                
+            </li>
+        
+            <li>
+                
+                    <form class="form-inline"
+                          action="/apps/test_app/app_config_delete"
+                          method="post">
+                        DOKKU_APP_TYPE = dockerfile&nbsp;
+                        <input type='hidden' name='csrfmiddlewaretoken' value='predictabletoken' />
+                        <input type="hidden" name="key" value="DOKKU_APP_TYPE" />
+                        <button type="submit" class="btn btn-primary btn-sm">Delete</button>
+                    </form>
+                
+            </li>
+        
+            <li>
+                
+                    <form class="form-inline"
+                          action="/apps/test_app/app_config_delete"
+                          method="post">
+                        DOKKU_PROXY_PORT = 80&nbsp;
+                        <input type='hidden' name='csrfmiddlewaretoken' value='predictabletoken' />
+                        <input type="hidden" name="key" value="DOKKU_PROXY_PORT" />
+                        <button type="submit" class="btn btn-primary btn-sm">Delete</button>
+                    </form>
+                
+            </li>
+        
+    </ul>
+    <h3>New item</h3>
+    <form action="/apps/test_app" method="post">
+        <input type='hidden' name='csrfmiddlewaretoken' value='predictabletoken' />
+        
+  <div class="form-group">
+  
+    
+    <label class="control-label  required" for="id_key">key</label>
+  
+
+  <div class="">
+    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">
+    
+    
+  </div>
+  
+</div>
+
+  <div class="form-group">
+  
+    
+    <label class="control-label  required" for="id_value">value</label>
+  
+
+  <div class="">
+    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">
+    
+    
+  </div>
+  
+</div>
+
+        <input class="form-control" type="submit" value="Submit" id="config_add" />
+    </form>
+
+
+            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+                    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+                    crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
+                    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+                    crossorigin="anonymous"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+                    integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+                    crossorigin="anonymous"></script>
+        </div>
+    </body>
+</html>

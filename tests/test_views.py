@@ -1,5 +1,6 @@
 import re
 import uuid
+from pathlib import Path
 from typing import Any, Callable, cast
 from unittest.mock import MagicMock, Mock, patch
 
@@ -15,6 +16,7 @@ from redis import StrictRedis
 
 from apps import models
 from apps.views import (
+    actions,
     app_config_delete,
     app_info,
     app_list,
@@ -27,12 +29,16 @@ from apps.views import (
     check_remove_postgres,
     check_remove_redis,
     check_rename_app,
+    config,
     create_app,
     create_postgres,
     create_redis,
+    databases,
+    domains,
     global_config,
     index,
     letsencrypt,
+    logs,
     process_info,
     refresh,
     refresh_all,
@@ -337,16 +343,43 @@ def test_check_app(
 def test_app_info(patched_delay: MagicMock, mock_request: HttpRequest):
     patched_delay.side_effect = mock_commands
     resp = app_info(mock_request, "test_app")
-    assert resp.status_code == 200, resp
-    content = resp.content.decode("utf-8")
+    assert isinstance(resp, HttpResponseRedirect)
+    assert resp.status_code == 302, resp
+    assert resp.url == "/apps/test_app/logs"
 
-    expected_contents = [
-        """<h1 id="app_page">Wharf: test_app</h1>\n    <a href="/">Return to apps index</a>\n    <br />\n    <h3>Actions</h3>\n    <div class="form-inline">\n        <form action="/apps/test_app/refresh" method="post">\n            <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n            <button type="submit"\n                    class="btn btn-primary"\n                    name="action"\n                    value="refresh"\n                    id="refresh_app">Refresh app</button>\n        </form>\n        \n            Can\'t deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)\n        \n    </div>\n    <h3>Rename app</h3>\n    <form action="/apps/test_app/rename" method="post">\n        <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n        \n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_new_name">New name</label>\n  \n\n  <div class="">\n    <input type="text" name="new_name" maxlength="100" class=" form-control" required id="id_new_name">\n    \n    \n  </div>\n  \n</div>\n\n        <input class="form-control" type="submit" value="Submit" />\n    </form>\n    <h2>Task logs</h2>\n    \n        No tasks run yet\n    \n    <h2>Domains</h2>\n    \n        <ul>\n            \n                <li>\n                    <a href="http://test_app.vagrant">test_app.vagrant</a>\n                    <form class="d-inline"\n                          action="/apps/test_app/remove_domain"\n                          method="post">\n                        <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n                        <input type="hidden" name="name" value="test_app.vagrant" />\n                        <button type="submit" class="btn btn-primary">Delete \'test_app.vagrant\' domain</button>\n                    </form>\n                </li>\n            \n        </ul>\n    \n    <h3>New domain</h3>\n    <form action="/apps/test_app/add_domain" method="post">""",
-        """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_name">Domain name</label>\n  \n\n  <div class="">\n    <input type="text" name="name" maxlength="100" class=" form-control" required id="id_name">\n    \n    \n  </div>\n  \n</div>\n\n        <input class="form-control" type="submit" value="Submit" />\n    </form>\n    <h2>Config</h2>\n    <ul class="config">\n        \n            <li>\n                \n                    <form class="form-inline"\n                          action="/apps/test_app/app_config_delete"\n                          method="post">\n                        DOKKU_APP_RESTORE = 1&nbsp;\n                        <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n                        <input type="hidden" name="key" value="DOKKU_APP_RESTORE" />\n                        <button type="submit" class="btn btn-primary btn-sm">Delete</button>\n                    </form>\n                \n            </li>\n        \n            <li>\n                \n                    <form class="form-inline"\n                          action="/apps/test_app/app_config_delete"\n                          method="post">\n                        DOKKU_APP_TYPE = dockerfile&nbsp;\n                        <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n                        <input type="hidden" name="key" value="DOKKU_APP_TYPE" />\n                        <button type="submit" class="btn btn-primary btn-sm">Delete</button>\n                    </form>\n                \n            </li>\n        \n            <li>\n                \n                    <form class="form-inline"\n                          action="/apps/test_app/app_config_delete"\n                          method="post">\n                        DOKKU_PROXY_PORT = 80&nbsp;\n                        <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n                        <input type="hidden" name="key" value="DOKKU_PROXY_PORT" />\n                        <button type="submit" class="btn btn-primary btn-sm">Delete</button>\n                    </form>\n                \n            </li>\n        \n    </ul>\n    <h3>New item</h3>""",
-        """<div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_key">key</label>\n  \n\n  <div class="">\n    <input type="text" name="key" maxlength="100" class=" form-control" required id="id_key">\n    \n    \n  </div>\n  \n</div>\n\n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_value">value</label>\n  \n\n  <div class="">\n    <input type="text" name="value" maxlength="300" class=" form-control" required id="id_value">\n    \n    \n  </div>\n  \n</div>\n\n        <input class="form-control" type="submit" value="Submit" id="config_add" />\n    </form>\n    <h3>Postgres</h3>\n    \n        Status: running\n        <form class="form-inline"\n              action="/apps/test_app/remove_postgres"\n              method="post">\n            <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n            <button type="submit" class="btn btn-primary">Remove Postgres db</button>\n        </form>\n    \n    <h3>Redis</h3>\n    \n        Status: running\n        <form class="form-inline"\n              action="/apps/test_app/remove_redis"\n              method="post">\n            <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n            <button type="submit" class="btn btn-primary">Remove Redis db</button>\n        </form>\n    \n    <h3>Let\'s Encrypt</h3>\n    \n        <form action="/apps/test_app/setup_letsencrypt" method="post">\n            <input type=\'hidden\' name=\'csrfmiddlewaretoken\' value=\'predictabletoken\' />\n            \n  <div class="form-group">\n  \n    \n    <label class="control-label  required" for="id_email">Email</label>\n  \n\n  <div class="">\n    <input type="email" name="email" maxlength="100" class=" form-control" required id="id_email">\n    \n    \n  </div>\n  \n</div>\n\n            <button type="submit" class="btn btn-primary">Setup Let\'s Encrypt</button>\n        </form>\n    \n    <h3>Process Info</h3>\n    <ul>\n        <li>Deployed: true</li><li>Processes: 2</li><li>Ps can scale: true</li><li>Ps computed procfile path: Procfile</li><li>Ps global procfile path: Procfile</li><li>Ps procfile path: </li><li>Ps restart policy: on-failure:10</li><li>Restore: true</li><li>Running: true</li>\n    </ul>\n    <h3>Processes</h3>\n    <ul>\n        <li>celery 1: running</li><li>web 1: running</li>\n    </ul>\n    <h3>Logs</h3>\n    <pre>\n2025-04-25T23:07:53.894820268Z app[celery.1]: System check identified some issues:\n2025-04-25T23:07:53.895026545Z app[celery.1]:\n2025-04-25T23:07:53.895030874Z app[celery.1]: WARNINGS:\n</pre>""",
-    ]
-    for expected_content in expected_contents:
-        assert expected_content in content
+
+def assert_snapshot(keyword: str, content: str):
+    snapshot_file = Path(__file__).parent.joinpath("snapshots", keyword)
+    if not snapshot_file.exists():
+        with snapshot_file.open("w") as f:
+            f.write(content)
+    else:
+        assert content == snapshot_file.open().read()
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "key, view_func",
+    [
+        ("databases", databases),
+        ("domains", domains),
+        ("config", config),
+        ("actions", actions),
+        ("logs", logs),
+    ],
+)
+@patch("wharf.tasks.run_ssh_command.delay")
+def test_app_infos(
+    patched_delay: MagicMock,
+    mock_request: HttpRequest,
+    key: str,
+    view_func: Callable[[HttpRequest, str], HttpResponse],
+):
+    patched_delay.side_effect = mock_commands
+    resp = view_func(mock_request, "test_app")
+    assert resp.status_code == 200, resp
+    assert isinstance(resp, HttpResponse)
+    assert_snapshot(key, resp.text)
 
 
 @pytest.mark.django_db
@@ -448,9 +481,10 @@ def test_task_logs_limit(patched_delay: MagicMock, mock_request: HttpRequest):
     patched_delay.side_effect = mock_commands
     test_app = baker.make(models.App, name="test_app")
     baker.make(models.TaskLog, app=test_app, _quantity=20)
-    resp = app_info(mock_request, "test_app")
+    resp = logs(mock_request, "test_app")
 
     assert isinstance(resp, HttpResponse)
+    assert resp.status_code == 200, resp
     log_count = re.findall(r"/logs/[^\"]+", resp.text)
     assert len(log_count) == 10, resp.text
 
