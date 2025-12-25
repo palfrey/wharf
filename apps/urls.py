@@ -100,6 +100,16 @@ urlpatterns = [
         views.check_domain,
         name="check_domain",
     ),
+    path(
+        "apps/<app_name>/rename",
+        views.rename_app,
+        name="rename_app",
+    ),
+    path(
+        "apps/<app_name>/check_rename_app/<task_id>",
+        views.check_rename_app,
+        name="check_rename_app",
+    ),
     path("apps/<app_name>/remove_domain", views.remove_domain, name="remove_domain"),
     path("apps/<app_name>/refresh", views.refresh, name="refresh"),
     path("logs/<task_id>", views.show_log, name="show_log"),
