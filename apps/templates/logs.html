@@ -1,0 +1,20 @@
+{% extends "app_info_base.html" %}
+{% block tab %}
+    {{ tabs("logs") }}
+    <h2>Task logs</h2>
+    {% if task_logs %}
+        <ul>
+            {% for tl in task_logs %}
+                <li>
+                    <a href="{{ url('show_log', task_id=tl.task_id) }}">{{ tl.nice_when() }} - {{ tl.description }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        No tasks run yet
+    {% endif %}
+    <h3>Logs</h3>
+    <pre>
+{{ logs }}
+    </pre>
+{% endblock tab %}

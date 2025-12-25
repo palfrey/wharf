@@ -1,0 +1,47 @@
+{% extends "app_info_base.html" %}
+{% block tab %}
+    {{ tabs("domains") }}
+    <h2>Domains</h2>
+    {% if domains.length == 0 %}
+        None
+    {% else %}
+        <ul>
+            {% for d in domains %}
+                <li>
+                    <a href="{{ 'https' if letsencrypt else 'http' }}://{{ d }}">{{ d }}</a>
+                    <form class="d-inline"
+                          action="{{ url('remove_domain', app_name=app) }}"
+                          method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="name" value="{{ d }}" />
+                        <button type="submit" class="btn btn-primary">Delete '{{ d }}' domain</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <h3>New domain</h3>
+    <form action="{{ url('add_domain', app_name=app) }}" method="post">
+        {% csrf_token %}
+        {{ domain_form | bootstrap }}
+        <input class="form-control" type="submit" value="Submit" />
+    </form>
+    <h3>Let's Encrypt</h3>
+    {% if letsencrypt %}
+        <ul>
+            {% for (k,v) in letsencrypt.items() if k != 'App name' %}<li>{{ k }}: {{ v }}</li>{% endfor %}
+        </ul>
+        <form class="form-inline"
+              action="{{ url('remove_letsencrypt', app_name=app) }}"
+              method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Remove Letsencrypt</button>
+        </form>
+    {% else %}
+        <form action="{{ url('setup_letsencrypt', app_name=app) }}" method="post">
+            {% csrf_token %}
+            {{ letsencrypt_form | bootstrap }}
+            <button type="submit" class="btn btn-primary">Setup Let's Encrypt</button>
+        </form>
+    {% endif %}
+{% endblock tab %}

@@ -53,7 +53,7 @@ class Tester:
             raise Exception("No such element with %s and %s" % (strat, id))
         return ret
 
-    def wait_for_one(self, locators):
+    def _wait_for_one(self, locators):
         for locator in locators:
             element = self.find_element(*locator, allow_none=True)
             if element is not None:
@@ -95,7 +95,7 @@ class Tester:
             raise
 
     def wait_for_list(self, items, timeout: int = 10):
-        return self.wait_for_lambda(lambda driver: self.wait_for_one(items), timeout)
+        return self.wait_for_lambda(lambda driver: self._wait_for_one(items), timeout)
 
     def get_main_id(self):
         res = self.wait_for_list(
@@ -146,13 +146,21 @@ try:
     tester.wait_for_list([(By.ID, "app_page")])
     assert tester.page_source().find(f"Wharf: {app_name}") != -1
 
+    tester.click(By.ID, "link-actions")
+    tester.wait_for_list([(By.ID, "nav-active-actions")])
     github_text = "Can't deploy due to missing GITHUB_URL"
     if tester.page_source().find(github_text) != -1:
+        tester.click(By.ID, "link-config")
+        tester.wait_for_list([(By.ID, "nav-active-config")])
         tester.send_keys(By.ID, "id_key", "GITHUB_URL")
         tester.send_keys(
             By.ID, "id_value", "https://github.com/palfrey/python-getting-started.git"
         )
         tester.click(By.ID, "config_add")
+
+        link_actions = tester.wait_for_list([(By.ID, "link-actions")])
+        link_actions.click()
+        tester.wait_for_list([(By.ID, "nav-active-actions")])
 
         def wait_for_no_github_text(driver: WebDriver) -> WebElement | Literal[False]:
             if tester.page_source().find(github_text) != -1:

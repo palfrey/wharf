@@ -1,0 +1,49 @@
+{% extends "app_info_base.html" %}
+{% block tab %}
+    {{ tabs("actions") }}
+    <h3>Actions</h3>
+    <div class="form-inline">
+        <form action="{{ url('refresh', app_name=app) }}" method="post">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-primary"
+                    name="action"
+                    value="refresh"
+                    id="refresh_app">Refresh app</button>
+        </form>
+        {% if git_url == None %}
+            Can't deploy due to missing GITHUB_URL in config (which should be set to the "Clone with HTTPS" url from Github)
+        {% else %}
+            <form action="{{ url('deploy', app_name=app) }}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="url" value="{{ git_url }}" />
+                &nbsp;&nbsp;
+                <button type="submit"
+                        class="btn btn-primary"
+                        name="action"
+                        value="deploy"
+                        id="deploy_app">Deploy app</button>
+                &nbsp;&nbsp;
+                <button type="submit"
+                        class="btn btn-warning"
+                        name="action"
+                        value="rebuild"
+                        id="rebuild_app">Rebuild app</button>
+            </form>
+        {% endif %}
+    </div>
+    <h3>Rename app</h3>
+    <form action="{{ url('rename_app', app_name=app) }}" method="post">
+        {% csrf_token %}
+        {{ rename_form | bootstrap }}
+        <input class="form-control" type="submit" value="Submit" />
+    </form>
+    <h3>Process Info</h3>
+    <ul>
+        {% for (k,v) in process.items() if k != 'processes' %}<li>{{ k }}: {{ v }}</li>{% endfor %}
+    </ul>
+    <h3>Processes</h3>
+    <ul>
+        {% for (k,v) in process.get('processes',{}).items() %}<li>{{ k }}: {{ v }}</li>{% endfor %}
+    </ul>
+{% endblock tab %}

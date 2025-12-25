@@ -5,8 +5,10 @@ repos:
   hooks:
   - id: trailing-whitespace
     exclude_types: [yaml, diff]
+    exclude: tests/snapshots/.*
   - id: end-of-file-fixer
     exclude_types: [diff]
+    exclude: tests/snapshots/.*
   - id: check-yaml
   - id: check-added-large-files
 
