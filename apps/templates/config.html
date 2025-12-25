@@ -21,7 +21,7 @@
         {% endfor %}
     </ul>
     <h3>New item</h3>
-    <form action="{{ url('app_info', app_name=app) }}" method="post">
+    <form action="{{ url('config', app_name=app) }}" method="post">
         {% csrf_token %}
         {{ config_form | bootstrap }}
         <input class="form-control" type="submit" value="Submit" id="config_add" />

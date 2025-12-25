@@ -93,7 +93,7 @@
         
     </ul>
     <h3>New item</h3>
-    <form action="/apps/test_app" method="post">
+    <form action="/apps/test_app/config" method="post">
         <input type='hidden' name='csrfmiddlewaretoken' value='predictabletoken' />
         
   <div class="form-group">

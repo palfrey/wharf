@@ -276,7 +276,7 @@ def check_config_set(request: HttpRequest, task_id: str):
 def check_app_config_set(request: HttpRequest, app_name, task_id: str):
     check_config_set(request, task_id)
     clear_cache("config:show %s" % app_name)
-    return redirect_reverse("app_info", args=[app_name])
+    return redirect_reverse("config", args=[app_name])
 
 
 def app_config_delete(request, app):
