@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block body %}
+    <h1 id="app_page">Wharf: {{ app }}</h1>
+    <a href="{{ url("index") }}">Return to apps index</a>
+    <br />
+    {% block tab %}
+    {% endblock tab %}
+{% endblock body %}
+{% macro tabs(active) -%}
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link {% if active == 'logs' %}active{% endif %}"
+               href="{{ url('logs', app_name=app) }}">Logs</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active == 'databases' %}active{% endif %}"
+               href="{{ url('databases', app_name=app) }}">Databases</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active == 'config' %}active{% endif %}"
+               href="{{ url('config', app_name=app) }}">Config</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active == 'domains' %}active{% endif %}"
+               href="{{ url('domains', app_name=app) }}">Domains</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if active == 'actions' %}active{% endif %}"
+               href="{{ url('actions', app_name=app) }}">Actions</a>
+        </li>
+    </ul>
+{% endmacro %}

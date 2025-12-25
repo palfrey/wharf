@@ -17,6 +17,11 @@ urlpatterns = [
     ),
     path("apps/<app_name>/check_app/<task_id>", views.check_app, name="check_app"),
     path("apps/<app_name>", views.app_info, name="app_info"),
+    path("apps/<app_name>/logs", views.logs, name="logs"),
+    path("apps/<app_name>/databases", views.databases, name="databases"),
+    path("apps/<app_name>/config", views.config, name="config"),
+    path("apps/<app_name>/domains", views.domains, name="domains"),
+    path("apps/<app_name>/actions", views.actions, name="actions"),
     path(
         "apps/<app_name>/wait/<task_id>/<after>",
         views.wait_for_command,

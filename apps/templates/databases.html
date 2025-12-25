@@ -1,0 +1,38 @@
+{% extends "app_info_base.html" %}
+{% block tab %}
+    {{ tabs("databases") }}
+    <h3>Postgres</h3>
+    {% if postgres %}
+        Status: {{ postgres['Status'] }}
+        <form class="form-inline"
+              action="{{ url('remove_postgres', app_name=app) }}"
+              method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Remove Postgres db</button>
+        </form>
+    {% else %}
+        <form class="form-inline"
+              action="{{ url('create_postgres', app_name=app) }}"
+              method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Create Postgres db</button>
+        </form>
+    {% endif %}
+    <h3>Redis</h3>
+    {% if redis %}
+        Status: {{ redis['Status'] }}
+        <form class="form-inline"
+              action="{{ url('remove_redis', app_name=app) }}"
+              method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Remove Redis db</button>
+        </form>
+    {% else %}
+        <form class="form-inline"
+              action="{{ url('create_redis', app_name=app) }}"
+              method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Create Redis db</button>
+        </form>
+    {% endif %}
+{% endblock tab %}

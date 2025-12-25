@@ -1,0 +1,29 @@
+{% extends "app_info_base.html" %}
+{% block tab %}
+    {{ tabs("config") }}
+    <h2>Config</h2>
+    <ul class="config">
+        {% for (k,v) in config %}
+            <li>
+                {% if k in ['GIT_REV', 'REDIS_URL', 'DATABASE_URL'] %}
+                    {{ k }} = {{ v }}
+                {% else %}
+                    <form class="form-inline"
+                          action="{{ url('app_config_delete', app_name=app) }}"
+                          method="post">
+                        {{ k }} = {{ v }}&nbsp;
+                        {% csrf_token %}
+                        <input type="hidden" name="key" value="{{ k }}" />
+                        <button type="submit" class="btn btn-primary btn-sm">Delete</button>
+                    </form>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+    <h3>New item</h3>
+    <form action="{{ url('app_info', app_name=app) }}" method="post">
+        {% csrf_token %}
+        {{ config_form | bootstrap }}
+        <input class="form-control" type="submit" value="Submit" id="config_add" />
+    </form>
+{% endblock tab %}

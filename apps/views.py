@@ -489,43 +489,110 @@ def remove_domain(request: HttpRequest, app_name):
     )
 
 
-def app_info(request: HttpRequest, app_name: str):
+def logs(request: HttpRequest, app_name: str):
+    try:
+        app_config(app_name)
+    except NoSuchAppException:
+        return HttpResponseNotFound(content=f"App {app_name} not found")
+    app, _ = models.App.objects.get_or_create(name=app_name)
+    return render(
+        request,
+        "logs.html",
+        {
+            "app": app_name,
+            "logs": ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
+            "task_logs": models.TaskLog.objects.filter(app=app).order_by("-when")[0:10],
+        },
+    )
+
+
+def databases(request: HttpRequest, app_name: str):
+    try:
+        app_config(app_name)
+    except NoSuchAppException:
+        return HttpResponseNotFound(content=f"App {app_name} not found")
+    return render(
+        request,
+        "databases.html",
+        {
+            "app": app_name,
+            "postgres": postgres_info(app_name),
+            "redis": redis_info(app_name),
+        },
+    )
+
+
+def config(request: HttpRequest, app_name: str):
     try:
         config = app_config(app_name)
     except NoSuchAppException:
         return HttpResponseNotFound(content=f"App {app_name} not found")
+
     app, _ = models.App.objects.get_or_create(name=app_name)
     if "GITHUB_URL" in config:
         app.github_url = config["GITHUB_URL"]
         app.save()
+
     if request.method == "POST":
-        form = forms.ConfigForm(request.POST)
-        if form.is_valid():
+        config_form = forms.ConfigForm(request.POST)
+        if config_form.is_valid():
             return app_config_set(
-                app_name, form.cleaned_data["key"], form.cleaned_data["value"]
+                app_name,
+                config_form.cleaned_data["key"],
+                config_form.cleaned_data["value"],
             )
     else:
-        form = forms.ConfigForm()
+        config_form = forms.ConfigForm()
+
     return render(
         request,
-        "app_info.html",
+        "config.html",
         {
-            "postgres": postgres_info(app_name),
-            "redis": redis_info(app_name),
+            "config": sorted(config.items()),
+            "config_form": config_form,
+            "app": app_name,
+        },
+    )
+
+
+def domains(request: HttpRequest, app_name: str):
+    try:
+        app_config(app_name)
+    except NoSuchAppException:
+        return HttpResponseNotFound(content=f"App {app_name} not found")
+
+    return render(
+        request,
+        "domains.html",
+        {
+            "app": app_name,
             "letsencrypt": letsencrypt(app_name),
-            "process": process_info(app_name),
-            "logs": ansi_escape.sub("", run_cmd("logs %s --num 100" % app_name)),
             "domains": domains_list(app_name),
             "domain_form": forms.CreateDomainForm(),
             "letsencrypt_form": forms.SetupLetsEncrypt(),
-            "form": form,
+        },
+    )
+
+
+def actions(request: HttpRequest, app_name: str):
+    try:
+        config = app_config(app_name)
+    except NoSuchAppException:
+        return HttpResponseNotFound(content=f"App {app_name} not found")
+    return render(
+        request,
+        "actions.html",
+        {
+            "process": process_info(app_name),
             "app": app_name,
             "git_url": config.get("GITHUB_URL", None),
-            "config": sorted(config.items()),
-            "task_logs": models.TaskLog.objects.filter(app=app).order_by("-when")[0:10],
             "rename_form": forms.RenameApp(),
         },
     )
+
+
+def app_info(request: HttpRequest, app_name: str):
+    return redirect_reverse("logs", args=[app_name])
 
 
 def deploy(request: HttpRequest, app_name):
