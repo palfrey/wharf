@@ -16,6 +16,7 @@ from django.http import (
     HttpRequest,
     HttpResponse,
     HttpResponseBadRequest,
+    HttpResponseNotFound,
     HttpResponseServerError,
 )
 from django.shortcuts import redirect, render
@@ -238,8 +239,14 @@ def generic_config(app_name: str, data: str) -> dict[str, Any]:
     return config
 
 
+class NoSuchAppException(Exception):
+    pass
+
+
 def app_config(app_name):
     data = run_cmd_with_cache("config:show %s" % app_name)
+    if "does not exist" in data:
+        raise NoSuchAppException
     return generic_config(app_name, data)
 
 
@@ -482,9 +489,12 @@ def remove_domain(request: HttpRequest, app_name):
     )
 
 
-def app_info(request: HttpRequest, app_name):
+def app_info(request: HttpRequest, app_name: str):
+    try:
+        config = app_config(app_name)
+    except NoSuchAppException:
+        return HttpResponseNotFound(content=f"App {app_name} not found")
     app, _ = models.App.objects.get_or_create(name=app_name)
-    config = app_config(app_name)
     if "GITHUB_URL" in config:
         app.github_url = config["GITHUB_URL"]
         app.save()
@@ -513,6 +523,7 @@ def app_info(request: HttpRequest, app_name):
             "git_url": config.get("GITHUB_URL", None),
             "config": sorted(config.items()),
             "task_logs": models.TaskLog.objects.filter(app=app).order_by("-when")[0:10],
+            "rename_form": forms.RenameApp(),
         },
     )
 
@@ -794,3 +805,35 @@ def status(request: HttpRequest):
         return HttpResponse("All good")
     except timeout_decorator.TimeoutError:
         return HttpResponseServerError("Timeout trying to get status")
+
+
+def rename_app(request: HttpRequest, app_name: str):
+    form = forms.RenameApp(request.POST)
+    if form.is_valid():
+        new_app_name = form.cleaned_data["new_name"]
+        return run_cmd_with_log(
+            app_name,
+            "Rename app",
+            [
+                "apps:rename %s %s" % (app_name, new_app_name),
+            ],
+            "check_rename_app",
+        )
+    else:
+        raise Exception
+
+
+def check_rename_app(request: HttpRequest, app_name, task_id: str):
+    res = AsyncResult(task_id)
+    data = get_log(res)
+    if data.find("Retiring old containers and images") == -1:
+        raise Exception(data)
+    new_app_match = re.search(r"Creating (.+)\.\.\.", data)
+    assert new_app_match is not None
+    new_app = new_app_match.group(1)
+    messages.success(request, f"{app_name} renamed to {new_app}")
+    models.App.objects.filter(name=app_name).delete()
+    clear_cache("config:show %s" % app_name)
+    clear_cache("config:show %s" % new_app)
+    clear_cache("apps:list")
+    return redirect_reverse("app_info", args=[new_app])

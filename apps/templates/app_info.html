@@ -34,6 +34,12 @@
             </form>
         {% endif %}
     </div>
+    <h3>Rename app</h3>
+    <form action="{{ url('rename_app', app_name=app) }}" method="post">
+        {% csrf_token %}
+        {{ rename_form | bootstrap }}
+        <input class="form-control" type="submit" value="Submit" />
+    </form>
     <h2>Task logs</h2>
     {% if task_logs %}
         <ul>
