@@ -279,12 +279,12 @@ def check_app_config_set(request: HttpRequest, app_name, task_id: str):
     return redirect_reverse("config", args=[app_name])
 
 
-def app_config_delete(request, app):
+def app_config_delete(request, app_name: str):
     key = request.POST["key"]
     return run_cmd_with_log(
-        app,
+        app_name,
         "Removing %s" % key,
-        "config:unset %s %s" % (app, key),
+        "config:unset %s %s" % (app_name, key),
         "check_app_config_delete",
     )
 
