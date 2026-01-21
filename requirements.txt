@@ -117,7 +117,7 @@ prompt-toolkit==3.0.51
     # via click-repl
 psycopg2-binary==2.9.10
     # via -r requirements.in
-pycparser==2.22
+pycparser==3.0
     # via cffi
 pygments==2.19.2
     # via pytest
