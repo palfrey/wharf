@@ -85,7 +85,7 @@ idna==3.10
     #   trio
 iniconfig==2.1.0
     # via pytest
-invoke==2.2.1
+invoke==3.0.0
     # via paramiko
 jinja2==3.1.6
     # via
