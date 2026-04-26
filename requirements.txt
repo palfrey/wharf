@@ -71,7 +71,7 @@ filelock==3.25.2
     #   virtualenv
 gitdb==4.0.12
     # via gitpython
-gitpython==3.1.44
+gitpython==3.1.47
     # via -r requirements.in
 h11==0.16.0
     # via wsproto
