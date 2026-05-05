@@ -40,7 +40,7 @@ click-plugins==1.1.1
     # via celery
 click-repl==0.3.0
     # via celery
-cryptography==47.0.0
+cryptography==48.0.0
     # via paramiko
 distlib==0.4.0
     # via virtualenv
