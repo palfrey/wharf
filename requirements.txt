@@ -107,7 +107,7 @@ packaging==26.0
     # via
     #   -r requirements.in
     #   pytest
-paramiko==4.0.0
+paramiko==5.0.0
     # via -r requirements.in
 platformdirs==4.5.0
     # via
