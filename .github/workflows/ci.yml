@@ -19,8 +19,7 @@ jobs:
     - name: Install Dependencies
       run: |
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker-key.gpg
-        echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker-key.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs)
-        stable" | sudo tee -i /etc/apt/sources.list.d/docker.list
+        echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker-key.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee -i /etc/apt/sources.list.d/docker.list
         sudo apt update
         apt-cache policy docker-ce
         sudo apt-get install -y docker-ce nginx firefox hostsed
