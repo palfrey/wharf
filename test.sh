@@ -12,7 +12,7 @@ fi
 REDIS_URL=redis://dummy python3 manage.py test
 wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo gpg --dearmor -o /etc/apt/keyrings/dokku-key.gpg
 if [ ! -f /etc/apt/sources.list.d/dokku.list ]; then
-    echo "deb [signed-by=/etc/apt/keyrings/dokku-key.gpg] https://packagecloud.io/dokku/dokku/ubuntu/ noble main" | sudo tee /etc/apt/sources.list.d/dokku.list
+    echo "deb [signed-by=/etc/apt/keyrings/dokku-key.gpg] https://packagecloud.io/dokku/dokku/ubuntu/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/dokku.list
     sudo apt-get update
 fi
 echo dokku dokku/skip_key_file boolean true | sudo debconf-set-selections
