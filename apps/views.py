@@ -79,7 +79,10 @@ def redirect_reverse(
 def run_cmd_with_log(app_name, description, cmd, after):
     res = tasks.run_ssh_command.delay(cmd)
     if app_name is None:  # global
-        app_name = "_"
+        return redirect_reverse(
+            "wait_for_command",
+            kwargs={"task_id": res.id, "after": after},
+        )
     else:
         models.TaskLog(
             task_id=res.id,
@@ -87,10 +90,10 @@ def run_cmd_with_log(app_name, description, cmd, after):
             app=models.App.objects.get(name=app_name),
             description=description,
         ).save()
-    return redirect_reverse(
-        "wait_for_command",
-        kwargs={"app_name": app_name, "task_id": res.id, "after": after},
-    )
+        return redirect_reverse(
+            "wait_for_command",
+            kwargs={"app_name": app_name, "task_id": res.id, "after": after},
+        )
 
 
 def get_log(res: AsyncResult):
