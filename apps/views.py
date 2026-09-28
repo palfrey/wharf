@@ -234,6 +234,8 @@ def generic_config(app_name: str, data: str) -> dict[str, Any]:
         raise Exception(data)
     config = {}
     for line in lines[1:]:
+        if ":" not in line:
+            raise Exception("Line is '%s'\n%s" % (line, lines))
         (name, value) = line.split(":", 1)
         config[name] = value.lstrip()
     return config
