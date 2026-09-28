@@ -13,6 +13,10 @@ jobs:
   Build:
     runs-on: ubuntu-26.04
     steps:
+    # FIXME: workaround for https://github.com/actions/runner-images/issues/14797
+    - name: Fix adduser by removing invalid skel files
+      run: |
+        sudo rm -rf /etc/skel/.nvm/test
     - run: |
         sudo systemctl stop apache2
         sudo apt-get remove -y apache2
