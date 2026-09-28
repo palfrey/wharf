@@ -10,9 +10,9 @@ if [ -f /etc/nginx/sites-enabled/default ]; then
 fi
 
 REDIS_URL=redis://dummy python3 manage.py test
-wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo apt-key add -
+wget -nv -O - https://packagecloud.io/dokku/dokku/gpgkey | sudo gpg --dearmor -o /etc/apt/keyrings/dokku-key.gpg
 if [ ! -f /etc/apt/sources.list.d/dokku.list ]; then
-    echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ noble main" | sudo tee /etc/apt/sources.list.d/dokku.list
+    echo "deb [signed-by=/etc/apt/keyrings/dokku-key.gpg] https://packagecloud.io/dokku/dokku/ubuntu/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/dokku.list
     sudo apt-get update
 fi
 echo dokku dokku/skip_key_file boolean true | sudo debconf-set-selections
@@ -35,8 +35,8 @@ if [ ! -f /usr/bin/dokku-daemon ]; then
         sudo systemctl start dokku-daemon
     )
 fi
-(dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git --committish 1.41.0 redis
-(dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git --committish 1.43.0 postgres
+(dokku plugin:list | grep redis) || sudo dokku plugin:install https://github.com/dokku/dokku-redis.git --committish 2.1.0 redis
+(dokku plugin:list | grep postgres) || sudo dokku plugin:install https://github.com/dokku/dokku-postgres.git --committish 2.1.0 postgres
 (dokku plugin:list | grep letsencrypt) || sudo dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git --committish 0.22.0 letsencrypt
 dokku plugin:list
 dokku letsencrypt:cron-job --add
