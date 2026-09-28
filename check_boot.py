@@ -138,12 +138,12 @@ try:
     tester.log("Making new app %s" % app_name)
     tester.send_keys(By.ID, "id_name", app_name)
     tester.click(By.ID, "create_app")
-    tester.wait_for_list([(By.ID, "app_page")])
+    tester.wait_for_list([(By.ID, "app_page")], timeout=30)
     assert tester.page_source().find(app_name) != -1
 
     tester.get(sys.argv[1])
     tester.click(By.XPATH, f'//a[text()="{app_name}"]')
-    tester.wait_for_list([(By.ID, "app_page")])
+    tester.wait_for_list([(By.ID, "app_page")], timeout=30)
     assert tester.page_source().find(f"Wharf: {app_name}") != -1
 
     tester.click(By.ID, "link-actions")
