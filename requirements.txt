@@ -110,9 +110,7 @@ packaging==26.0
 paramiko==5.0.0
     # via -r requirements.in
 platformdirs==4.5.0
-    # via
-    #   python-discovery
-    #   virtualenv
+    # via virtualenv
 pluggy==1.5.0
     # via pytest
 pre-commit==4.4.0
@@ -139,7 +137,7 @@ pytest-watcher==0.4.3
     # via -r requirements.in
 python-dateutil==2.9.0.post0
     # via celery
-python-discovery==1.2.0
+python-discovery==1.6.1
     # via virtualenv
 pyyaml==6.0.3
     # via pre-commit
@@ -172,6 +170,7 @@ trio-websocket==0.12.2
 typing-extensions==4.13.2
     # via
     #   dj-database-url
+    #   django-redis
     #   selenium
 tzdata==2026.1
     # via kombu
