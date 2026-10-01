@@ -184,7 +184,7 @@ vine==5.1.0
     #   amqp
     #   celery
     #   kombu
-virtualenv==21.2.0
+virtualenv==21.7.13
     # via pre-commit
 watchdog==6.0.0
     # via pytest-watcher
