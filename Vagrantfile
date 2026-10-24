@@ -16,10 +16,12 @@ Vagrant.configure("2") do |config|
     set -eux -o pipefail
     sudo apt-get update
     sudo apt-get install --no-install-recommends -y build-essential python3 python3-pip git apt-transport-https curl redis-server firefox python3-setuptools python3-wheel python3-dev libssl-dev xdg-utils hostsed
+    curl -LsSf https://astral.sh/uv/0.13.5/install.sh | sh
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker-key.gpg
     echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker-key.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs)  stable" | sudo tee /etc/apt/sources.list.d/docker.list
     cd /vagrant
-    pip3 install --break-system-packages -r requirements.txt
+    ~/.local/bin/uv venv --system-site-packages
+    ~/.local/bin/uv sync
     ./test.sh
   SHELL
 end
