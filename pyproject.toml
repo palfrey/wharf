@@ -1,4 +1,31 @@
+[dependency-groups]
+dev = [
+  "selenium==4.31.0",
+  "pre-commit==4.4.0",
+  "pytest==9.0.3",
+  "pytest-django==4.11.1",
+  "pytest-watcher==0.4.3",
+  "model-bakery==1.20.5"
+]
+
 [project]
+dependencies = [
+  "django==6.0.8",
+  "django-jinja-bootstrap-form==4.5.0",
+  "dj-database-url==3.0.0",
+  "requests==2.33.0",
+  "jinja2==3.1.6",
+  "psycopg2-binary==2.9.10",
+  "celery[redis]==5.5.1",
+  "django-redis==7.0.0",
+  "django-celery-results==2.6.0",
+  "paramiko==5.0.0",
+  "gitpython==3.2.1",
+  "humanize==4.12.2",
+  "timeout-decorator==0.5.0",
+  "packaging==26.0",
+  "django-jinja==2.11.0"
+]
 description = "Opinionated web frontend for Dokku"
 name = "wharf"
 requires-python = ">=3.12"

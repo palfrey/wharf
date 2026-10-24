@@ -37,13 +37,6 @@ jobs:
     - uses: actions/checkout@v7
       with:
         fetch-depth: 0   # All of history
-    - name: Cache pip
-      uses: actions/cache@v6
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-        
     - uses: asdf-vm/actions/install@v4
     - name: Install dependencies
       run: make sync
@@ -64,13 +57,6 @@ jobs:
     - uses: actions/checkout@v7
       with:
         fetch-depth: 0   # All of history
-    - name: Cache pip
-      uses: actions/cache@v6
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-        
     - uses: asdf-vm/actions/install@v4
     - name: Install dependencies
       run: make sync
