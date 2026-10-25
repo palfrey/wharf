@@ -1402,31 +1402,31 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "celery", extras = ["redis"], specifier = "==5.5.1" },
-    { name = "dj-database-url", specifier = "==3.0.0" },
-    { name = "django", specifier = "==6.0.8" },
-    { name = "django-celery-results", specifier = "==2.6.0" },
-    { name = "django-jinja", specifier = "==2.11.0" },
-    { name = "django-jinja-bootstrap-form", specifier = "==4.5.0" },
-    { name = "django-redis", specifier = "==7.0.0" },
-    { name = "gitpython", specifier = "==3.2.1" },
-    { name = "humanize", specifier = "==4.12.2" },
-    { name = "jinja2", specifier = "==3.1.6" },
-    { name = "packaging", specifier = "==26.0" },
-    { name = "paramiko", specifier = "==5.0.0" },
-    { name = "psycopg2-binary", specifier = "==2.9.10" },
-    { name = "requests", specifier = "==2.33.0" },
-    { name = "timeout-decorator", specifier = "==0.5.0" },
+    { name = "celery", extras = ["redis"], specifier = ">=5.5.1" },
+    { name = "dj-database-url", specifier = ">=3.0.0" },
+    { name = "django", specifier = ">=6.0.8" },
+    { name = "django-celery-results", specifier = ">=2.6.0" },
+    { name = "django-jinja", specifier = ">=2.11.0" },
+    { name = "django-jinja-bootstrap-form", specifier = ">=4.5.0" },
+    { name = "django-redis", specifier = ">=7.0.0" },
+    { name = "gitpython", specifier = ">=3.2.1" },
+    { name = "humanize", specifier = ">=4.12.2" },
+    { name = "jinja2", specifier = ">=3.1.6" },
+    { name = "packaging", specifier = ">=26.0" },
+    { name = "paramiko", specifier = ">=5.0.0" },
+    { name = "psycopg2-binary", specifier = ">=2.9.10" },
+    { name = "requests", specifier = ">=2.33.0" },
+    { name = "timeout-decorator", specifier = ">=0.5.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "model-bakery", specifier = "==1.20.5" },
-    { name = "pre-commit", specifier = "==4.4.0" },
-    { name = "pytest", specifier = "==9.0.3" },
-    { name = "pytest-django", specifier = "==4.11.1" },
-    { name = "pytest-watcher", specifier = "==0.4.3" },
-    { name = "selenium", specifier = "==4.31.0" },
+    { name = "model-bakery", specifier = ">=1.20.5" },
+    { name = "pre-commit", specifier = ">=4.4.0" },
+    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "pytest-django", specifier = ">=4.11.1" },
+    { name = "pytest-watcher", specifier = ">=0.4.3" },
+    { name = "selenium", specifier = ">=4.31.0" },
 ]
 
 [[package]]
